@@ -1,0 +1,132 @@
+# Anomaly detection thresholds and scoring caps.
+#
+# These are APRIORI settings, expressed in robust-z units or trailing
+# percentiles. They are not fitted to forward returns. Each detector's evidence
+# payload records the threshold, the observed value and the resulting score, so
+# any flag can be recomputed by hand.
+#
+# score formula (uniform across detectors):
+#   score = clip((|measure| - min) / (cap - min), 0, 1)
+# which is monotone, bounded and independent of the instrument's volatility
+# scale (the measures are already robust-z or percentile based).
+#
+# `flood_control` caps the number of anomalies per family and scan so that a
+# broad market move does not swamp the pipeline with 100 near-identical flags.
+
+version: "1.0"
+
+global:
+  min_history_days: 504          # 2 years before an instrument is eligible
+  min_price_rows: 120
+  min_abs_z_floor: 1.5           # never flag anything below this robust z
+  max_anomalies_per_family: 60
+  max_anomalies_per_entity: 4
+  data_quality_penalty_aggregator: 0.0   # market data: aggregator accepted (documented)
+
+detectors:
+
+  price_return_shock:
+    family: price
+    description: 1-day or 1-month move far outside its own 3y robust distribution
+    windows:
+      1d: {measure: return_z_1d_3y, min: 3.0, cap: 7.0}
+      1m: {measure: return_z_3y, min: 2.0, cap: 5.0}
+    percentile_support: 0.97       # require |z| extreme AND trailing percentile extreme
+    min_percentile: 0.97
+
+  vol_regime_shift:
+    family: price
+    description: realized volatility regime shift (expansion or compression)
+    measure: vol_z_3y
+    min: 1.5
+    cap: 4.0
+    direction_split: true
+
+  drawdown_extreme:
+    family: price
+    description: drawdown from 1y high at an extreme percentile of its 5y history
+    measure: drawdown_pctile_5y
+    low: 0.05
+    high: 0.95
+    min_abs_distance: 0.0
+
+  trend_break:
+    family: price
+    description: 50/200 day moving-average relationship flips
+    lookback_days: 10
+    min_abs_gap: 0.01
+
+  relative_strength_extreme:
+    family: industry
+    description: sector/instrument 1m or 3m relative strength vs benchmark beyond 2 robust sigma
+    min_z: 2.0
+    cap_z: 5.0
+    windows: ["1m", "3m"]
+
+  breadth_extreme:
+    family: industry
+    description: share of equities above 200d MA at an extreme
+    min_abs_z: 1.5
+    cap_abs_z: 3.5
+    sector_dispersion_z: 2.0
+
+  valuation_extreme:
+    family: valuation
+    description: CAPE percentile at 10y extreme; equity risk premium percentile
+    cape_pctile_low: 0.10
+    cape_pctile_high: 0.90
+    erp_pctile_low: 0.10
+    erp_pctile_high: 0.90
+
+  curve_change:
+    family: macro
+    description: large 1m change in a benchmark yield or curve slope
+    min_abs_z: 2.0
+    cap_abs_z: 5.0
+    slope_change_min_bp: 25.0      # 25bp minimum move to be economically interesting
+    inversion_flip_lookback: 20
+
+  credit_stress:
+    family: macro
+    description: high-yield vs treasury relative performance at a 3y extreme
+    min_abs_z: 2.0
+    cap_abs_z: 4.0
+
+  cross_asset_divergence:
+    family: cross_asset
+    description: 63d cross-asset correlation far from its 3y norm (regime break)
+    min_abs_z: 2.0
+    cap_abs_z: 4.0
+
+  macro_shift:
+    family: macro
+    description: macro series level at a 3y extreme with a material recent change
+    min_abs_z: 1.5
+    cap_abs_z: 3.5
+    min_abs_change_3p: 0.10        # in transformed units (e.g. pp for inflation)
+    exclude_series: ["US_CREDIT", "CN_CREDIT"]
+
+  positioning_extreme:
+    family: positioning
+    description: CFTC net position at a 5y percentile extreme (crowding)
+    pctile_low: 0.05
+    pctile_high: 0.95
+    min_history: 104
+
+  policy_rate_change:
+    family: macro
+    description: 央行政策利率实际变动（降息/加息），非统计异常
+    min_change_pp: 0.05
+    lookback_days: 45
+
+  risk_appetite_shift:
+    family: cross_asset
+    description: VIX term structure inversion or VIX/MOVE at a 3y extreme
+    vix_term_min_abs_z: 1.5
+    vix_pctile_high: 0.90
+    move_pctile_high: 0.90
+
+flood_control:
+  max_anomalies_per_family: 60
+  max_anomalies_per_entity: 4
+  dedupe_within_days: 5           # same detector+entity within N days = one event

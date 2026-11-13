@@ -1,0 +1,84 @@
+# Historical detection cases (point-in-time, ex-ante).
+#
+# Each case is a pre-registered question: "given only the data available at
+# as_of, does the engine flag the kind of phenomenon that turned out to matter?"
+# It tests DETECTION, not profitability. No case uses information from after its
+# as_of date; the replay layer enforces the publication lag for macro series.
+#
+# expect_detectors / expect_families must fire on at least one entity in the
+# window for the case to pass. expected_mechanisms are checked when the
+# mechanism catalogue covers the episode.
+
+version: "1.0"
+
+cases:
+
+  COVID_CRASH_2020:
+    title: 2020 年 3 月全球风险资产崩跌
+    window: ["2020-02-20", "2020-04-30"]
+    as_of: "2020-04-30"
+    entities: [US_EQ_SPY, US_CR_HYG, US_VOL_VIX, CM_MET_GC]
+    expect_detectors: [price_return_shock, vol_regime_shift, drawdown_extreme]
+    expect_families: [cross_asset]
+    expect_mechanisms: [M10_CREDIT_SPREADS_EQUITY_RISK, M12_VIX_TERM_STRUCTURE]
+    note: 流动性冲击与信用/波动率共振；检验系统在极端窗口是否给出可研究的线索，而不是预测顶部。
+
+  RATE_SHOCK_2022:
+    title: 2022 年美联储加息与股债双杀
+    window: ["2022-01-01", "2022-10-31"]
+    as_of: "2022-10-31"
+    entities: [US_EQ_SPY, US_FI_TLT, UST:10Y, US_FX_DXY]
+    expect_detectors: [curve_change, drawdown_extreme, vol_regime_shift]
+    expect_families: [macro, price]
+    expect_mechanisms: [M01_REAL_RATES_USD_ALLOCATION, M11_CURVE_BANK_PROFITABILITY]
+    note: 实际利率→美元→全球配置链条；检验利率与跨资产联动是否被识别。
+
+  UK_GILT_CRISIS_2022:
+    title: 2022 年 9 月英国国债/养老金 LDI 冲击
+    window: ["2022-09-01", "2022-10-31"]
+    as_of: "2022-10-31"
+    entities: [UK_EQ_FTSE, GX_FX_GBPUSD, US_VOL_MOVE]
+    expect_detectors: [price_return_shock, vol_regime_shift]
+    expect_families: [price, cross_asset]
+    expect_mechanisms: [M01_REAL_RATES_USD_ALLOCATION]
+    note: 财政/流动性冲击的本地化表现；系统能否把英国资产与全球利率波动区分开。
+
+  SVB_CREDIT_STRESS_2023:
+    title: 2023 年 3 月美国区域银行事件
+    window: ["2023-03-01", "2023-04-15"]
+    as_of: "2023-04-15"
+    entities: [US_CR_HYG, US_FI_IEF, US_SEC_XLF, US_VOL_VIX]
+    expect_detectors: [credit_stress, vol_regime_shift, drawdown_extreme]
+    expect_families: [macro, cross_asset]
+    expect_mechanisms: [M10_CREDIT_SPREADS_EQUITY_RISK]
+    note: 信用利差代理与银行板块；检验"价格下跌 vs 信用恶化"的区分能力。
+
+  JAPAN_CARRY_UNWIND_2024:
+    title: 2024 年 8 月日元套息交易平仓
+    window: ["2024-07-15", "2024-09-15"]
+    as_of: "2024-09-15"
+    entities: [JP_EQ_N225, GX_FX_USDJPY, US_VOL_VIX, US_EQ_SPY]
+    expect_detectors: [price_return_shock, vol_regime_shift, relative_strength_extreme]
+    expect_families: [cross_asset, price]
+    expect_mechanisms: [M14_JAPAN_CARRY_UNWIND]
+    note: 跨市场去杠杆；检验机制 M14 在事件窗口是否被激活且有支持证据。
+
+  CHINA_POLICY_RALLY_2024:
+    title: 2024 年 9 月中国政策转向与股市急涨
+    window: ["2024-09-15", "2024-11-15"]
+    as_of: "2024-11-15"
+    entities: [CN_EQ_CSI300, CN_EQ_CSI500, HK_EQ_HSI, CN_EQ_KWEB]
+    expect_detectors: [price_return_shock, relative_strength_extreme, breadth_extreme]
+    expect_families: [price, industry]
+    expect_mechanisms: [M04_CHINA_POLICY_HK_TECH]
+    note: 政策事件驱动的重定价；检验上涨异常是否被记录（而非只记录下跌）。
+
+  GOLD_VS_REAL_RATES_2025:
+    title: 2025 年黄金与实际利率/美元的关系变化
+    window: ["2025-01-01", "2025-12-31"]
+    as_of: "2025-12-31"
+    entities: [CM_MET_GC, UST:10Y, US_FX_DXY, US_FI_TIP]
+    expect_detectors: [price_return_shock, cross_asset_divergence]
+    expect_families: [price, cross_asset]
+    expect_mechanisms: [M02_GOLD_REAL_YIELD]
+    note: 传统机制失效/减弱的检验；若机制证据不足，系统应输出"不支持/证据不足"而非强行叙事。

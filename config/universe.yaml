@@ -1,0 +1,254 @@
+# Global tradable instrument universe.
+#
+# Fields
+#   name         human readable name (Chinese + English)
+#   asset_class  equity_index | equity_etf | sector_equity | fixed_income | credit
+#                | fx | commodity | crypto | volatility
+#   region       US CN HK JP EA UK DE FR IT ES CH KR TW IN BR CA AU MX TR WORLD
+#   currency     quote currency of the traded instrument
+#   source       data adapter id (see config/sources.yaml)
+#   symbol       adapter specific symbol
+#   importance   0..1 global importance weight used by the impact score.
+#                Anchored on (a) share of global market value / daily turnover and
+#                (b) how much the instrument transmits to other assets. Documented
+#                in docs/SCORING.md; not tuned on returns.
+#   liquidity    very_high | high | medium | low  (tradability of the proxy)
+#   role         benchmark | sector | factor | macro_proxy | safe_haven | ...
+#   benchmark    optional: instrument_id used as relative-strength benchmark
+#
+# Prices are downloaded as unadjusted close AND adjusted close. Return based
+# analytics use adjusted close when available (dividends/splits), and the
+# adjustment flag is stored with every row so the choice is auditable.
+
+# Default benchmark per region (used for relative strength when an instrument
+# does not declare its own benchmark). An instrument is never compared with
+# itself: the resolver skips self-references.
+benchmarks:
+  US: US_EQ_SPY
+  CN: CN_EQ_CSI300
+  HK: HK_EQ_HSI
+  JP: JP_EQ_N225
+  EA: EA_EQ_SX5E
+  DE: DE_EQ_DAX
+  FR: FR_EQ_CAC
+  UK: UK_EQ_FTSE
+  KR: KR_EQ_KOSPI
+  TW: TW_EQ_TAIEX
+  IN: IN_EQ_SENSEX
+  BR: BR_EQ_EWZ
+  CA: CA_EQ_TSX
+  AU: AU_EQ_ASX200
+  MX: MX_EQ_IPC
+  WORLD: WORLD_EQ_EFA
+
+instruments:
+
+  # ------------------------------------------------------------------ US equity
+  US_EQ_SPY:
+    name: SPDR S&P 500 ETF
+    asset_class: equity_etf
+    region: US
+    currency: USD
+    source: yahoo
+    symbol: SPY
+    importance: 1.0
+    liquidity: very_high
+    role: benchmark
+  US_EQ_QQQ:
+    name: Invesco QQQ (Nasdaq 100)
+    asset_class: equity_etf
+    region: US
+    currency: USD
+    source: yahoo
+    symbol: QQQ
+    importance: 0.95
+    liquidity: very_high
+    role: benchmark
+  US_EQ_IWM:
+    name: iShares Russell 2000
+    asset_class: equity_etf
+    region: US
+    currency: USD
+    source: yahoo
+    symbol: IWM
+    importance: 0.7
+    liquidity: very_high
+    role: benchmark
+    benchmark: US_EQ_SPY
+  US_EQ_DIA:
+    name: SPDR Dow Jones Industrial Average
+    asset_class: equity_etf
+    region: US
+    currency: USD
+    source: yahoo
+    symbol: DIA
+    importance: 0.6
+    liquidity: very_high
+    role: benchmark
+  US_EQ_RSP:
+    name: Invesco S&P 500 Equal Weight
+    asset_class: equity_etf
+    region: US
+    currency: USD
+    source: yahoo
+    symbol: RSP
+    importance: 0.5
+    liquidity: high
+    role: breadth_proxy
+    benchmark: US_EQ_SPY
+  US_EQ_MDY:
+    name: SPDR S&P MidCap 400
+    asset_class: equity_etf
+    region: US
+    currency: USD
+    source: yahoo
+    symbol: MDY
+    importance: 0.4
+    liquidity: high
+    role: benchmark
+    benchmark: US_EQ_SPY
+
+  # --------------------------------------------------------- US sectors (GICS)
+  US_SEC_XLK: {name: Technology Select Sector SPDR, asset_class: sector_equity, region: US, currency: USD, source: yahoo, symbol: XLK, importance: 0.9, liquidity: very_high, role: sector, benchmark: US_EQ_SPY}
+  US_SEC_XLF: {name: Financial Select Sector SPDR, asset_class: sector_equity, region: US, currency: USD, source: yahoo, symbol: XLF, importance: 0.7, liquidity: very_high, role: sector, benchmark: US_EQ_SPY}
+  US_SEC_XLV: {name: Health Care Select Sector SPDR, asset_class: sector_equity, region: US, currency: USD, source: yahoo, symbol: XLV, importance: 0.6, liquidity: very_high, role: sector, benchmark: US_EQ_SPY}
+  US_SEC_XLE: {name: Energy Select Sector SPDR, asset_class: sector_equity, region: US, currency: USD, source: yahoo, symbol: XLE, importance: 0.6, liquidity: very_high, role: sector, benchmark: US_EQ_SPY}
+  US_SEC_XLI: {name: Industrial Select Sector SPDR, asset_class: sector_equity, region: US, currency: USD, source: yahoo, symbol: XLI, importance: 0.5, liquidity: very_high, role: sector, benchmark: US_EQ_SPY}
+  US_SEC_XLY: {name: Consumer Discretionary Select Sector SPDR, asset_class: sector_equity, region: US, currency: USD, source: yahoo, symbol: XLY, importance: 0.5, liquidity: very_high, role: sector, benchmark: US_EQ_SPY}
+  US_SEC_XLP: {name: Consumer Staples Select Sector SPDR, asset_class: sector_equity, region: US, currency: USD, source: yahoo, symbol: XLP, importance: 0.4, liquidity: very_high, role: sector, benchmark: US_EQ_SPY}
+  US_SEC_XLU: {name: Utilities Select Sector SPDR, asset_class: sector_equity, region: US, currency: USD, source: yahoo, symbol: XLU, importance: 0.35, liquidity: high, role: sector, benchmark: US_EQ_SPY}
+  US_SEC_XLB: {name: Materials Select Sector SPDR, asset_class: sector_equity, region: US, currency: USD, source: yahoo, symbol: XLB, importance: 0.35, liquidity: high, role: sector, benchmark: US_EQ_SPY}
+  US_SEC_XLRE: {name: Real Estate Select Sector SPDR, asset_class: sector_equity, region: US, currency: USD, source: yahoo, symbol: XLRE, importance: 0.3, liquidity: high, role: sector, benchmark: US_EQ_SPY}
+  US_SEC_XLC: {name: Communication Services Select Sector SPDR, asset_class: sector_equity, region: US, currency: USD, source: yahoo, symbol: XLC, importance: 0.45, liquidity: high, role: sector, benchmark: US_EQ_SPY}
+
+  # ------------------------------------------------------------ US styles/factors
+  US_FAC_MTUM: {name: iShares MSCI USA Momentum Factor, asset_class: equity_etf, region: US, currency: USD, source: yahoo, symbol: MTUM, importance: 0.3, liquidity: high, role: factor, benchmark: US_EQ_SPY}
+  US_FAC_VLUE: {name: iShares MSCI USA Value Factor, asset_class: equity_etf, region: US, currency: USD, source: yahoo, symbol: VLUE, importance: 0.3, liquidity: medium, role: factor, benchmark: US_EQ_SPY}
+  US_FAC_USMV: {name: iShares MSCI USA Min Vol Factor, asset_class: equity_etf, region: US, currency: USD, source: yahoo, symbol: USMV, importance: 0.3, liquidity: high, role: factor, benchmark: US_EQ_SPY}
+
+  # ------------------------------------------------------------- US rates / credit
+  US_FI_TLT: {name: iShares 20+ Year Treasury Bond, asset_class: fixed_income, region: US, currency: USD, source: yahoo, symbol: TLT, importance: 0.8, liquidity: very_high, role: duration}
+  US_FI_IEF: {name: iShares 7-10 Year Treasury Bond, asset_class: fixed_income, region: US, currency: USD, source: yahoo, symbol: IEF, importance: 0.7, liquidity: very_high, role: duration}
+  US_FI_SHY: {name: iShares 1-3 Year Treasury Bond, asset_class: fixed_income, region: US, currency: USD, source: yahoo, symbol: SHY, importance: 0.5, liquidity: very_high, role: front_end}
+  US_FI_TIP: {name: iShares TIPS Bond, asset_class: fixed_income, region: US, currency: USD, source: yahoo, symbol: TIP, importance: 0.6, liquidity: high, role: inflation_linked}
+  US_FI_MBB: {name: iShares MBS ETF, asset_class: fixed_income, region: US, currency: USD, source: yahoo, symbol: MBB, importance: 0.35, liquidity: high, role: spread_product}
+  US_FI_BIL: {name: SPDR Bloomberg 1-3 Month T-Bill, asset_class: fixed_income, region: US, currency: USD, source: yahoo, symbol: BIL, importance: 0.4, liquidity: very_high, role: cash_proxy}
+  US_CR_HYG: {name: iShares iBoxx High Yield Corporate Bond, asset_class: credit, region: US, currency: USD, source: yahoo, symbol: HYG, importance: 0.75, liquidity: very_high, role: high_yield}
+  US_CR_JNK: {name: SPDR Bloomberg High Yield Bond, asset_class: credit, region: US, currency: USD, source: yahoo, symbol: JNK, importance: 0.5, liquidity: high, role: high_yield}
+  US_CR_LQD: {name: iShares iBoxx Investment Grade Corporate Bond, asset_class: credit, region: US, currency: USD, source: yahoo, symbol: LQD, importance: 0.65, liquidity: very_high, role: investment_grade}
+  US_CR_EMB: {name: iShares J.P. Morgan USD Emerging Markets Bond, asset_class: credit, region: US, currency: USD, source: yahoo, symbol: EMB, importance: 0.4, liquidity: high, role: em_credit}
+
+  # ------------------------------------------------------------------- FX (US)
+  US_FX_DXY: {name: ICE US Dollar Index (DXY spot), asset_class: fx, region: US, currency: USD, source: yahoo, symbol: DX-Y.NYB, importance: 1.0, liquidity: very_high, role: benchmark}
+  US_FX_UUP: {name: Invesco DB US Dollar Index Bullish Fund, asset_class: fx, region: US, currency: USD, source: yahoo, symbol: UUP, importance: 0.4, liquidity: high, role: benchmark}
+  GX_FX_EURUSD: {name: EUR/USD, asset_class: fx, region: EA, currency: USD, source: yahoo, symbol: EURUSD=X, importance: 0.9, liquidity: very_high, role: major_pair}
+  GX_FX_USDJPY: {name: USD/JPY, asset_class: fx, region: JP, currency: JPY, source: yahoo, symbol: USDJPY=X, importance: 0.85, liquidity: very_high, role: major_pair}
+  GX_FX_GBPUSD: {name: GBP/USD, asset_class: fx, region: UK, currency: USD, source: yahoo, symbol: GBPUSD=X, importance: 0.7, liquidity: very_high, role: major_pair}
+  CN_FX_USDCNY: {name: USD/CNY onshore, asset_class: fx, region: CN, currency: CNY, source: yahoo, symbol: USDCNY=X, importance: 0.8, liquidity: high, role: policy_pair}
+  GX_FX_AUDUSD: {name: AUD/USD, asset_class: fx, region: AU, currency: USD, source: yahoo, symbol: AUDUSD=X, importance: 0.5, liquidity: very_high, role: commodity_currency}
+  GX_FX_USDKRW: {name: USD/KRW, asset_class: fx, region: KR, currency: KRW, source: yahoo, symbol: USDKRW=X, importance: 0.4, liquidity: high, role: asia_risk_proxy}
+  GX_FX_USDBRL: {name: USD/BRL, asset_class: fx, region: BR, currency: BRL, source: yahoo, symbol: USDBRL=X, importance: 0.35, liquidity: high, role: em_risk_proxy}
+  GX_FX_USDMXN: {name: USD/MXN, asset_class: fx, region: MX, currency: MXN, source: yahoo, symbol: USDMXN=X, importance: 0.3, liquidity: high, role: em_risk_proxy}
+  GX_FX_USDCHF: {name: USD/CHF, asset_class: fx, region: CH, currency: CHF, source: yahoo, symbol: USDCHF=X, importance: 0.4, liquidity: high, role: safe_haven}
+
+  # ------------------------------------------------------------------ Commodities
+  CM_MET_GC: {name: COMEX Gold front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: GC=F, importance: 1.0, liquidity: very_high, role: precious_metal}
+  CM_MET_SI: {name: COMEX Silver front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: SI=F, importance: 0.7, liquidity: high, role: precious_metal}
+  CM_MET_PL: {name: NYMEX Platinum front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: PL=F, importance: 0.3, liquidity: medium, role: precious_metal}
+  CM_MET_HG: {name: COMEX Copper front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: HG=F, importance: 0.85, liquidity: high, role: industrial_metal}
+  CM_MET_ALI: {name: Aluminum futures, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: ALI=F, importance: 0.45, liquidity: medium, role: industrial_metal}
+  CM_ENE_CL: {name: WTI Crude front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: CL=F, importance: 1.0, liquidity: very_high, role: energy}
+  CM_ENE_BZ: {name: Brent Crude front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: BZ=F, importance: 0.95, liquidity: very_high, role: energy}
+  CM_ENE_NG: {name: Henry Hub Natural Gas front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: NG=F, importance: 0.7, liquidity: high, role: energy}
+  CM_ENE_HO: {name: NY Harbor ULSD Heating Oil, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: HO=F, importance: 0.4, liquidity: medium, role: energy}
+  CM_ENE_RB: {name: RBOB Gasoline front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: RB=F, importance: 0.4, liquidity: medium, role: energy}
+  CM_AGR_ZS: {name: CBOT Soybean front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: ZS=F, importance: 0.6, liquidity: high, role: agriculture}
+  CM_AGR_ZC: {name: CBOT Corn front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: ZC=F, importance: 0.6, liquidity: high, role: agriculture}
+  CM_AGR_ZW: {name: CBOT Wheat front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: ZW=F, importance: 0.55, liquidity: high, role: agriculture}
+  CM_AGR_KC: {name: Coffee C front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: KC=F, importance: 0.25, liquidity: medium, role: agriculture}
+  CM_AGR_SB: {name: Sugar No.11 front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: SB=F, importance: 0.25, liquidity: medium, role: agriculture}
+  CM_AGR_CT: {name: Cotton front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: CT=F, importance: 0.2, liquidity: medium, role: agriculture}
+  CM_AGR_LE: {name: Live Cattle front month, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: LE=F, importance: 0.2, liquidity: medium, role: agriculture}
+
+  # -------------------------------------------------------------- Commodity ETFs
+  CM_ETF_GLD: {name: SPDR Gold Shares, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: GLD, importance: 0.5, liquidity: very_high, role: etf_proxy}
+  CM_ETF_SLV: {name: iShares Silver Trust, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: SLV, importance: 0.35, liquidity: high, role: etf_proxy}
+  CM_ETF_GDX: {name: VanEck Gold Miners, asset_class: sector_equity, region: WORLD, currency: USD, source: yahoo, symbol: GDX, importance: 0.3, liquidity: high, role: equity_proxy, benchmark: US_EQ_SPY}
+  CM_ETF_USO: {name: United States Oil Fund, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: USO, importance: 0.3, liquidity: high, role: etf_proxy}
+  CM_ETF_UNG: {name: United States Natural Gas Fund, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: UNG, importance: 0.2, liquidity: medium, role: etf_proxy}
+  CM_ETF_DBC: {name: Invesco DB Commodity Index Tracking Fund, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: DBC, importance: 0.3, liquidity: high, role: etf_proxy}
+  CM_ETF_CPER: {name: United States Copper Index Fund, asset_class: commodity, region: WORLD, currency: USD, source: yahoo, symbol: CPER, importance: 0.2, liquidity: medium, role: etf_proxy}
+  CM_ETF_URA: {name: Global X Uranium ETF, asset_class: sector_equity, region: WORLD, currency: USD, source: yahoo, symbol: URA, importance: 0.2, liquidity: medium, role: equity_proxy, benchmark: US_EQ_SPY}
+
+  # ------------------------------------------------------------------ Volatility
+  US_VOL_VIX: {name: CBOE Volatility Index, asset_class: volatility, region: US, currency: USD, source: yahoo, symbol: ^VIX, importance: 0.9, liquidity: none, role: risk_gauge}
+  US_VOL_VIX3M: {name: CBOE 3-Month Volatility Index, asset_class: volatility, region: US, currency: USD, source: yahoo, symbol: ^VIX3M, importance: 0.4, liquidity: none, role: risk_gauge}
+  US_VOL_VVIX: {name: CBOE VVIX (vol of VIX), asset_class: volatility, region: US, currency: USD, source: yahoo, symbol: ^VVIX, importance: 0.35, liquidity: none, role: risk_gauge}
+  US_VOL_MOVE: {name: ICE BofA MOVE Index (rates vol), asset_class: volatility, region: US, currency: USD, source: yahoo, symbol: ^MOVE, importance: 0.5, liquidity: none, role: risk_gauge}
+  US_VOL_SKEW: {name: CBOE SKEW Index, asset_class: volatility, region: US, currency: USD, source: yahoo, symbol: ^SKEW, importance: 0.3, liquidity: none, role: risk_gauge}
+
+  # ---------------------------------------------------------------- China onshore
+  CN_EQ_SSE: {name: SSE Composite Index, asset_class: equity_index, region: CN, currency: CNY, source: akshare_cn_index, symbol: 000001.SS, importance: 0.85, liquidity: high, role: benchmark}
+  CN_EQ_SZSE: {name: Shenzhen Component Index, asset_class: equity_index, region: CN, currency: CNY, source: akshare_cn_index, symbol: 399001.SZ, importance: 0.6, liquidity: medium, role: benchmark}
+  CN_EQ_CSI300: {name: CSI 300 Index, asset_class: equity_index, region: CN, currency: CNY, source: akshare_cn_index, symbol: 000300.SS, importance: 0.9, liquidity: high, role: benchmark}
+  CN_EQ_CSI500: {name: CSI 500 Index, asset_class: equity_index, region: CN, currency: CNY, source: akshare_cn_index, symbol: 000905.SS, importance: 0.55, liquidity: medium, role: benchmark}
+  CN_EQ_CSI1000: {name: CSI 1000 Index, asset_class: equity_index, region: CN, currency: CNY, source: akshare_cn_index, symbol: 000852.SS, importance: 0.4, liquidity: medium, role: benchmark}
+  CN_EQ_ETF300: {name: Huatai-PB CSI300 ETF, asset_class: equity_etf, region: CN, currency: CNY, source: yahoo, symbol: 510300.SS, importance: 0.4, liquidity: high, role: etf_proxy, benchmark: CN_EQ_CSI300}
+  CN_EQ_ETF500: {name: ChinaAMC CSI500 ETF, asset_class: equity_etf, region: CN, currency: CNY, source: yahoo, symbol: 510500.SS, importance: 0.25, liquidity: high, role: etf_proxy, benchmark: CN_EQ_CSI300}
+  CN_EQ_STAR50: {name: STAR 50 ETF, asset_class: equity_etf, region: CN, currency: CNY, source: yahoo, symbol: 588000.SS, importance: 0.3, liquidity: high, role: etf_proxy, benchmark: CN_EQ_CSI300}
+  CN_EQ_CHINEXT: {name: ChiNext ETF, asset_class: equity_etf, region: CN, currency: CNY, source: yahoo, symbol: 159915.SZ, importance: 0.35, liquidity: high, role: etf_proxy, benchmark: CN_EQ_CSI300}
+  CN_SEC_SEC: {name: China Securities Sector ETF, asset_class: sector_equity, region: CN, currency: CNY, source: yahoo, symbol: 512880.SS, importance: 0.3, liquidity: high, role: sector, benchmark: CN_EQ_CSI300}
+  CN_SEC_BANK: {name: China Bank Sector ETF, asset_class: sector_equity, region: CN, currency: CNY, source: yahoo, symbol: 512800.SS, importance: 0.35, liquidity: high, role: sector, benchmark: CN_EQ_CSI300}
+  CN_SEC_DEF: {name: China Defense Sector ETF, asset_class: sector_equity, region: CN, currency: CNY, source: yahoo, symbol: 512660.SS, importance: 0.25, liquidity: medium, role: sector, benchmark: CN_EQ_CSI300}
+  CN_SEC_SEMI: {name: China Semiconductor ETF, asset_class: sector_equity, region: CN, currency: CNY, source: yahoo, symbol: 512480.SS, importance: 0.4, liquidity: high, role: sector, benchmark: CN_EQ_CSI300}
+  CN_SEC_LIQ: {name: China Liquor Sector ETF, asset_class: sector_equity, region: CN, currency: CNY, source: yahoo, symbol: 512690.SS, importance: 0.3, liquidity: high, role: sector, benchmark: CN_EQ_CSI300}
+  CN_SEC_HEALTH: {name: China Healthcare ETF, asset_class: sector_equity, region: CN, currency: CNY, source: yahoo, symbol: 512170.SS, importance: 0.25, liquidity: high, role: sector, benchmark: CN_EQ_CSI300}
+  CN_SEC_PHARMA: {name: China Pharma ETF, asset_class: sector_equity, region: CN, currency: CNY, source: yahoo, symbol: 512010.SS, importance: 0.25, liquidity: medium, role: sector, benchmark: CN_EQ_CSI300}
+  CN_SEC_EV: {name: China EV Sector ETF, asset_class: sector_equity, region: CN, currency: CNY, source: yahoo, symbol: 515030.SS, importance: 0.35, liquidity: high, role: sector, benchmark: CN_EQ_CSI300}
+  CN_SEC_SOLAR: {name: China Solar Sector ETF, asset_class: sector_equity, region: CN, currency: CNY, source: yahoo, symbol: 515790.SS, importance: 0.3, liquidity: high, role: sector, benchmark: CN_EQ_CSI300}
+  CN_SEC_NEWEN: {name: China New Energy ETF, asset_class: sector_equity, region: CN, currency: CNY, source: yahoo, symbol: 516160.SS, importance: 0.25, liquidity: medium, role: sector, benchmark: CN_EQ_CSI300}
+  CN_SEC_DIV: {name: China Dividend ETF, asset_class: sector_equity, region: CN, currency: CNY, source: yahoo, symbol: 510880.SS, importance: 0.3, liquidity: high, role: factor, benchmark: CN_EQ_CSI300}
+
+  # --------------------------------------------------------------------- Hong Kong
+  HK_EQ_HSI: {name: Hang Seng Index, asset_class: equity_index, region: HK, currency: HKD, source: yahoo, symbol: ^HSI, importance: 0.8, liquidity: high, role: benchmark}
+  HK_EQ_HSCEI: {name: Hang Seng China Enterprises Index, asset_class: equity_index, region: HK, currency: HKD, source: yahoo, symbol: ^HSCE, importance: 0.6, liquidity: medium, role: benchmark}
+  HK_EQ_2800: {name: Tracker Fund of Hong Kong (2800), asset_class: equity_etf, region: HK, currency: HKD, source: yahoo, symbol: 2800.HK, importance: 0.45, liquidity: high, role: etf_proxy, benchmark: HK_EQ_HSI}
+  HK_EQ_3033: {name: CSOP Hang Seng TECH ETF, asset_class: equity_etf, region: HK, currency: HKD, source: yahoo, symbol: 3033.HK, importance: 0.4, liquidity: high, role: etf_proxy, benchmark: HK_EQ_HSI}
+  HK_EQ_3067: {name: iShares Hang Seng TECH ETF, asset_class: equity_etf, region: HK, currency: HKD, source: yahoo, symbol: 3067.HK, importance: 0.3, liquidity: high, role: etf_proxy, benchmark: HK_EQ_HSI}
+
+  # ------------------------------------------------------------------------ Japan
+  JP_EQ_N225: {name: Nikkei 225, asset_class: equity_index, region: JP, currency: JPY, source: yahoo, symbol: ^N225, importance: 0.8, liquidity: high, role: benchmark}
+  JP_EQ_TOPIX: {name: TOPIX ETF (1306), asset_class: equity_etf, region: JP, currency: JPY, source: yahoo, symbol: 1306.T, importance: 0.4, liquidity: high, role: etf_proxy}
+  JP_EQ_EWJ: {name: iShares MSCI Japan, asset_class: equity_etf, region: JP, currency: USD, source: yahoo, symbol: EWJ, importance: 0.35, liquidity: high, role: etf_proxy}
+
+  # ---------------------------------------------------------------- Europe / UK
+  EA_EQ_SX5E: {name: Euro Stoxx 50, asset_class: equity_index, region: EA, currency: EUR, source: yahoo, symbol: ^STOXX50E, importance: 0.85, liquidity: high, role: benchmark}
+  DE_EQ_DAX: {name: DAX 40, asset_class: equity_index, region: DE, currency: EUR, source: yahoo, symbol: ^GDAXI, importance: 0.7, liquidity: high, role: benchmark}
+  FR_EQ_CAC: {name: CAC 40, asset_class: equity_index, region: FR, currency: EUR, source: yahoo, symbol: ^FCHI, importance: 0.6, liquidity: high, role: benchmark}
+  UK_EQ_FTSE: {name: FTSE 100, asset_class: equity_index, region: UK, currency: GBP, source: yahoo, symbol: ^FTSE, importance: 0.7, liquidity: high, role: benchmark}
+  IT_EQ_FTSEMIB: {name: FTSE MIB, asset_class: equity_index, region: IT, currency: EUR, source: yahoo, symbol: FTSEMIB.MI, importance: 0.4, liquidity: medium, role: benchmark}
+  ES_EQ_IBEX: {name: IBEX 35, asset_class: equity_index, region: ES, currency: EUR, source: yahoo, symbol: ^IBEX, importance: 0.35, liquidity: medium, role: benchmark}
+  CH_EQ_SMI: {name: Swiss Market Index, asset_class: equity_index, region: CH, currency: CHF, source: yahoo, symbol: ^SSMI, importance: 0.4, liquidity: medium, role: benchmark}
+  EA_EQ_VGK: {name: Vanguard FTSE Europe, asset_class: equity_etf, region: EA, currency: USD, source: yahoo, symbol: VGK, importance: 0.4, liquidity: high, role: etf_proxy}
+  DE_EQ_EWG: {name: iShares MSCI Germany, asset_class: equity_etf, region: DE, currency: USD, source: yahoo, symbol: EWG, importance: 0.3, liquidity: high, role: etf_proxy}
+  UK_EQ_EWU: {name: iShares MSCI United Kingdom, asset_class: equity_etf, region: UK, currency: USD, source: yahoo, symbol: EWU, importance: 0.3, liquidity: high, role: etf_proxy}
+
+  # --------------------------------------------------- Other developed / EM equity
+  KR_EQ_KOSPI: {name: KOSPI, asset_class: equity_index, region: KR, currency: KRW, source: yahoo, symbol: ^KS11, importance: 0.5, liquidity: medium, role: benchmark}
+  TW_EQ_TAIEX: {name: TAIEX, asset_class: equity_index, region: TW, currency: TWD, source: yahoo, symbol: ^TWII, importance: 0.5, liquidity: medium, role: benchmark}
+  IN_EQ_SENSEX: {name: BSE Sensex, asset_class: equity_index, region: IN, currency: INR, source: yahoo, symbol: ^BSESN, importance: 0.5, liquidity: medium, role: benchmark}
+  AU_EQ_ASX200: {name: S&P/ASX 200, asset_class: equity_index, region: AU, currency: AUD, source: yahoo, symbol: ^AXJO, importance: 0.45, liquidity: medium, role: benchmark}
+  CA_EQ_TSX: {name: S&P/TSX Composite, asset_class: equity_index, region: CA, currency: CAD, source: yahoo, symbol: ^GSPTSE, importance: 0.4, liquidity: medium, role: benchmark}
+  MX_EQ_IPC: {name: IPC Mexico, asset_class: equity_index, region: MX, currency: MXN, source: yahoo, symbol: ^MXX, importance: 0.25, liquidity: low, role: benchmark}
+  WORLD_EQ_EEM: {name: iShares MSCI Emerging Markets, asset_class: equity_etf, region: WORLD, currency: USD, source: yahoo, symbol: EEM, importance: 0.5, liquidity: very_high, role: etf_proxy}
+  WORLD_EQ_VWO: {name: Vanguard FTSE Emerging Markets, asset_class: equity_etf, region: WORLD, currency: USD, source: yahoo, symbol: VWO, importance: 0.45, liquidity: very_high, role: etf_proxy}
+  WORLD_EQ_EFA: {name: iShares MSCI EAFE, asset_class: equity_etf, region: WORLD, currency: USD, source: yahoo, symbol: EFA, importance: 0.5, liquidity: very_high, role: etf_proxy}
+  IN_EQ_INDA: {name: iShares MSCI India, asset_class: equity_etf, region: IN, currency: USD, source: yahoo, symbol: INDA, importance: 0.3, liquidity: high, role: etf_proxy}
+  BR_EQ_EWZ: {name: iShares MSCI Brazil, asset_class: equity_etf, region: BR, currency: USD, source: yahoo, symbol: EWZ, importance: 0.3, liquidity: high, role: etf_proxy}
+  CN_EQ_FXI: {name: iShares China Large-Cap, asset_class: equity_etf, region: CN, currency: USD, source: yahoo, symbol: FXI, importance: 0.5, liquidity: very_high, role: etf_proxy}
+  CN_EQ_KWEB: {name: KraneShares CSI China Internet, asset_class: equity_etf, region: CN, currency: USD, source: yahoo, symbol: KWEB, importance: 0.4, liquidity: high, role: etf_proxy}
+
+  # ----------------------------------------------------------------------- Crypto
+  CR_BTC: {name: Bitcoin / USD, asset_class: crypto, region: WORLD, currency: USD, source: yahoo, symbol: BTC-USD, importance: 0.7, liquidity: high, role: crypto_beta}
+  CR_ETH: {name: Ether / USD, asset_class: crypto, region: WORLD, currency: USD, source: yahoo, symbol: ETH-USD, importance: 0.5, liquidity: high, role: crypto_beta}
+  CR_SOL: {name: Solana / USD, asset_class: crypto, region: WORLD, currency: USD, source: yahoo, symbol: SOL-USD, importance: 0.3, liquidity: medium, role: crypto_beta}

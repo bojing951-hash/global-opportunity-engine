@@ -1,0 +1,433 @@
+{
+  "schema_version": "1.0",
+  "engine": {
+    "name": "global-opportunity-engine",
+    "version": "0.1.0",
+    "scan_id": "scan-20261113T153026Z-557681",
+    "as_of": "2026-11-13",
+    "generated_at": "2026-11-13T15:30:35Z"
+  },
+  "provenance": {
+    "config_hash": "ebd1d09abef9fc0296a9e9715168964a4b3e1d2f55a104c75abc3851f0bcdf57",
+    "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6"
+  },
+  "summary": {
+    "n_opportunities": 15,
+    "by_status": {
+      "deep_research": 2,
+      "low_priority": 2,
+      "watch": 11
+    },
+    "by_archetype": {
+      "event_revision": 4,
+      "price_fundamental_divergence": 5,
+      "regime_repricing": 6
+    }
+  },
+  "opportunities": [
+    {
+      "schema_version": "1.0",
+      "engine": {
+        "name": "global-opportunity-engine",
+        "version": "0.1.0",
+        "scan_id": "scan-20261113T153026Z-557681",
+        "as_of": "2026-11-13",
+        "generated_at": "2026-11-13T15:30:35Z"
+      },
+      "provenance": {
+        "config_hash": "ebd1d09abef9fc0296a9e9715168964a4b3e1d2f55a104c75abc3851f0bcdf57",
+        "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+        "db_path": "<repo>/data/goe.db",
+        "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+      },
+      "opportunity": {
+        "opportunity_id": "OPP-0001",
+        "fingerprint": "FP-4f4f72215ec88aad",
+        "status": "deep_research",
+        "score": 0.7042,
+        "score_breakdown": {
+          "anomaly_strength": 1.0,
+          "economic_impact": 0.7333,
+          "expectation_gap": 0.336,
+          "repricing_potential": 0.9133,
+          "catalyst": 0.1,
+          "timing_window": 1.0,
+          "risk_liquidity": 1.0,
+          "evidence_quality": 0.7568
+        },
+        "archetype": "regime_repricing",
+        "title": "实际利率—美元—全球配置 Real rates, the dollar and global allocation：COMEX Gold front month 可能处于重定价窗口",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "horizon": "3-12m",
+        "instruments": [
+          {
+            "id": "CM_MET_GC",
+            "name": "COMEX Gold front month",
+            "symbol": "GC=F",
+            "asset_class": "commodity",
+            "region": "WORLD",
+            "role": "primary",
+            "importance": 1.0,
+            "liquidity": "very_high"
+          }
+        ],
+        "discovery": {
+          "what": "宏观机制 M01_REAL_RATES_USD_ALLOCATION（实际利率—美元—全球配置 Real rates, the dollar and global allocation）的触发变量出现异常，COMEX Gold front month 是被机制映射的受影响资产。",
+          "why_now": "机制置信度 0.56，状态 mixed；资产 1 个月收益 -6.5%。",
+          "hypothesis": "实际利率—美元—全球配置 Real rates, the dollar and global allocation 若继续演进，COMEX Gold front month 的定价假设需要重新检验。",
+          "anomalies": [
+            {
+              "id": "AN-17d530b0339ad0",
+              "detector": "drawdown_extreme",
+              "direction": "deep_drawdown",
+              "score": 1.0,
+              "role": "asset"
+            },
+            {
+              "id": "AN-668d5acaa09ac9",
+              "detector": "price_return_shock",
+              "direction": "down",
+              "score": 0.1894040029486096,
+              "role": "asset"
+            },
+            {
+              "id": "AN-1666451f83e571",
+              "detector": "drawdown_extreme",
+              "direction": "near_high",
+              "score": 0.8669579030976967,
+              "role": "trigger"
+            }
+          ],
+          "invalidation_checks": [
+            {
+              "entity": "US_FX_DXY",
+              "feature": "return_z_3y",
+              "window": "1m",
+              "op": "between",
+              "value": [
+                -1.0,
+                1.0
+              ],
+              "note": "触发变量的异常已消退（|z|<1）"
+            }
+          ]
+        },
+        "mechanism": {
+          "id": "M01_REAL_RATES_USD_ALLOCATION",
+          "chain": [
+            "美国实际利率上升（名义收益率上行且通胀预期相对稳定，或以 TIPS 价格下跌代理）",
+            "美元指数走强，离岸美元融资条件收紧",
+            "全球金融条件收紧，风险预算与杠杆下降",
+            "跨境配置从 EM、长久期成长与黄金转向美元现金与短久期资产",
+            "高久期资产估值倍数压缩，价格调整幅度大于现金流变化"
+          ],
+          "confidence": 0.5599999999999999,
+          "causal_status": "hypothesis",
+          "conditions": [
+            "美国实际利率是边际定价因子，且通胀预期相对稳定",
+            "全球风险偏好正常，美元不因避险需求而脱离利差逻辑",
+            "目标资产存在外币负债或长久期现金流",
+            "资本账户开放、汇率浮动或爬行盯住的经济体传导更顺畅"
+          ],
+          "identification": "correlation_only; 因果链条需条件成立，且可能被政策/结构因素打断。"
+        },
+        "evidence_for": [
+          {
+            "claim": "传导机制 M01_REAL_RATES_USD_ALLOCATION 被激活：实际利率—美元—全球配置 Real rates, the dollar and global allocation",
+            "evidence": "UST:10Y 与 US_EQ_QQQ 的滚动相关为 -0.17（期望符号 -1），近端窗口符号一致率 59%，样本 1639。；US_FX_DXY 与 WORLD_EQ_EEM 的滚动相关为 -0.37（期望符号 -1），近端窗口符号一致率 100%，样本 1637。",
+            "source": "mechanism",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "corr 检验通过",
+            "evidence": "UST:10Y 与 US_EQ_QQQ 的滚动相关为 -0.17（期望符号 -1），近端窗口符号一致率 59%，样本 1639。",
+            "source": "mechanism_stats",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "corr 检验通过",
+            "evidence": "US_FX_DXY 与 WORLD_EQ_EEM 的滚动相关为 -0.37（期望符号 -1），近端窗口符号一致率 100%，样本 1637。",
+            "source": "mechanism_stats",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          }
+        ],
+        "evidence_against": [
+          {
+            "claim": "机制 M01_REAL_RATES_USD_ALLOCATION 的检验存在失败/不稳定项",
+            "evidence": "US_FI_TIP 与 CM_MET_GC 的滚动相关为 +0.15（期望符号 +1），近端窗口符号一致率 100%，样本 1638。（相关性过弱）",
+            "source": "mechanism_stats",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "机制 M01_REAL_RATES_USD_ALLOCATION 的检验存在失败/不稳定项",
+            "evidence": "历史上 UST:10Y > 4.25 的 436 个样本中，US_EQ_QQQ 其后约 63 个交易日平均收益 +6.5%，符号命中率 21%。（conditional_weak）",
+            "source": "mechanism_stats",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "相关关系不等于因果关系",
+            "evidence": "滚动相关与条件统计只能说明历史共动，无法识别因果；机制成立依赖所列条件。",
+            "source": "methodology",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          }
+        ],
+        "catalysts": [],
+        "open_questions": [
+          "该资产对触发变量的历史敏感度是否稳定？滚动回归系数是否发生结构性变化？",
+          "本次宏观变化是水平冲击还是斜率/预期变化？两者对不同久期资产影响不同。",
+          "传导链条中哪一环最可能断裂（政策干预、供给约束、汇率制度）？"
+        ],
+        "invalidation": "若机制触发变量回到常态（|z|<1），或 COMEX Gold front month 对触发变量的滚动敏感度符号翻转，则重定价假设失效。反证条件：实际利率上行期间黄金连续 6 个月以上上涨，且 TIP 与黄金的滚动相关转负; QQQ 与 10Y 日变化的相关在多数滚动窗口为正，且美元不随实际利率走强",
+        "data_quality": {
+          "score": 0.65,
+          "gaps": [
+            "机制统计基于历史共动，无法识别因果",
+            "月度宏观数据存在发布滞后"
+          ]
+        },
+        "research_question": "【全球机会引擎研究任务】OPP-0001（regime_repricing，WORLD，commodity，研究周期 3-12m）\n研究对象：COMEX Gold front month(GC=F)\n现象：宏观机制 M01_REAL_RATES_USD_ALLOCATION（实际利率—美元—全球配置 Real rates, the dollar and global allocation）的触发变量出现异常，COMEX Gold front month 是被机制映射的受影响资产。\n待检验假设：实际利率—美元—全球配置 Real rates, the dollar and global allocation 若继续演进，COMEX Gold front month 的定价假设需要重新检验。\n初步传导逻辑：美国实际利率上升（名义收益率上行且通胀预期相对稳定，或以 TIPS 价格下跌代理） → 美元指数走强，离岸美元融资条件收紧 → 全球金融条件收紧，风险预算与杠杆下降 → 跨境配置从 EM、长久期成长与黄金转向美元现金与短久期资产 → 高久期资产估值倍数压缩，价格调整幅度大于现金流变化（置信度 0.56，条件：美国实际利率是边际定价因子，且通胀预期相对稳定；全球风险偏好正常，美元不因避险需求而脱离利差逻辑；目标资产存在外币负债或长久期现金流；资本账户开放、汇率浮动或爬行盯住的经济体传导更顺畅）\n支持证据：传导机制 M01_REAL_RATES_USD_ALLOCATION 被激活：实际利率—美元—全球配置 Real rates, the dollar and global allocation: UST:10Y 与 US_EQ_QQQ 的滚动相关为 -0.17（期望符号 -1），近端窗口符号一致率 59%，样本 1639。；US_FX_DXY 与 WORLD_EQ_EEM 的滚动相关为 -0.37（期望符号 -1），近端窗口符号一致率 100%，样本 1637。；corr 检验通过: UST:10Y 与 US_EQ_QQQ 的滚动相关为 -0.17（期望符号 -1），近端窗口符号一致率 59%，样本 1639。；corr 检验通过: US_FX_DXY 与 WORLD_EQ_EEM 的滚动相关为 -0.37（期望符号 -1），近端窗口符号一致率 100%，样本 1637。\n反对证据：机制 M01_REAL_RATES_USD_ALLOCATION 的检验存在失败/不稳定项: US_FI_TIP 与 CM_MET_GC 的滚动相关为 +0.15（期望符号 +1），近端窗口符号一致率 100%，样本 1638。（相关性过弱）；机制 M01_REAL_RATES_USD_ALLOCATION 的检验存在失败/不稳定项: 历史上 UST:10Y > 4.25 的 436 个样本中，US_EQ_QQQ 其后约 63 个交易日平均收益 +6.5%，符号命中率 21%。（conditional_weak）；相关关系不等于因果关系: 滚动相关与条件统计只能说明历史共动，无法识别因果；机制成立依赖所列条件。\n失效条件：若机制触发变量回到常态（|z|<1），或 COMEX Gold front month 对触发变量的滚动敏感度符号翻转，则重定价假设失效。反证条件：实际利率上行期间黄金连续 6 个月以上上涨，且 TIP 与黄金的滚动相关转负; QQQ 与 10Y 日变化的相关在多数滚动窗口为正，且美元不随实际利率走强\n需要回答：该资产对触发变量的历史敏感度是否稳定？滚动回归系数是否发生结构性变化？；本次宏观变化是水平冲击还是斜率/预期变化？两者对不同久期资产影响不同。；传导链条中哪一环最可能断裂（政策干预、供给约束、汇率制度）？\n请完成：宏观与政策背景 → 行业/中观结构 → 公司或资产微观证据 → 情景分析 → 估值与赔率 → 明确列出支持与反对证据、关键数据缺口，以及使结论失效的条件。若证据不足，请直接说明，不要补全缺失数据。"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "engine": {
+        "name": "global-opportunity-engine",
+        "version": "0.1.0",
+        "scan_id": "scan-20261113T153026Z-557681",
+        "as_of": "2026-11-13",
+        "generated_at": "2026-11-13T15:30:35Z"
+      },
+      "provenance": {
+        "config_hash": "ebd1d09abef9fc0296a9e9715168964a4b3e1d2f55a104c75abc3851f0bcdf57",
+        "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+        "db_path": "<repo>/data/goe.db",
+        "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+      },
+      "opportunity": {
+        "opportunity_id": "OPP-0002",
+        "fingerprint": "FP-5a76ccf535c97abb",
+        "status": "deep_research",
+        "score": 0.6828,
+        "score_breakdown": {
+          "anomaly_strength": 0.9841,
+          "economic_impact": 0.6133,
+          "expectation_gap": 0.7,
+          "repricing_potential": 0.3737,
+          "catalyst": 0.2,
+          "timing_window": 1.0,
+          "risk_liquidity": 0.775,
+          "evidence_quality": 0.7418
+        },
+        "archetype": "price_fundamental_divergence",
+        "title": "日本 Nikkei 225：价格下行与全球信用/风险偏好/广度信号不一致（待检验的超跌假设）",
+        "market": "JP",
+        "asset_class": "equity_index",
+        "horizon": "1-3m",
+        "instruments": [
+          {
+            "id": "JP_EQ_N225",
+            "name": "Nikkei 225",
+            "symbol": "^N225",
+            "asset_class": "equity_index",
+            "region": "JP",
+            "role": "primary",
+            "importance": 0.8,
+            "liquidity": "high"
+          }
+        ],
+        "discovery": {
+          "what": "Nikkei 225 出现价格异常下跌（1 个月收益 -9.7%，回撤 -15.5%）；信用代理与宏观序列未显示同等程度的恶化。",
+          "why_now": "1 个月收益 -9.7%、距 1 年高点 -15.5%（5 年分位 3%）；信用代理 z=+0.89；宏观解释判定：信用市场未确认风险厌恶。",
+          "hypothesis": "价格已计入悲观情形，而基本面与信用条件尚未验证该悲观程度；若后续数据不恶化，存在重新定价空间。",
+          "anomalies": [
+            {
+              "id": "AN-6a1e5558e23c3a",
+              "detector": "price_return_shock",
+              "direction": "down",
+              "score": 0.6223333890429097
+            },
+            {
+              "id": "AN-226370fa9730a8",
+              "detector": "drawdown_extreme",
+              "direction": "deep_drawdown",
+              "score": 0.9841143764892772
+            },
+            {
+              "id": "AN-4237cbea28fea7",
+              "detector": "trend_break",
+              "direction": "golden_cross",
+              "score": 0.5
+            },
+            {
+              "id": "AN-f45627915491d0",
+              "detector": "vol_regime_shift",
+              "direction": "expansion",
+              "score": 0.5464752627091466
+            }
+          ],
+          "cape_pctile": NaN,
+          "erp_level": -0.9344017447812067,
+          "context_verdict": "conflict",
+          "context_note": "信用市场未确认风险厌恶",
+          "theme": "japan_equity",
+          "invalidation_checks": [
+            {
+              "entity": "JP_EQ_N225",
+              "feature": "rel_strength_vs_benchmark",
+              "window": "1m",
+              "op": "<",
+              "value": -0.08,
+              "note": "相对基准继续大幅跑输"
+            },
+            {
+              "entity": "CREDIT_RISK",
+              "feature": "hy_minus_treasury_z_3y",
+              "op": "<",
+              "value": -2.0,
+              "note": "信用利差代理恶化"
+            }
+          ]
+        },
+        "mechanism": {
+          "id": null,
+          "chain": [
+            "增长/流动性预期",
+            "风险溢价与盈利预期",
+            "估值",
+            "价格"
+          ],
+          "confidence": 0.39,
+          "causal_status": "hypothesis",
+          "conditions": [
+            "信用利差未持续走阔",
+            "宏观增长数据未显著下修",
+            "无重大资产特有负面事件"
+          ],
+          "identification": "该链条是待检验假设；价格与基本面代理之间的相关性不等于因果。"
+        },
+        "evidence_for": [
+          {
+            "claim": "price_return_shock 触发（down）",
+            "evidence": "度量 return_z_1d_3y=-5.489，异常强度 0.62；return_1d=-6.0%",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-06",
+            "strength": "moderate"
+          },
+          {
+            "claim": "drawdown_extreme 触发（deep_drawdown）",
+            "evidence": "度量 drawdown_pctile_5y=0.003，异常强度 0.98；drawdown_252d=-20.6%",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-06",
+            "strength": "strong"
+          },
+          {
+            "claim": "trend_break 触发（golden_cross）",
+            "evidence": "度量 ma_cross_50_200=0.049，异常强度 0.50；ma_cross_50_200=+0.049, ma_gap_200d=-0.025",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-10",
+            "strength": "moderate"
+          },
+          {
+            "claim": "vol_regime_shift 触发（expansion）",
+            "evidence": "度量 vol_z_3y=2.866，异常强度 0.55；vol_pctile_5y=+0.936",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-10",
+            "strength": "moderate"
+          },
+          {
+            "claim": "价格已显著回撤",
+            "evidence": "距 1 年高点回撤 -15.5%",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "美元 1 个月变化",
+            "evidence": "DXY +1.1%",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-13",
+            "strength": "weak"
+          },
+          {
+            "claim": "美国 10Y 收益率 1 个月变化",
+            "evidence": "-11bp",
+            "source": "treasury_us",
+            "tier": "official",
+            "as_of": "2026-11-13",
+            "strength": "weak"
+          },
+          {
+            "claim": "信用代理未确认风险厌恶",
+            "evidence": "HY/国债相对表现 z=+0.89",
+            "source": "yahoo_proxy",
+            "tier": "proxy",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          }
+        ],
+        "evidence_against": [
+          {
+            "claim": "价格下跌可能反映基本面恶化而非错误定价",
+            "evidence": "本系统未接入盈利一致预期与修正数据；若 EPS 预期同步下修，'超跌'假设不成立。",
+            "source": "data_gap",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          },
+          {
+            "claim": "波动率处于高位",
+            "evidence": "波动率 5 年分位 92%，高波动期价格信号噪声更大。",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          }
+        ],
+        "catalysts": [
+          {
+            "id": "BOJ_2026_12_18",
+            "date": "2026-12-18",
+            "type": "central_bank",
+            "title": "BoJ Monetary Policy Meeting decision (December 2026)",
+            "verified": true,
+            "source": "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm"
+          }
+        ],
+        "open_questions": [
+          "该资产的盈利/现金流预期是否已经同步下修？本系统未接入分析师一致预期，需要在 investment-agent 中核验。",
+          "下跌是风险溢价上升还是现金流预期下降？两者对后续定价含义不同。",
+          "同行业/同国家其他资产是否出现一致的定价变化（行业性 vs 个股/个券性）？"
+        ],
+        "invalidation": "若 Nikkei 225 相对基准再下跌 8% 以上，或 HY/国债相对表现跌至 -2σ（约 -3%），或出现明确的盈利下修/信用事件，则'超跌'假设失效。",
+        "data_quality": {
+          "score": 0.7,
+          "gaps": [
+            "分析师盈利预期与修正数据未接入",
+            "信用利差使用 HYG/IEF 代理，非 OAS 直接数据"
+          ]
+        },
+        "research_question": "【全球机会引擎研究任务】OPP-0002（price_fundamental_divergence，JP，equity_index，研究周期 1-3m）\n研究对象：Nikkei 225(^N225)\n现象：Nikkei 225 出现价格异常下跌（1 个月收益 -9.7%，回撤 -15.5%）；信用代理与宏观序列未显示同等程度的恶化。\n待检验假设：价格已计入悲观情形，而基本面与信用条件尚未验证该悲观程度；若后续数据不恶化，存在重新定价空间。\n初步传导逻辑：增长/流动性预期 → 风险溢价与盈利预期 → 估值 → 价格（置信度 0.39，条件：信用利差未持续走阔；宏观增长数据未显著下修；无重大资产特有负面事件）\n支持证据：price_return_shock 触发（down）: 度量 return_z_1d_3y=-5.489，异常强度 0.62；return_1d=-6.0%；drawdown_extreme 触发（deep_drawdown）: 度量 drawdown_pctile_5y=0.003，异常强度 0.98；drawdown_252d=-20.6%；trend_break 触发（golden_cross）: 度量 ma_cross_50_200=0.049，异常强度 0.50；ma_cross_50_200=+0.049, ma_gap_200d=-0.025；vol_regime_shift 触发（expansion）: 度量 vol_z_3y=2.866，异常强度 0.55；vol_pctile_5y=+0.936\n反对证据：价格下跌可能反映基本面恶化而非错误定价: 本系统未接入盈利一致预期与修正数据；若 EPS 预期同步下修，'超跌'假设不成立。；波动率处于高位: 波动率 5 年分位 92%，高波动期价格信号噪声更大。\n失效条件：若 Nikkei 225 相对基准再下跌 8% 以上，或 HY/国债相对表现跌至 -2σ（约 -3%），或出现明确的盈利下修/信用事件，则'超跌'假设失效。\n需要回答：该资产的盈利/现金流预期是否已经同步下修？本系统未接入分析师一致预期，需要在 investment-agent 中核验。；下跌是风险溢价上升还是现金流预期下降？两者对后续定价含义不同。；同行业/同国家其他资产是否出现一致的定价变化（行业性 vs 个股/个券性）？\n请完成：宏观与政策背景 → 行业/中观结构 → 公司或资产微观证据 → 情景分析 → 估值与赔率 → 明确列出支持与反对证据、关键数据缺口，以及使结论失效的条件。若证据不足，请直接说明，不要补全缺失数据。"
+      }
+    }
+  ],
+  "_note": "示例：为控制体积仅保留前两条机会；完整文件由 `goe scan` 生成。"
+}

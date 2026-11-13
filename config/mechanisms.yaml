@@ -1,0 +1,1449 @@
+# Global Opportunity Engine — transmission mechanisms library
+#
+# 本文件是机器可读的宏观传导机制库。每个机制是一个条件性假设，描述某个可观测
+# 触发变量如何经中间环节影响资产价格，并给出可被数据检验的支持/反对证据。
+# 它不是交易信号，不包含收益预测，也不声称任何机制保证结果。
+#
+# 约定：
+#   * 所有 series / instrument id 必须存在于 docs/id_reference.md。
+#   * evidence_tests type=corr 的 a/b 可为任意 id；收益类资产应使用日收益，
+#     利率与宏观水平序列应使用一阶差分（实现约定见 docs/TRANSMISSION_METHOD.md）。
+#   * window 以交易日计；月度宏观与日频价格配对时使用 750（约 36 个月）。
+#   * conditional_return 的 lookback 以观测次数计（宏观为月/季度），
+#     horizon_days 以交易日计；阈值先验设定，不在样本内最优化。
+#
+schema_version: "1.0"
+
+method_note: "机制库是条件性假设的集合，不是自然定律，也不是收益预测。每条机制只陈述：在给定制度、政策与仓位条件下，某个可观测变量变化倾向于通过哪些中间环节影响哪些资产；它必须与反证条件、数据缺口和识别问题一起阅读。相关性不等于因果，条件收益不是交易收益，任何机制都可能在结构断点后失效。"
+
+mechanisms:
+
+  M01_REAL_RATES_USD_ALLOCATION:
+    title: "实际利率—美元—全球配置 Real rates, the dollar and global allocation"
+    family: real_rates
+    causal_status: hypothesis
+    thesis: "美国实际利率是全球风险资产定价的共同折现因子。实际利率上升推高美元、收紧全球美元融资条件，跨境资金从久期长、外币负债高的资产撤出，全球配置向美元现金与短久期资产倾斜，高估值成长股、EM 股票与黄金承压。该链条在浮动汇率与资本账户开放的经济体中更一致，但美元作为安全资产在避险时可能与本机制方向相反，因此只作为条件性假设使用。"
+    mechanism_chain:
+      - "美国实际利率上升（名义收益率上行且通胀预期相对稳定，或以 TIPS 价格下跌代理）"
+      - "美元指数走强，离岸美元融资条件收紧"
+      - "全球金融条件收紧，风险预算与杠杆下降"
+      - "跨境配置从 EM、长久期成长与黄金转向美元现金与短久期资产"
+      - "高久期资产估值倍数压缩，价格调整幅度大于现金流变化"
+    triggers:
+      - series: "UST:10Y"
+        direction: up
+        note: "名义 10Y 上行且通胀预期稳定时，可近似视为实际利率上行；若由通胀预期驱动，需改用 TIP 价格判断"
+      - series: "US_FI_TIP"
+        direction: down
+        note: "TIPS ETF 价格下跌对应实际收益率上行，是本机制的直接代理"
+      - series: "US_FX_DXY"
+        direction: up
+        note: "美元走强是金融条件收紧的同步确认，不是独立驱动"
+      - series: "US_POLICY_RATE"
+        direction: up
+        note: "政策利率上行通过短端与前瞻指引传导至实际利率"
+    affected_assets:
+      - id: GX_FX_GBPUSD
+        role: transmission
+        expected_direction: ambiguous
+        horizon: "1-3m"
+      - id: GX_FX_EURUSD
+        role: transmission
+        expected_direction: ambiguous
+        horizon: "1-3m"
+      - id: UK_EQ_FTSE
+        role: secondary
+        expected_direction: ambiguous
+        horizon: "1-3m"
+      - id: "US_EQ_QQQ"
+        role: primary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "WORLD_EQ_EEM"
+        role: primary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "CN_EQ_CSI300"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "CM_MET_GC"
+        role: secondary
+        expected_direction: down
+        horizon: "3-12m"
+      - id: "US_FX_DXY"
+        role: transmission
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "US_FI_TLT"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+    evidence_tests:
+      - type: corr
+        a: "UST:10Y"
+        b: "US_EQ_QQQ"
+        window: 250
+        expected_sign: -1
+        min_abs: 0.15
+        note: "用 10Y 收益率日变化与 QQQ 日收益计算；实际利率序列未直接接入，10Y 仅为代理，符号应弱于真实实际利率检验"
+      - type: corr
+        a: "US_FI_TIP"
+        b: "CM_MET_GC"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "TIPS 总收益上升对应实际利率下行，黄金应同向；TIP 含久期与通胀补偿，不是纯实际利率"
+      - type: corr
+        a: "US_FX_DXY"
+        b: "WORLD_EQ_EEM"
+        window: 250
+        expected_sign: -1
+        min_abs: 0.15
+        note: "美元与 EM 股票的条件负相关；商品出口国 EM 可能反向，需分组检查"
+      - type: conditional_return
+        condition_series: "UST:10Y"
+        operator: ">"
+        threshold: 4.25
+        lookback: 3
+        target: "US_EQ_QQQ"
+        horizon_days: 63
+        expected_sign: -1
+        note: "阈值在样本前设定，对应 2022 年后的高利率区间；lookback=3 个交易日；描述性统计，不是交易信号"
+    conditions:
+      - "美国实际利率是边际定价因子，且通胀预期相对稳定"
+      - "全球风险偏好正常，美元不因避险需求而脱离利差逻辑"
+      - "目标资产存在外币负债或长久期现金流"
+      - "资本账户开放、汇率浮动或爬行盯住的经济体传导更顺畅"
+    falsifiers:
+      - "实际利率上行期间黄金连续 6 个月以上上涨，且 TIP 与黄金的滚动相关转负"
+      - "QQQ 与 10Y 日变化的相关在多数滚动窗口为正，且美元不随实际利率走强"
+      - "EM 股票在实际利率上行期持续跑赢美股，同时 EM 汇率升值"
+    required_data:
+      - "10Y 实际收益率（FRED DFII10）与 10Y 盈亏平衡通胀（T10YIE）— 未接入，当前用 UST:10Y 与 US_FI_TIP 代理"
+      - "全球金融条件指数（如 Chicago Fed NFCI）— 未接入"
+      - "EPFR 跨境基金流与 ETF 资金流 — 未接入"
+      - "美元交叉货币基差（EUR/USD、USD/JPY）— 未接入"
+    limitations: "实际利率不可直接观测：名义收益率变动可能来自增长、通胀预期或期限溢价，符号会被混淆。美元在避险情景中同时受安全资产需求驱动，可能与本机制方向相反。2015-2026 样本经历零利率、QE、2022 通胀冲击与 2023-2026 高利率，结构断点明显，滚动相关不能外推。"
+    references:
+      - title: "Rey, H. (2015). Dilemma not Trilemma: The Global Financial Cycle and Monetary Policy Independence. NBER Working Paper 21162."
+        url: "https://www.nber.org/papers/w21162"
+      - title: "Miranda-Agrippino, S. and Rey, H. (2020). US Monetary Policy and the Global Financial Cycle. NBER Working Paper 21722."
+        url: "https://www.nber.org/papers/w21722"
+      - title: "Board of Governors of the Federal Reserve System. Market Yield on U.S. Treasury Securities at 10-Year Constant Maturity, Inflation-Indexed (DFII10), via FRED."
+        url: "https://fred.stlouisfed.org/series/DFII10"
+
+  M02_GOLD_REAL_YIELD:
+    title: "黄金与实际利率 Gold versus real yields"
+    family: real_rates
+    causal_status: hypothesis
+    thesis: "黄金可视为零息实际资产，持有黄金的机会成本是实际利率；实际利率下行时黄金相对吸引力上升，白银与金矿股以更高 beta 跟随。但央行储备多元化、地缘政治与 ETF 流量可以在数季度内压过利率逻辑，2022 年后金价与实际利率同向上涨即是反例，因此该机制必须标注为条件性假设。"
+    mechanism_chain:
+      - "实际利率下行，或 TIPS 价格上涨"
+      - "持有黄金的机会成本下降，实际资产配置需求上升"
+      - "央行购金与 ETF 流入放大边际需求"
+      - "金价上涨，白银与金矿股以更高弹性跟随"
+    triggers:
+      - series: "UST:10Y"
+        direction: down
+        note: "名义收益率下行且通胀预期稳定时，实际利率下行，对黄金形成上行压力"
+      - series: "US_FI_TIP"
+        direction: up
+        note: "TIPS 价格上涨是实际利率下行的直接代理"
+      - series: "US_FX_DXY"
+        direction: down
+        note: "美元走弱降低非美元投资者的黄金成本，放大金价弹性"
+    affected_assets:
+      - id: "CM_MET_GC"
+        role: primary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "CM_ETF_GLD"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "CM_MET_SI"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "CM_ETF_GDX"
+        role: secondary
+        expected_direction: up
+        horizon: "3-12m"
+      - id: "US_FI_TIP"
+        role: transmission
+        expected_direction: up
+        horizon: "1-3m"
+    evidence_tests:
+      - type: corr
+        a: "CM_MET_GC"
+        b: "US_FI_TIP"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "TIPS 总收益与黄金同向，检验实际利率渠道；TIP 价格同时受久期与通胀补偿影响"
+      - type: corr
+        a: "CM_MET_GC"
+        b: "US_FX_DXY"
+        window: 250
+        expected_sign: -1
+        min_abs: 0.15
+        note: "美元计价与机会成本双重渠道，预期负相关"
+      - type: conditional_return
+        condition_series: "UST:10Y"
+        operator: ">"
+        threshold: 4.5
+        lookback: 3
+        target: "CM_MET_GC"
+        horizon_days: 63
+        expected_sign: -1
+        note: "高名义利率区间的机会成本检验；2022 年后该关系失效本身就是反证，lookback=3 个交易日"
+    conditions:
+      - "实际利率是黄金的边际定价因子，央行购金规模平稳"
+      - "美元不出现避险性急升"
+      - "通胀预期锚定，黄金不主要作为通胀对冲被买入"
+      - "ETF 与期货持仓未处于极端拥挤状态"
+    falsifiers:
+      - "实际利率上行 100bp 以上而金价仍上涨，且 TIP 与黄金的滚动相关转负"
+      - "央行购金或 ETF 流入可解释金价的大部分季度波动（需持仓数据验证）"
+      - "白银与金矿股在金价上涨时反而下跌，说明驱动来自避险而非利率"
+    required_data:
+      - "10Y 实际收益率与盈亏平衡通胀（DFII10、T10YIE）— 未接入，仅用 TIP 与名义收益率代理"
+      - "世界黄金协会央行购金季度数据 — 有公开页面但未接入"
+      - "GLD 持仓量与 ETF 资金流 — 未接入"
+      - "CFTC 黄金管理资金净持仓 — 已接入 POS_GOLD_MM，但缺少持仓量归一化"
+    limitations: "实际利率以 TIP 价格与名义收益率代理，久期和通胀补偿会污染信号。2022 年后央行购金与地缘风险使金价与实际利率脱钩，样本内关系不稳定。黄金没有现金流，任何贴现模型都只能解释部分价格变动，剩余部分属于储备需求与风险溢价。"
+    references:
+      - title: "Barsky, R. B. and Summers, L. H. (1988). Gibson's Paradox and the Gold Standard. Journal of Political Economy 96(3). NBER Working Paper 1680."
+        url: "https://www.nber.org/papers/w1680"
+      - title: "Erb, C. B. and Harvey, C. R. (2013). The Golden Dilemma. Financial Analysts Journal. NBER Working Paper 18706."
+        url: "https://www.nber.org/papers/w18706"
+      - title: "World Gold Council. Gold Demand Trends."
+        url: "https://www.gold.org/goldhub/research/gold-demand-trends"
+
+  M03_CHINA_CREDIT_IMPULSE:
+    title: "中国信贷脉冲与实体需求 China credit impulse to demand"
+    family: china_cycle
+    causal_status: hypothesis
+    thesis: "中国信贷脉冲领先国内投资与大宗商品进口需求，信贷加速通常在一到两个季度后传导至工业金属价格、A 股周期板块与商品出口国股市。该链条依赖信贷真正进入实体投资而非借新还旧，房地产资产负债表衰退期会显著削弱传导。"
+    mechanism_chain:
+      - "政策宽松（LPR 下调、准备金与财政配合）"
+      - "信贷同比加速，社融与中长期贷款回升"
+      - "基建与制造业投资、部分房地产施工回升"
+      - "铜、铝等工业金属进口与价格上行"
+      - "A 股周期板块与商品出口国股市相对受益"
+    triggers:
+      - series: "CN_CREDIT"
+        direction: up
+        note: "BIS 私人非金融部门信贷同比加速，作为信贷脉冲的季度代理"
+      - series: "CN_POLICY_RATE"
+        direction: down
+        note: "1 年期 LPR 下调是信贷扩张的政策前提"
+      - series: "CN:10Y"
+        direction: down
+        note: "中国国债长端下行降低实体融资成本，但需与增长预期区分"
+      - series: "CN_CPI"
+        direction: up
+        note: "需求回升最终体现在价格上；中国 CPI 对工业需求的敏感度低于 PPI"
+    affected_assets:
+      - id: "CM_MET_HG"
+        role: primary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "CM_MET_ALI"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "CN_EQ_CSI300"
+        role: secondary
+        expected_direction: up
+        horizon: "3-12m"
+      - id: "AU_EQ_ASX200"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "US_SEC_XLB"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+    evidence_tests:
+      - type: corr
+        a: "CN_CREDIT"
+        b: "CM_MET_HG"
+        window: 750
+        expected_sign: 1
+        min_abs: 0.15
+        note: "季度宏观与日频价格：月末对齐并按发布滞后处理；750 交易日约 36 个月度观测，样本量有限"
+      - type: corr
+        a: "CN_CREDIT"
+        b: "CN_EQ_CSI300"
+        window: 750
+        expected_sign: 1
+        min_abs: 0.15
+        note: "信贷扩张与 A 股同向，检验国内需求渠道；估值与政策预期会污染符号"
+      - type: corr
+        a: "CN_CREDIT"
+        b: "AU_EQ_ASX200"
+        window: 750
+        expected_sign: 1
+        min_abs: 0.15
+        note: "商品出口国股市对中国的需求冲击敏感，检验跨境传导"
+      - type: conditional_return
+        condition_series: "CN_CREDIT"
+        operator: ">"
+        threshold: 10.0
+        lookback: 2
+        target: "CM_MET_HG"
+        horizon_days: 126
+        expected_sign: 1
+        note: "季度观测，lookback=2 个季度；阈值为样本前设定的信贷扩张区间，非最优化结果；horizon 约 6 个月"
+    conditions:
+      - "信贷扩张进入实体投资，而非仅债务滚续"
+      - "房地产部门未处于深度资产负债表衰退"
+      - "全球需求与美元不构成反向冲击"
+      - "政策传导时滞 1-2 个季度"
+    falsifiers:
+      - "信贷同比加速而铜价与 CSI300 连续两个季度下跌"
+      - "信贷脉冲与工业金属进口量背离（需海关数据验证）"
+      - "房地产投资继续两位数下滑，抵消基建与制造业"
+    required_data:
+      - "中国信贷脉冲（新增社融流量/GDP）— 当前仅有 BIS 信贷存量同比，季度、约 2 个季度滞后且会被修订"
+      - "中国月度社融、新增人民币贷款、中长期贷款 — 未接入"
+      - "中国房地产销售与投资、PMI、工业增加值 — 未接入"
+      - "铜显性库存（SHFE/LME/COMEX）— 未接入"
+    limitations: "BIS 信贷是存量、季度频率且有发布滞后与修订，用它近似信贷脉冲会平滑掉最快的边际变化。中国数据可得性与口径变化（资管新规、地方政府债务置换）造成结构断点。2015-2026 覆盖地产上行、三条红线、疫情与地产下行，同一系数不可能稳定。"
+    references:
+      - title: "Chen, K., Ren, J. and Zha, T. (2018). The Nexus of Monetary Policy and Shadow Banking in China. American Economic Review 108(12)."
+        url: "https://www.aeaweb.org/articles?id=10.1257/aer.20170133"
+      - title: "Bank for International Settlements. Credit-to-GDP gaps."
+        url: "https://www.bis.org/statistics/c_gaps.htm"
+      - title: "Bank for International Settlements. BIS total credit statistics (methodology and data)."
+        url: "https://www.bis.org/statistics/totcredit.htm"
+
+  M04_CHINA_POLICY_HK_TECH:
+    title: "中国政策与港股科技 China policy to Hong Kong tech"
+    family: policy_event
+    causal_status: hypothesis
+    thesis: "中国政策立场（监管、地产支持、资本市场与汇率管理）首先改变离岸投资者要求的风险溢价，而不是当期盈利；港股科技因外资持股比例高、ADR 与离岸流动性敏感，成为政策风险的高 beta 表达。政策宽松时估值修复可以脱离盈利，收紧时杀估值先于杀盈利。"
+    mechanism_chain:
+      - "政策信号转向（监管缓和、地产支持、货币宽松）"
+      - "离岸风险溢价下降，CNH 走强或企稳"
+      - "外资与南向资金回流港股，成交与估值修复"
+      - "港股科技与中概股反弹，A 股跟随但弹性较低"
+    triggers:
+      - series: "CN_POLICY_RATE"
+        direction: down
+        note: "LPR 下调是货币政策宽松的直接信号"
+      - series: "CN_FX_USDCNY"
+        direction: down
+        note: "离岸人民币升值或企稳，表示资本外流压力缓解与政策可信度上升"
+      - series: "CN:10Y"
+        direction: down
+        note: "中国长端利率下行改善离岸贴现率，但需排除增长恶化驱动的下行"
+    affected_assets:
+      - id: "CN_EQ_KWEB"
+        role: primary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "HK_EQ_3033"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "HK_EQ_3067"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "CN_EQ_FXI"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "CN_EQ_CSI300"
+        role: secondary
+        expected_direction: up
+        horizon: "3-12m"
+    evidence_tests:
+      - type: corr
+        a: "CN_POLICY_RATE"
+        b: "CN_EQ_KWEB"
+        window: 750
+        expected_sign: -1
+        min_abs: 0.15
+        note: "月度政策利率变化与 KWEB 月度收益：降息（负变化）对应正收益，故相关为负；750 交易日约 36 个月"
+      - type: corr
+        a: "CN_FX_USDCNY"
+        b: "CN_EQ_KWEB"
+        window: 250
+        expected_sign: -1
+        min_abs: 0.15
+        note: "CNH 贬值（USDCNH 上行）与港股科技下跌同向，检验离岸风险溢价渠道"
+      - type: corr
+        a: "CN:10Y"
+        b: "CN_EQ_KWEB"
+        window: 250
+        expected_sign: -1
+        min_abs: 0.15
+        note: "中国长端利率下行与港股科技同向，检验贴现率渠道；增长驱动的下行为反例"
+      - type: conditional_return
+        condition_series: "CN_POLICY_RATE"
+        operator: "<"
+        threshold: 3.5
+        lookback: 3
+        target: "CN_EQ_KWEB"
+        horizon_days: 63
+        expected_sign: 1
+        note: "低利率区间的描述性统计；政策利率不是唯一政策变量，n 约为 30 个月度观测"
+    conditions:
+      - "政策变化通过风险溢价而非盈利传导"
+      - "美国对华科技限制与 ADR 退市风险没有同时升级"
+      - "港元流动性与 HIBOR 不出现极端收紧"
+      - "外资与南向资金流向可观测（当前不可得，作为条件而非变量）"
+    falsifiers:
+      - "政策宽松期 KWEB 持续跑输 A 股与美股，风险溢价未下降"
+      - "政策利率下调与港股科技收益无稳定符号"
+      - "监管收紧但港股科技上涨，说明定价由盈利或全球流动性主导"
+    required_data:
+      - "中国政策不确定性指数（Baker-Bloom-Davis 中国 EPU）— 有公开月度数据但未接入"
+      - "南向通净流入、港股通成交占比 — 未接入"
+      - "中概股 ADR 溢价折价与退市风险事件 — 未接入"
+      - "监管事件时间线（平台、数据、AI、跨境券商）— 需人工维护"
+    limitations: "政策事件是离散的，可预期与不可预期混杂，月度利率无法刻画监管冲击。港股同时受美元流动性与 HIBOR 影响，政策效应与全球风险偏好难以分离。样本中 2020-2022 监管收紧与 2024-2026 支持政策各只出现一次，事件研究样本极小。"
+    references:
+      - title: "Subrahmanyam, M., Cherian, J., Mo, J. and Tingyi, X. (2022). The swan song march? An update on China's Big Tech crackdown. NYU Stern."
+        url: "https://www.stern.nyu.edu/experience-stern/faculty-research/swan-song-march-update-china-s-big-tech-crackdown"
+      - title: "Baker, S. R., Bloom, N. and Davis, S. J. China Economic Policy Uncertainty Index."
+        url: "https://www.policyuncertainty.com/china_monthly.html"
+      - title: "International Monetary Fund. People's Republic of China: Article IV Consultation Staff Report (2024)."
+
+  M05_ENERGY_INFLATION_CHAIN:
+    title: "能源—通胀—利润率—股债 Energy to inflation to margins and assets"
+    family: energy_inflation
+    causal_status: established_mechanism
+    thesis: "能源价格冲击通过三条渠道传导：一是直接抬升 headline CPI 与通胀预期；二是压缩非能源企业利润率；三是改变货币政策与期限溢价。需求驱动的油价上涨对权益冲击较小，供给驱动的上涨更可能形成滞胀组合：盈亏平衡通胀上行、曲线熊平、能源板块跑赢、可选消费与长久期债券承压。能源到 headline CPI 的算术传导是已确立的，后续资产价格链条仍是假设。"
+    mechanism_chain:
+      - "能源供给或需求冲击推高油价与天然气价格"
+      - "燃料与电力成本进入 headline CPI（1-3 个月）"
+      - "通胀预期与政策路径重定价，名义收益率与期限溢价上行"
+      - "非能源企业投入成本上升，利润率压缩"
+      - "能源板块跑赢，可选消费、必需消费与长久期债券承压"
+    triggers:
+      - series: "CM_ENE_CL"
+        direction: up
+        note: "WTI 上行是最直接的能源冲击价格信号"
+      - series: "CM_ENE_BZ"
+        direction: up
+        note: "Brent 对欧洲与全球通胀的传导更直接"
+      - series: "CM_ENE_NG"
+        direction: up
+        note: "天然气冲击主要影响欧洲电价与化工成本"
+      - series: "US_CPI"
+        direction: up
+        note: "CPI 同比加速确认能源已进入总体通胀，而非仅商品价格变动"
+    affected_assets:
+      - id: "US_SEC_XLE"
+        role: primary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "US_SEC_XLY"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "US_SEC_XLP"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "US_FI_TLT"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "US_FI_TIP"
+        role: transmission
+        expected_direction: ambiguous
+        horizon: "1-3m"
+    evidence_tests:
+      - type: corr
+        a: "CM_ENE_CL"
+        b: "US_SEC_XLE"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "检验能源价格向能源股盈利的传导，不检验通胀链本身"
+      - type: corr
+        a: "CM_ENE_CL"
+        b: "US_CPI"
+        window: 750
+        expected_sign: 1
+        min_abs: 0.15
+        note: "月度对齐：油价同比与 CPI 同比；两者共同受需求驱动，相关不等于因果"
+      - type: conditional_return
+        condition_series: "US_CPI"
+        operator: ">"
+        threshold: 4.0
+        lookback: 3
+        target: "US_FI_TLT"
+        horizon_days: 63
+        expected_sign: -1
+        note: "高通胀区间（2021-2023 为主）的描述性条件收益；样本重叠，不能作为可交易信号"
+      - type: conditional_return
+        condition_series: "US_CORE_CPI"
+        operator: ">"
+        threshold: 3.0
+        lookback: 3
+        target: "US_FI_TLT"
+        horizon_days: 63
+        expected_sign: -1
+        note: "核心通胀高于 3% 的月份检验更持久的通胀压力；核心 CPI 与 TLT 的关系还受增长与避险影响"
+    conditions:
+      - "能源冲击向核心通胀有正溢出，需求与劳动力市场偏紧"
+      - "通胀预期未完全锚定，央行需要回应"
+      - "企业定价权不足以完全转嫁成本"
+      - "冲击为供给驱动而非需求驱动（需求驱动时权益可能同涨）"
+    falsifiers:
+      - "油价翻倍但 CPI 与盈亏平衡通胀无反应"
+      - "能源板块在油价上涨时跑输，或非能源企业利润率扩张"
+      - "收益率在通胀上行时下行（避险主导），债券与股票同涨"
+    required_data:
+      - "10Y 盈亏平衡通胀（T10YIE）与 5y5y 远期 — 未接入，TIP 仅为代理"
+      - "原油期货期限结构（CL1-CL2）与 EIA 库存 — 未接入"
+      - "标普 500 利润率与单位劳动成本 — 未接入"
+      - "CPI 分项能源权重与核心商品通胀 — 仅有 CPI 总量，缺分项"
+    limitations: "油价与 CPI 的月度相关被共同的需求冲击污染，不能识别因果方向。能源在 CPI 中的权重与传导系数随监管与能源结构变化，2015-2026 跨越页岩油革命与俄乌冲击。条件收益使用重叠窗口，统计显著性被高估。"
+    references:
+      - title: "Bernanke, B. S., Gertler, M. and Watson, M. (1997). Systematic Monetary Policy and the Effects of Oil Price Shocks. Brookings Papers on Economic Activity 1997(1)."
+        url: "https://www.brookings.edu/articles/systematic-monetary-policy-and-the-effects-of-oil-price-shocks/"
+      - title: "Kilian, L. (2008). The Economic Effects of Energy Price Shocks. Journal of Economic Literature 46(4)."
+        url: "https://www.aeaweb.org/articles?id=10.1257/jel.46.4.871"
+      - title: "Federal Reserve Bank of St. Louis. 10-Year Breakeven Inflation Rate (T10YIE), FRED."
+        url: "https://fred.stlouisfed.org/series/T10YIE"
+
+  M06_OIL_TERM_STRUCTURE_INVENTORIES:
+    title: "原油期限结构与库存 Oil term structure and inventories"
+    family: commodity_cycle
+    causal_status: hypothesis
+    thesis: "商品期限结构反映库存与便利收益：backwardation 通常对应低库存与紧张现货，展期收益为正；contango 对应高库存与过剩，展期收益为负。该机制解释现货与展期收益的差异，并影响商品 ETF（如 USO）与能源股的相对表现。系统当前没有期限结构与库存序列，只能用价格与持仓代理，结论强度有限。"
+    mechanism_chain:
+      - "库存去化、现货紧张"
+      - "近月合约相对远月升水（backwardation），便利收益上升"
+      - "多头展期获得正收益，商品 ETF 净值受益"
+      - "能源股盈利与现金流改善，资本开支预期上升"
+    triggers:
+      - series: "CM_ENE_CL"
+        direction: up
+        note: "近月价格上涨可能来自现货紧张或地缘风险，需与库存和期限结构核对"
+      - series: "CM_ENE_BZ"
+        direction: up
+        note: "Brent 期限结构对海运与欧洲库存更敏感"
+      - series: "POS_WTI_MM"
+        direction: up
+        note: "管理资金净多增加通常追随趋势，本身不区分期限结构状态"
+    affected_assets:
+      - id: "CM_ENE_CL"
+        role: primary
+        expected_direction: ambiguous
+        horizon: "1-3m"
+      - id: "CM_ETF_USO"
+        role: secondary
+        expected_direction: ambiguous
+        horizon: "3-12m"
+      - id: "US_SEC_XLE"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "CM_ENE_HO"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+    evidence_tests:
+      - type: corr
+        a: "CM_ENE_CL"
+        b: "CM_ENE_HO"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "同一能源复合体的共同因子，检验价格联动而非期限结构"
+      - type: corr
+        a: "CM_ENE_CL"
+        b: "CM_ETF_USO"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "USO 滚动展期使其在 contango 中落后于现货；高相关是必要条件，累计收益差才是期限结构的间接证据"
+      - type: corr
+        a: "POS_WTI_MM"
+        b: "CM_ENE_CL"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "管理资金净持仓追随价格，验证持仓是趋势结果而非领先信号"
+    conditions:
+      - "库存与便利收益是期限结构的主要驱动"
+      - "展期规则与合约流动性稳定（USO 曾因换月与监管改变持仓）"
+      - "地缘冲突未造成近月挤仓（此时 backwardation 由交割风险驱动）"
+    falsifiers:
+      - "backwardation 期间现货价格下跌、展期收益为负"
+      - "库存高企但期限结构持续 backwardation"
+      - "USO 与现货的累计收益差与期限结构符号相反"
+    required_data:
+      - "WTI/Brent 近月与次近月结算价（CL1-CL2、BZ1-BZ2）— 未接入"
+      - "EIA 周度原油、汽油、馏分油库存 — 未接入"
+      - "OECD 商业库存与浮仓 — 未接入"
+      - "USO 持仓与展期规则变更记录 — 未接入"
+    limitations: "仅有连续近月价格，无法区分价格水平变化与期限结构变化。库存与价格同时由供需决定，回归系数无法识别方向。商品 ETF 的展期规则、费用与监管变化会造成与期限结构无关的跟踪误差。"
+    references:
+      - title: "Gorton, G. B., Hayashi, F. and Rouwenhorst, K. G. (2013). The Fundamentals of Commodity Futures Returns. Review of Finance 17(1). NBER Working Paper 13249."
+        url: "https://www.nber.org/papers/w13249"
+      - title: "U.S. Energy Information Administration. Weekly Petroleum Status Report."
+        url: "https://www.eia.gov/petroleum/supply/weekly/"
+      - title: "Working, H. (1949). The Theory of Price of Storage. American Economic Review 39(6), 1254-1262."
+      - title: "Fama, E. F. and French, K. R. (1987). Commodity Futures Prices: Some Evidence on Forecast Power, Premiums, and the Theory of Storage. Journal of Business 60(1)."
+
+  M07_COPPER_GOLD_GROWTH:
+    title: "铜金比价与增长信号 Copper-gold ratio as a growth signal"
+    family: commodity_cycle
+    causal_status: hypothesis
+    thesis: "铜金比价把工业需求（铜）与货币避险需求（金）压缩成一个比率，上升通常对应制造业与全球增长预期改善、实际利率上行，下降对应增长担忧或避险。该比率可作为周期股相对防御股、10Y 收益率的描述性同步指标，但比值本身不可直接作为测试对象，需用两条腿分别检验。"
+    mechanism_chain:
+      - "全球制造业与工业需求预期改善"
+      - "铜价相对金价走强，铜金比价上升"
+      - "周期板块盈利预期上修，防御板块相对吸引力下降"
+      - "名义收益率与实际利率上行，曲线陡化"
+    triggers:
+      - series: "CM_MET_HG"
+        direction: up
+        note: "铜价走强是工业需求改善的直接信号，但供给中断也会推高铜价"
+      - series: "CM_MET_GC"
+        direction: down
+        note: "金价走弱降低比值分母，放大比价上行的增长含义"
+      - series: "UST:10Y"
+        direction: up
+        note: "长端收益率上行确认增长与实际利率同向变化"
+    affected_assets:
+      - id: "US_SEC_XLI"
+        role: primary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "CM_MET_HG"
+        role: primary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "US_SEC_XLB"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "US_SEC_XLP"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "US_FI_TLT"
+        role: secondary
+        expected_direction: down
+        horizon: "3-12m"
+    evidence_tests:
+      - type: corr
+        a: "CM_MET_HG"
+        b: "UST:10Y"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "铜的日变化与 10Y 收益率日变化同向，检验铜的增长属性；供给冲击会削弱该关系"
+      - type: corr
+        a: "CM_MET_HG"
+        b: "US_SEC_XLI"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "铜与工业板块同向，检验周期传导"
+      - type: corr
+        a: "CM_MET_HG"
+        b: "CM_MET_ALI"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "工业金属共同因子，排除单一品种噪声；高相关也意味着无法分离品种特有的供给冲击"
+    conditions:
+      - "铜价由工业需求而非供给中断主导"
+      - "黄金由实际利率而非央行购金主导"
+      - "比价变化反映增长预期，而非美元计价效应"
+    falsifiers:
+      - "铜金比价上升（两腿分别验证）而周期股跑输防御股"
+      - "铜与 10Y 收益率的滚动相关在多数窗口为负"
+      - "铜价上涨由矿端供给中断驱动，制造业同步走弱"
+    required_data:
+      - "铜金比价作为派生序列 — 当前测试接口只支持单一 id 对，无法直接表达比值，需要在特征层构造"
+      - "全球制造业 PMI、OECD 领先指标 — 未接入"
+      - "LME/COMEX 铜库存与矿端扰动事件 — 未接入"
+    limitations: "比值是两条腿的商，任何一腿的货币属性变化都会污染信号。铜的金融属性（美元计价、投机持仓）在短期可压过工业属性。直接检验铜金比价与增长的同行评审证据稀少，本机制更接近从业者经验法则，必须按假设对待。"
+    references:
+      - title: "Stuermer, M. (2017). Industrialization and the Demand for Mineral Commodities. Journal of International Money and Finance 76. Federal Reserve Bank of Dallas Working Paper 1413."
+        url: "https://www.dallasfed.org/-/media/documents/research/papers/2014/wp1413.pdf"
+      - title: "Barsky, R. B. and Summers, L. H. (1988). Gibson's Paradox and the Gold Standard. Journal of Political Economy 96(3). NBER Working Paper 1680."
+        url: "https://www.nber.org/papers/w1680"
+      - title: "Kilian, L. (2009). Not All Oil Price Shocks Are Alike: Disentangling Demand and Supply Shocks in the Crude Oil Market. American Economic Review 99(3)."
+        url: "https://www.aeaweb.org/articles?id=10.1257/aer.99.3.1053"
+
+  M08_COMMODITY_SUPPLY_SHOCK:
+    title: "农产品与金属供给冲击 Commodity supply shocks"
+    family: commodity_cycle
+    causal_status: hypothesis
+    thesis: "供给冲击（天气、出口禁令、制裁、矿山事故）使单个商品价格在数量下降的同时上涨，与需求驱动的普涨不同。供给驱动的食品与金属价格上涨会压缩下游利润率、推升 EM 食品进口国通胀与政治风险，并可能触发出口国进一步限制出口，形成放大回路。"
+    mechanism_chain:
+      - "天气、地缘或政策导致供给中断"
+      - "该品种库存下降、现货升水，价格跳升"
+      - "下游食品、饮料、制造业投入成本上升"
+      - "EM 食品进口国通胀与国际收支恶化"
+      - "出口国限制出口，价格进一步上行形成放大回路"
+    triggers:
+      - series: "CM_AGR_ZW"
+        direction: up
+        note: "小麦对天气、黑海航运与出口政策最敏感"
+      - series: "CM_AGR_ZC"
+        direction: up
+        note: "玉米同时受天气与能源（乙醇）需求影响，需区分供给与需求"
+      - series: "CM_MET_ALI"
+        direction: up
+        note: "铝受电力成本与冶炼限产影响，是典型的供给端品种"
+      - series: "CM_MET_NI"
+        direction: up
+        note: "镍的供给集中度高，2022 年逼空是极端案例；流动性低，价格噪声大"
+    affected_assets:
+      - id: "US_SEC_XLP"
+        role: primary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "CM_AGR_ZS"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "CM_ETF_DBC"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "WORLD_EQ_EEM"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "US_SEC_XLB"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+    evidence_tests:
+      - type: corr
+        a: "CM_AGR_ZW"
+        b: "CM_AGR_ZC"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "农产品共同因子（天气与能源成本），检验板块联动而非单一供给冲击"
+      - type: corr
+        a: "CM_MET_ALI"
+        b: "CM_MET_NI"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "工业金属共同因子；2022 年镍逼空是极端供给冲击案例"
+      - type: corr
+        a: "CM_AGR_ZW"
+        b: "US_SEC_XLP"
+        window: 250
+        expected_sign: -1
+        min_abs: 0.10
+        note: "食品成本上升对必需消费毛利的压制；相关性弱，仅作方向性证据"
+    conditions:
+      - "冲击来自供给而非需求"
+      - "库存缓冲低、替代来源有限"
+      - "出口国存在贸易政策干预动机"
+      - "下游企业定价权弱、合约重定价滞后"
+    falsifiers:
+      - "供给中断品种价格上涨，但下游利润率与股价未受影响"
+      - "同一冲击下出口国未限制出口，价格迅速回落"
+      - "农产品与金属价格同涨由全球需求驱动，EM 通胀未上升"
+    required_data:
+      - "库存消费比与 USDA/FAO 供需平衡表 — 未接入"
+      - "出口禁令与关税事件时间线 — 未接入"
+      - "EM 食品 CPI 权重与汇率 — 未接入"
+      - "具体品种的供给中断代理（矿山产量、港口发运）— 未接入"
+    limitations: "供给冲击是离散事件，月度与日度数据都难以给出足够样本。商品价格同时受美元、利率与需求影响，供给识别需要库存与产量数据。农产品受天气与能源成本共同驱动，单一品种的相关不能外推到整个板块。"
+    references:
+      - title: "Kilian, L. (2009). Not All Oil Price Shocks Are Alike: Disentangling Demand and Supply Shocks in the Crude Oil Market. American Economic Review 99(3)."
+        url: "https://www.aeaweb.org/articles?id=10.1257/aer.99.3.1053"
+      - title: "Food and Agriculture Organization of the United Nations. FAO Food Price Index."
+        url: "https://www.fao.org/worldfoodsituation/foodpricesindex/en/"
+      - title: "World Bank. Commodity Markets Outlook."
+        url: "https://www.worldbank.org/en/research/commodity-markets"
+
+  M09_DOLLAR_LIQUIDITY_EM_STRESS:
+    title: "美元流动性与新兴市场压力 Dollar liquidity and EM stress"
+    family: dollar_liquidity
+    causal_status: hypothesis
+    thesis: "全球美元融资条件而非单一国家利率决定 EM 的金融周期。美元升值叠加美元利率上行时，EM 外币负债成本上升、本币贬值、EM 债与股票风险溢价扩大；美元走弱时反向。美元的双重角色（避险与利差）使该机制在危机中可能非线性放大。"
+    mechanism_chain:
+      - "美元利率上行或全球风险厌恶上升"
+      - "美元融资成本与交叉货币基差扩大，美元升值"
+      - "EM 本币贬值、外币负债负担上升"
+      - "EM 央行被迫加息或干预，国内金融条件收紧"
+      - "EM 股票与信用债风险溢价扩大，资金外流"
+    triggers:
+      - series: "US_FX_DXY"
+        direction: up
+        note: "美元指数走强是 EM 金融条件收紧的核心信号"
+      - series: "US_POLICY_RATE"
+        direction: up
+        note: "美国政策利率上行通过利差与全球银行杠杆渠道传导"
+      - series: "POS_USD_LEV"
+        direction: up
+        note: "杠杆基金美元净多增加确认美元多头拥挤，但不构成独立驱动"
+      - series: "GX_FX_USDKRW"
+        direction: up
+        note: "韩元贬值是亚洲风险偏好的高频代理，属于传导结果而非原因"
+    affected_assets:
+      - id: "WORLD_EQ_EEM"
+        role: primary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "US_CR_EMB"
+        role: primary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "WORLD_EQ_VWO"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "GX_FX_USDBRL"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "GX_FX_USDKRW"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "CN_EQ_FXI"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+    evidence_tests:
+      - type: corr
+        a: "US_FX_DXY"
+        b: "WORLD_EQ_EEM"
+        window: 250
+        expected_sign: -1
+        min_abs: 0.15
+        note: "美元与 EM 股票负相关，检验全球金融周期；商品出口国分组可能反向"
+      - type: corr
+        a: "US_FX_DXY"
+        b: "US_CR_EMB"
+        window: 250
+        expected_sign: -1
+        min_abs: 0.15
+        note: "美元走强与 EM 美元债价格下跌同向，检验信用渠道"
+      - type: corr
+        a: "US_FX_DXY"
+        b: "GX_FX_USDKRW"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "美元与 EM 汇率同向是机械关系，只能作为风险传导的确认，不构成独立证据"
+      - type: conditional_return
+        condition_series: "US_FX_DXY"
+        operator: ">"
+        threshold: 105.0
+        lookback: 3
+        target: "WORLD_EQ_EEM"
+        horizon_days: 63
+        expected_sign: -1
+        note: "强美元区间（2015-2016、2022、2024-2025）的描述性条件收益；阈值先验设定，lookback=3 个交易日"
+    conditions:
+      - "美元是全球金融周期的共同因子"
+      - "EM 存在外币负债与经常账户赤字"
+      - "EM 央行不通过资本管制完全隔离外部冲击"
+      - "美国利率上行的驱动是增长而非避险"
+    falsifiers:
+      - "美元大幅升值期间 EM 股票与 EM 债跑赢发达市场"
+      - "EM 本币升值且 EM 信用利差收窄"
+      - "美元与 EM 资产的相关在多数滚动窗口接近零或符号相反"
+    required_data:
+      - "美元交叉货币基差与离岸美元融资利率 — 未接入"
+      - "EM 外币债务结构与到期分布（BIS/IIF）— 未接入"
+      - "EPFR EM 资金流 — 未接入"
+      - "主权 CDS 利差 — 未接入，EMB 仅为代理"
+    limitations: "EM 是异质集合，商品出口国与制造国对美元的敏感度相反，加总相关系数会掩盖分组差异。美元升值可能由美国增长强劲驱动，此时 EM 股票可以与美元同涨。2015-2026 样本包含 2020 美元荒与 2022 强美元周期，关系存在明显的状态依赖。"
+    references:
+      - title: "Rey, H. (2015). Dilemma not Trilemma: The Global Financial Cycle and Monetary Policy Independence. NBER Working Paper 21162."
+        url: "https://www.nber.org/papers/w21162"
+      - title: "Bank for International Settlements. Global liquidity indicators."
+        url: "https://www.bis.org/statistics/gli.htm"
+      - title: "Bruno, V. and Shin, H. S. (2015). Cross-border banking and global liquidity. Review of Economic Studies 82(2). BIS Working Paper 386."
+        url: "https://www.bis.org/publ/work386.htm"
+
+  M10_CREDIT_SPREADS_EQUITY_RISK:
+    title: "信用利差与股票风险溢价 Credit spreads versus equity risk premium"
+    family: credit_risk
+    causal_status: hypothesis
+    thesis: "信用利差与股票风险溢价是同一组违约与折现风险的两种价格。HY 利差走阔通常领先或同步于股票回撤，HY 相对国债跑输是金融条件收紧的早期信号；当股票上涨而信用利差走阔时，两个市场的风险定价出现分歧，通常不可持续。系统没有直接利差序列，只能用 HYG/LQD 总收益与价格代理，信号会混入利率久期效应。"
+    mechanism_chain:
+      - "增长或流动性预期恶化，违约概率上修"
+      - "HY 信用利差走阔，HYG 相对 LQD 跑输"
+      - "企业再融资成本上升，盈利与投资下修"
+      - "股票风险溢价上升，小盘与金融板块先跌"
+    triggers:
+      - series: "US_CR_HYG"
+        direction: down
+        note: "HYG 价格下跌可能来自利差走阔或国债收益率上行，需与 LQD 对照"
+      - series: "US_CR_JNK"
+        direction: down
+        note: "JNK 久期较短，对纯利率冲击的敏感度低于 HYG"
+      - series: "US_CR_LQD"
+        direction: down
+        note: "LQD 下跌用于区分利率驱动与信用驱动"
+      - series: "US_VOL_VIX"
+        direction: up
+        note: "波动上升与信用利差走阔通常同向，是金融条件的同步确认"
+    affected_assets:
+      - id: UK_EQ_FTSE
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "US_CR_HYG"
+        role: primary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "US_CR_JNK"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "US_EQ_SPY"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "US_EQ_IWM"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "US_SEC_XLF"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+    evidence_tests:
+      - type: corr
+        a: "US_CR_HYG"
+        b: "US_EQ_SPY"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "总收益同向，验证信用与股票的共同风险因子；不含利差方向"
+      - type: corr
+        a: "US_CR_HYG"
+        b: "US_EQ_IWM"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "小盘股对信用条件更敏感，检验风险传导的横截面差异"
+      - type: corr
+        a: "US_CR_HYG"
+        b: "US_CR_LQD"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "同为信用资产，共同因子强；该测试不能区分利差与无风险利率"
+      - type: conditional_return
+        condition_series: "US_CAPE"
+        operator: ">"
+        threshold: 30.0
+        lookback: 3
+        target: "US_EQ_SPY"
+        horizon_days: 252
+        expected_sign: -1
+        note: "高估值与信用条件组合的 ERP 压缩假说；252 日重叠窗口，独立观测很少，仅作描述性证据"
+    conditions:
+      - "信用利差变化由违约风险而非无风险利率驱动"
+      - "HY 发行人再融资需求高、浮息债占比可控"
+      - "股票与信用市场参与者对同一宏观冲击定价"
+    falsifiers:
+      - "HYG 跑输 LQD 而股票继续上涨超过一个季度"
+      - "信用利差走阔后股票未出现回撤，且盈利预期上修"
+      - "股票与信用总收益的相关在多数窗口为负"
+    required_data:
+      - "ICE BofA HY OAS（BAMLH0A0HYM2）与 IG OAS — 未接入，HYG/LQD 仅为价格代理"
+      - "HY 违约率与评级迁移 — 未接入"
+      - "股票隐含 ERP（Damodaran/Shiller）— CAPE 已接入，远期 ERP 未接入"
+      - "信用 ETF 资金流与一级市场发行 — 未接入"
+    limitations: "HYG 与 LQD 的价格同时受无风险利率与信用利差影响，无法分离；久期不同也造成相对价格噪声。信用市场流动性在压力期恶化，价格信号滞后于真实利差。用 CAPE 代理 ERP 忽略了利率与增长变化，条件收益的解释力有限。"
+    references:
+      - title: "Gilchrist, S. and Zakrajsek, E. (2012). Credit Spreads and Business Cycle Fluctuations. American Economic Review 102(4)."
+        url: "https://www.aeaweb.org/articles?id=10.1257/aer.102.4.1692"
+      - title: "Federal Reserve Bank of St. Louis. ICE BofA US High Yield Index Option-Adjusted Spread (BAMLH0A0HYM2), FRED."
+        url: "https://fred.stlouisfed.org/series/BAMLH0A0HYM2"
+      - title: "Damodaran, A. Implied Equity Risk Premiums."
+        url: "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/implpr.html"
+      - title: "Shiller, R. J. Online Data (CAPE)."
+        url: "https://shillerdata.com/"
+
+  M11_CURVE_BANK_PROFITABILITY:
+    title: "收益率曲线与银行盈利 Yield curve and bank profitability"
+    family: curve_banking
+    causal_status: established_mechanism
+    thesis: "银行净息差取决于资产端收益率与负债端成本的差，曲线形态是核心变量：陡峭化通常改善新发放贷款的息差，平坦或倒挂压缩息差并抑制信贷供给；但信用损失、存款竞争与监管资本会抵消。该机制在银行股定价上有较多证据，对信贷供给与实体经济的传导更弱、更慢。"
+    mechanism_chain:
+      - "政策利率与曲线形态变化"
+      - "银行资产重定价慢于负债（或相反），净息差变化"
+      - "银行盈利与资本充足率变化，信贷标准调整"
+      - "企业与居民信贷可得性变化，投资与消费受影响"
+      - "银行股相对表现与信用供给同步变化"
+    triggers:
+      - series: "UST:10Y"
+        direction: up
+        note: "长端上行在存款成本不变时改善资产端收益率，但需排除期限溢价冲击与信用损失"
+      - series: "UST:2Y"
+        direction: down
+        note: "短端下行降低负债成本，与长端共同构成陡峭化"
+      - series: "US_POLICY_RATE"
+        direction: down
+        note: "政策利率下调通过存款重定价渠道影响净息差，方向取决于存款 beta"
+      - series: "UST:3M"
+        direction: down
+        note: "短端资金成本下降改善负债端，与长端共同决定曲线斜率"
+    affected_assets:
+      - id: "US_SEC_XLF"
+        role: primary
+        expected_direction: up
+        horizon: "3-12m"
+      - id: "US_EQ_IWM"
+        role: secondary
+        expected_direction: up
+        horizon: "3-12m"
+      - id: "US_SEC_XLRE"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "US_CR_LQD"
+        role: transmission
+        expected_direction: up
+        horizon: "3-12m"
+    evidence_tests:
+      - type: corr
+        a: "US_SEC_XLF"
+        b: "UST:10Y"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "长端收益率与银行股同向，检验资产端重定价；未控制信用损失与期限溢价"
+      - type: corr
+        a: "US_SEC_XLF"
+        b: "US_EQ_SPY"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "银行 beta，非机制证据，仅作基准"
+      - type: conditional_return
+        condition_series: "UST:10Y"
+        operator: ">"
+        threshold: 4.25
+        lookback: 3
+        target: "US_SEC_XLF"
+        horizon_days: 63
+        expected_sign: 1
+        note: "高长端利率区间的描述性条件收益；水平不等于斜率，若信用损失主导符号可能反转"
+    conditions:
+      - "存款竞争温和，负债成本对政策利率的敏感度低于资产端"
+      - "信用损失可控，拨备不抵消息差改善"
+      - "曲线变化由货币政策而非期限溢价冲击驱动"
+      - "银行资本与监管约束不强制去杠杆"
+    falsifiers:
+      - "曲线陡峭化期间银行股跑输且净息差未改善"
+      - "倒挂持续但银行盈利与信贷供给未恶化"
+      - "银行股与长端收益率在多数滚动窗口负相关"
+    required_data:
+      - "2s10s、3m10y 斜率序列 — 曲线 id 存在但测试接口不支持派生利差，需在特征层构造"
+      - "银行净息差、拨备覆盖率、贷款增速 — 未接入"
+      - "高级信贷官调查（SLOOS）— 未接入"
+      - "存款 beta 与批发融资成本 — 未接入"
+    limitations: "曲线水平与斜率高度相关但不相同，用 10Y 水平代理斜率会混淆。银行股还受信用损失、监管与并购预期影响，息差只是其中一个渠道。信贷供给到实体经济的传导时滞长且受资本约束，2015-2026 的低利率与 2022 年后快速加息提供了两次不同的制度环境。"
+    references:
+      - title: "Borio, C., Gambacorta, L. and Hofmann, B. (2017). The influence of monetary policy on bank profitability. International Finance 20(1). BIS Working Paper 514."
+        url: "https://www.bis.org/publ/work514.htm"
+      - title: "Federal Reserve Bank of New York. The Yield Curve as a Leading Indicator (FAQ)."
+        url: "https://www.newyorkfed.org/research/capital_markets/ycfaq"
+      - title: "Federal Reserve Bank of St. Louis. 10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity (T10Y2Y), FRED."
+        url: "https://fred.stlouisfed.org/series/T10Y2Y"
+
+  M12_VIX_TERM_STRUCTURE:
+    title: "VIX 期限结构与波动状态 VIX term structure and volatility regime"
+    family: vol_risk
+    causal_status: hypothesis
+    thesis: "VIX 期限结构（VIX 相对 VIX3M）刻画波动冲击是暂时的还是持续的：近月高于远月（倒挂）通常对应压力状态、做市商空 gamma 与流动性恶化，风险资产短期继续承压、相关性上升；远月升水（contango）对应平静的 carry 环境。该机制描述状态，不预测具体点位。"
+    mechanism_chain:
+      - "冲击发生，近月隐含波动率跳升"
+      - "VIX 高于 VIX3M，期限结构倒挂"
+      - "做市商与波动率卖方对冲需求上升，流动性变薄"
+      - "风险资产相关性上升、成交放大，短期继续承压"
+      - "波动回落后期限结构恢复 contango，风险偏好修复"
+    triggers:
+      - series: "US_VOL_VIX"
+        direction: up
+        note: "VIX 跳升是波动冲击的直接信号，但水平本身不区分暂时与持续"
+      - series: "US_VOL_VIX3M"
+        direction: down
+        note: "远月下跌相对近月更快，才构成期限结构倒挂"
+      - series: "US_VOL_VVIX"
+        direction: up
+        note: "波动率的波动率上升表示对冲需求与不确定性加剧"
+      - series: "US_VOL_MOVE"
+        direction: up
+        note: "利率波动上行是跨资产波动共振的确认"
+    affected_assets:
+      - id: "US_EQ_SPY"
+        role: primary
+        expected_direction: down
+        horizon: "1w"
+      - id: "US_EQ_IWM"
+        role: secondary
+        expected_direction: down
+        horizon: "1w"
+      - id: "US_CR_HYG"
+        role: secondary
+        expected_direction: down
+        horizon: "1w"
+      - id: "WORLD_EQ_EEM"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "US_FI_TLT"
+        role: hedge
+        expected_direction: up
+        horizon: "1w"
+    evidence_tests:
+      - type: corr
+        a: "US_VOL_VIX"
+        b: "US_EQ_SPY"
+        window: 250
+        expected_sign: -1
+        min_abs: 0.15
+        note: "水平相关；VIX 与股票收益的负相关是机械的，不能单独证明期限结构机制"
+      - type: corr
+        a: "US_VOL_VIX"
+        b: "US_CR_HYG"
+        window: 250
+        expected_sign: -1
+        min_abs: 0.15
+        note: "波动与信用风险同向，检验跨资产压力传导"
+      - type: conditional_return
+        condition_series: "US_VOL_VIX"
+        operator: ">"
+        threshold: 25.0
+        lookback: 3
+        target: "US_EQ_SPY"
+        horizon_days: 21
+        expected_sign: -1
+        note: "高波动区间的 21 日条件收益；均值回归可能使符号反转，样本重叠，仅作描述"
+    conditions:
+      - "波动冲击来自供给（gamma 对冲）而非基本面缓慢恶化"
+      - "做市商库存与波动率卖方仓位可观测（当前不可得）"
+      - "流动性未完全冻结，价格仍可交易"
+    falsifiers:
+      - "VIX 倒挂期间股票继续上涨、相关性下降"
+      - "VIX 高企后 1 个月股票收益显著为正（均值回归主导）"
+      - "VIX 与信用利差符号相反"
+    required_data:
+      - "VIX/VIX3M 比值与期限结构斜率 — 两个 id 存在，但测试接口不支持派生比值"
+      - "VIX 期货持仓与做市商 gamma — 仅有 POS_VIX_LEV，缺期权端数据"
+      - "期权成交量、偏度与流动性指标 — SKEW 已接入，其余未接入"
+      - "日内流动性与买卖价差 — 未接入"
+    limitations: "VIX 是 30 天隐含波动率，不是可交易资产；用指数水平做条件变量会混入长期趋势。期限结构倒挂与股市下跌互为因果，识别困难。高波动样本集中在少数危机窗口，条件收益的独立观测很少。"
+    references:
+      - title: "Cboe Global Markets. Cboe Volatility Index (VIX) Methodology."
+        url: "https://cdn.cboe.com/resources/indices/Volatility_Index_Methodology_Cboe_Volatility_Index.pdf"
+      - title: "Johnson, T. L. (2017). Risk Premia and the VIX Term Structure. Journal of Financial and Quantitative Analysis 52(6)."
+        url: "https://doi.org/10.1017/S0022109017000825"
+
+  M13_POSITIONING_EXTREMES:
+    title: "CFTC 持仓极端与拥挤交易 CFTC positioning extremes"
+    family: positioning_flows
+    causal_status: hypothesis
+    thesis: "CFTC 持仓是滞后的、按周披露的仓位快照。净持仓处于历史极端时，拥挤交易更容易因边际买盘枯竭或止损而反转；但仓位可以长期维持极端，持仓数据本身不构成择时信号，只能作为风险与反身性证据。系统只有合约数量、缺少统一持仓量归一化，横截面比较需谨慎。"
+    mechanism_chain:
+      - "趋势与叙事吸引同向资金，净持仓走向极端"
+      - "边际买家减少，止损失控点集中"
+      - "小幅冲击触发减仓，价格与持仓同向反转"
+      - "波动上升，进一步的强制去杠杆放大反转"
+    triggers:
+      - series: "POS_GOLD_MM"
+        direction: up
+        note: "管理资金黄金净多达到历史高分位表示多头拥挤，需要持仓量归一化"
+      - series: "POS_COPPER_MM"
+        direction: up
+        note: "铜管理资金净多极端时，供给冲击或需求转弱都可能触发快速减仓"
+      - series: "POS_SP500_LEV"
+        direction: up
+        note: "杠杆基金股票净多极端表示系统性风险预算已充分使用"
+      - series: "POS_USD_LEV"
+        direction: up
+        note: "美元净多极端与 EM 压力通常同时出现，需与美元指数对照"
+    affected_assets:
+      - id: "CM_MET_GC"
+        role: primary
+        expected_direction: ambiguous
+        horizon: "1-3m"
+      - id: "CM_MET_HG"
+        role: secondary
+        expected_direction: ambiguous
+        horizon: "1-3m"
+      - id: "US_EQ_SPY"
+        role: secondary
+        expected_direction: ambiguous
+        horizon: "1w"
+      - id: "GX_FX_USDJPY"
+        role: secondary
+        expected_direction: ambiguous
+        horizon: "1-3m"
+      - id: "CM_ENE_CL"
+        role: secondary
+        expected_direction: ambiguous
+        horizon: "1-3m"
+    evidence_tests:
+      - type: corr
+        a: "POS_GOLD_MM"
+        b: "CM_MET_GC"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "持仓追随价格，验证顺势性；正相关不能证明拥挤反转"
+      - type: corr
+        a: "POS_COPPER_MM"
+        b: "CM_MET_HG"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "持仓与价格同向；反向因果（价格吸引持仓）是主要解释之一"
+      - type: corr
+        a: "POS_SP500_LEV"
+        b: "US_EQ_SPY"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "杠杆基金净持仓与股票同向；持仓是结果变量"
+    conditions:
+      - "持仓极端且价格已偏离基本面或均值"
+      - "杠杆资金占比高、止损与保证金约束紧"
+      - "市场流动性足以在冲击时放大去杠杆"
+    falsifiers:
+      - "持仓极端后价格继续沿原方向运行 3 个月以上"
+      - "持仓与价格的相关在多数窗口为负（反指）"
+      - "减仓期间价格未出现超额波动"
+    required_data:
+      - "持仓量（open interest）归一化后的 z-score — 配置注释提到 :oi 序列，但 id_reference 未暴露"
+      - "持仓分位数与 3 年滚动标准化 — 需特征层实现"
+      - "期权 gamma、保证金与杠杆数据 — 未接入"
+      - "CFTC 报告与价格的时间对齐（周五发布、周二数据）— 需发布滞后处理"
+    limitations: "持仓是周度、滞后三天的数据，且分类口径多次调整，历史可比性有限。净持仓水平随持仓量与价格规模漂移，不做归一化时阈值没有经济含义。拥挤度与反转的关系是非线性的，线性相关检验只能提供弱证据。"
+    references:
+      - title: "U.S. Commodity Futures Trading Commission. Commitments of Traders."
+        url: "https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm"
+      - title: "U.S. Commodity Futures Trading Commission. Historical Compressed Commitments of Traders Files."
+        url: "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalCompressed/index.htm"
+      - title: "Bessembinder, H. (1992). Systematic Risk, Hedging Pressure, and Risk Premiums in Futures Markets. Review of Financial Studies 5(4), 637-667."
+      - title: "de Roon, F. A., Nijman, T. E. and Veld, C. (2000). Hedging Pressure Effects in Futures Markets. Journal of Finance 55(3), 1437-1456."
+
+  M14_JAPAN_CARRY_UNWIND:
+    title: "日元套息交易与全球去杠杆 Japan carry trade and global deleveraging"
+    family: dollar_liquidity
+    causal_status: hypothesis
+    thesis: "日元套息交易以低波动、低 JGB 收益率为前提，借入日元配置高收益资产。BoJ 正常化、JGB 收益率上行或全球波动跳升会提高融资成本与保证金要求，触发套息平仓：日元急升、高 beta 风险资产与 EM carry 货币下跌，流动性冲击可能跨市场放大。"
+    mechanism_chain:
+      - "日美利差与低波动支持套息仓位累积"
+      - "BoJ 加息或缩减购债、或全球波动上升，融资成本与风险上升"
+      - "套息仓位平仓，日元升值"
+      - "高收益货币与高 beta 资产被抛售，波动率上升"
+      - "保证金与风险限额触发进一步去杠杆"
+    triggers:
+      - series: "JP_POLICY_RATE"
+        direction: up
+        note: "BoJ 政策利率上调提高日元融资成本，是套息平仓的政策触发"
+      - series: "JP_CPI"
+        direction: up
+        note: "通胀持续高于目标增加 BoJ 正常化压力，是套息平仓的宏观前提"
+      - series: "JGB:10Y"
+        direction: up
+        note: "JGB 长端上行（含 YCC 调整）压缩套息利差"
+      - series: "GX_FX_USDJPY"
+        direction: down
+        note: "日元升值是套息平仓的价格确认，急升通常伴随去杠杆"
+      - series: "US_VOL_VIX"
+        direction: up
+        note: "全球波动上升提高保证金与风险预算约束，触发被动减仓"
+    affected_assets:
+      - id: "GX_FX_USDJPY"
+        role: primary
+        expected_direction: down
+        horizon: "1w"
+      - id: "JP_EQ_N225"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "US_EQ_SPY"
+        role: secondary
+        expected_direction: down
+        horizon: "1w"
+      - id: "WORLD_EQ_EEM"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "GX_FX_USDMXN"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "CR_BTC"
+        role: secondary
+        expected_direction: down
+        horizon: "1w"
+    evidence_tests:
+      - type: corr
+        a: "GX_FX_USDJPY"
+        b: "US_EQ_SPY"
+        window: 250
+        expected_sign: 1
+        min_abs: 0.15
+        note: "风险偏好与美元兑日元同向，检验套息作为风险 beta"
+      - type: corr
+        a: "GX_FX_USDJPY"
+        b: "US_VOL_VIX"
+        window: 250
+        expected_sign: -1
+        min_abs: 0.15
+        note: "波动上升时日元升值，检验融资货币的避险属性"
+      - type: corr
+        a: "JP_POLICY_RATE"
+        b: "GX_FX_USDJPY"
+        window: 750
+        expected_sign: -1
+        min_abs: 0.15
+        note: "政策利率上行应通过融资成本推动日元升值；2022-2024 利差主导时期符号可能相反，这正是需要检验的假设"
+      - type: conditional_return
+        condition_series: "US_VOL_VIX"
+        operator: ">"
+        threshold: 25.0
+        lookback: 3
+        target: "GX_FX_USDJPY"
+        horizon_days: 21
+        expected_sign: -1
+        note: "高波动窗口的日元避险；样本集中在 2020、2022、2024-2025，独立事件少"
+    conditions:
+      - "日元是主要融资货币，套息仓位规模可观"
+      - "波动率低、保证金要求稳定"
+      - "BoJ 政策变化超出市场预期"
+      - "全球风险资产对日元融资依赖度高"
+    falsifiers:
+      - "BoJ 加息后日元继续贬值、风险资产上涨"
+      - "VIX 高企时美元兑日元继续上行"
+      - "套息平仓期间 EM carry 货币未受冲击"
+    required_data:
+      - "日元套息仓位估计（BIS 衍生品统计、FX swaps）— 未接入"
+      - "日本投资者对外证券投资（MOF 周度国际收支）— 未接入"
+      - "JGB 收益率曲线 — 已接入 JGB 曲线，但政策利率为月度"
+      - "跨货币基差与日元融资溢价 — 未接入"
+    limitations: "套息仓位规模不可直接观测，只能用代理变量推断；利差与风险偏好同时影响日元，符号会随主导因素切换。2024 年 8 月平仓是单一事件，事件研究样本极小。BoJ 政策与美联储政策的交互使月度政策利率的线性检验解释力有限。"
+    references:
+      - title: "Brunnermeier, M. K., Nagel, S. and Pedersen, L. H. (2008). Carry Trades and Currency Crashes. NBER Macroeconomics Annual 2008. NBER Working Paper 14473."
+        url: "https://www.nber.org/papers/w14473"
+      - title: "Bank for International Settlements (2024). The market turbulence and carry trade unwind of August 2024. BIS Bulletin 90."
+        url: "https://www.bis.org/publications/bulletin-90-market-turbulence-and-carry-trade-unwind-august-2024"
+      - title: "Bank for International Settlements (2024). Carry off, carry on. BIS Quarterly Review, September 2024."
+        url: "https://www.bis.org/publications/qr-202409/carry-off-carry-on"
+
+  M15_US_LABOR_POLICY_REPRICING:
+    title: "美国劳动力数据与政策重定价 US labor data and policy repricing"
+    family: policy_event
+    causal_status: hypothesis
+    thesis: "美国劳动力数据是政策路径重定价的主要触发点：失业率上行或新增就业下修，会压低短端收益率与美元、抬升黄金，并支持利率敏感型股票；但若失业上行被解读为衰退，股票可能同时下跌。该机制的核心是政策反应函数，而不是就业与资产价格的直接关系。"
+    mechanism_chain:
+      - "劳动力市场降温（失业率上行、新增就业下修）"
+      - "市场下调政策利率路径，短端收益率下行"
+      - "美元走弱、黄金上涨，金融条件边际放松"
+      - "利率敏感型资产（小盘、地产、长久期债券）受益"
+      - "若衰退概率上升，股票风险溢价扩大，权益转为下跌"
+    triggers:
+      - series: "US_UNRATE"
+        direction: up
+        note: "失业率上行是劳动力市场降温的最直接月度信号"
+      - series: "US_PAYROLLS"
+        direction: down
+        note: "新增就业下修改变市场对政策路径的定价"
+      - series: "US_CPI"
+        direction: down
+        note: "通胀降温为宽松打开空间，与就业数据共同决定政策反应"
+      - series: "US_POLICY_RATE"
+        direction: down
+        note: "政策利率下调是重定价的结果，确认机制已进入价格"
+    affected_assets:
+      - id: "US_FI_SHY"
+        role: primary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "US_FI_TLT"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "US_FX_DXY"
+        role: secondary
+        expected_direction: down
+        horizon: "1-3m"
+      - id: "CM_MET_GC"
+        role: secondary
+        expected_direction: up
+        horizon: "1-3m"
+      - id: "US_EQ_IWM"
+        role: secondary
+        expected_direction: ambiguous
+        horizon: "3-12m"
+    evidence_tests:
+      - type: corr
+        a: "US_UNRATE"
+        b: "UST:2Y"
+        window: 750
+        expected_sign: -1
+        min_abs: 0.15
+        note: "月度对齐，失业率与 2Y 收益率负相关；共同受周期驱动，非因果"
+      - type: corr
+        a: "US_UNRATE"
+        b: "US_FI_SHY"
+        window: 750
+        expected_sign: -1
+        min_abs: 0.15
+        note: "失业率上升对应短端债券价格上涨，检验政策重定价渠道"
+      - type: conditional_return
+        condition_series: "US_UNRATE"
+        operator: ">"
+        threshold: 4.5
+        lookback: 3
+        target: "US_FI_SHY"
+        horizon_days: 63
+        expected_sign: 1
+        note: "阈值覆盖 2015-16 与 2020-21 两个窗口，独立事件少；描述性统计"
+      - type: conditional_return
+        condition_series: "US_PAYROLLS"
+        operator: "<"
+        threshold: 100.0
+        lookback: 3
+        target: "US_FI_SHY"
+        horizon_days: 63
+        expected_sign: 1
+        note: "新增就业低于 10 万的月份；数据会被修订，应使用实时 vintage 而非修订后数据"
+    conditions:
+      - "劳动力数据是政策路径的主要输入"
+      - "通胀不构成约束，美联储可以对就业降温做出反应"
+      - "市场未提前完全定价，数据存在意外成分"
+      - "衰退风险可控，股票不进入盈利下修"
+    falsifiers:
+      - "失业率上行而短端收益率上行（通胀或财政主导）"
+      - "新增就业下修但美元走强、黄金下跌"
+      - "劳动力降温后小盘股持续跑输"
+    required_data:
+      - "实时 vintage 就业数据（ALFRED）— 未接入，修订会造成前视偏差"
+      - "联邦基金期货隐含政策路径 — 未接入"
+      - "失业率与新增就业的意外成分（一致预期调查）— 未接入"
+      - "BLS 发布滞后 — 已在回放层按保守滞后处理，需核对"
+    limitations: "就业数据月度、修订频繁，且市场反应集中在发布日，月度条件收益会稀释事件效应。政策反应函数随通胀与金融稳定目标变化，2015-2026 经历零利率、平均通胀目标制与快速加息。失业率阈值触发的事件高度集中在危机期，样本不足以支持强结论。"
+    references:
+      - title: "Bernanke, B. S. and Kuttner, K. N. (2005). What Explains the Stock Market's Reaction to Federal Reserve Policy? Journal of Finance 60(3). NBER Working Paper 10402."
+        url: "https://www.nber.org/papers/w10402"
+      - title: "Nakamura, E. and Steinsson, J. (2018). High-Frequency Identification of Monetary Non-Neutrality: The Information Effect. Quarterly Journal of Economics 133(3). NBER Working Paper 19260."
+        url: "https://www.nber.org/papers/w19260"
+      - title: "U.S. Bureau of Labor Statistics. Employment Situation (news release)."
+

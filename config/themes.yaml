@@ -1,0 +1,102 @@
+# Exposure themes.
+#
+# Instruments in the same theme express the *same underlying phenomenon* through
+# different wrappers (futures, ETF, index). The opportunity layer de-duplicates
+# within a theme so that "gold fell" does not create five separate candidates
+# (GC, GLD, GDX ...) and crowd out distinct ideas.
+#
+# Instruments not listed here get their own singleton theme (= instrument id).
+
+version: "1.0"
+
+themes:
+  gold:            [CM_MET_GC, CM_ETF_GLD]
+  gold_miners:     [CM_ETF_GDX]
+  silver:          [CM_MET_SI, CM_ETF_SLV]
+  platinum:        [CM_MET_PL]
+  copper:          [CM_MET_HG, CM_ETF_CPER]
+  aluminium:       [CM_MET_ALI]
+  crude_oil:       [CM_ENE_CL, CM_ENE_BZ, CM_ETF_USO]
+  refined_products: [CM_ENE_HO, CM_ENE_RB]
+  natural_gas:     [CM_ENE_NG, CM_ETF_UNG]
+  grains:          [CM_AGR_ZS, CM_AGR_ZC, CM_AGR_ZW]
+  softs:           [CM_AGR_KC, CM_AGR_SB, CM_AGR_CT]
+  livestock:       [CM_AGR_LE]
+  broad_commodity: [CM_ETF_DBC]
+  uranium:         [CM_ETF_URA]
+
+  us_equity_broad: [US_EQ_SPY, US_EQ_DIA, US_EQ_RSP, US_FAC_USMV]
+  us_equity_growth: [US_EQ_QQQ]
+  us_equity_small: [US_EQ_IWM, US_EQ_MDY]
+  us_momentum_factor: [US_FAC_MTUM]
+  us_value_factor: [US_FAC_VLUE]
+  us_sector_tech: [US_SEC_XLK]
+  us_sector_fin:  [US_SEC_XLF]
+  us_sector_health: [US_SEC_XLV]
+  us_sector_energy: [US_SEC_XLE]
+  us_sector_ind:  [US_SEC_XLI]
+  us_sector_disc: [US_SEC_XLY]
+  us_sector_staples: [US_SEC_XLP]
+  us_sector_util: [US_SEC_XLU]
+  us_sector_materials: [US_SEC_XLB]
+  us_sector_reit: [US_SEC_XLRE]
+  us_sector_comms: [US_SEC_XLC]
+
+  us_rates_long:  [US_FI_TLT, US_FI_IEF]
+  us_rates_short: [US_FI_SHY, US_FI_BIL]
+  us_inflation_linked: [US_FI_TIP]
+  us_mbs:         [US_FI_MBB]
+  us_credit_hy:   [US_CR_HYG, US_CR_JNK]
+  us_credit_ig:   [US_CR_LQD]
+  em_credit:      [US_CR_EMB]
+
+  usd:            [US_FX_DXY, US_FX_UUP]
+  eurusd:         [GX_FX_EURUSD]
+  usdjpy:         [GX_FX_USDJPY]
+  gbpusd:         [GX_FX_GBPUSD]
+  usdcny:         [CN_FX_USDCNY]
+  audusd:         [GX_FX_AUDUSD]
+  usdkrw:         [GX_FX_USDKRW]
+  usdbrl:         [GX_FX_USDBRL]
+  usdmxn:         [GX_FX_USDMXN]
+  usdchf:         [GX_FX_USDCHF]
+
+  china_broad:    [CN_EQ_CSI300, CN_EQ_SSE, CN_EQ_ETF300, CN_EQ_FXI, CN_EQ_SZSE]
+  china_small:    [CN_EQ_CSI500, CN_EQ_ETF500, CN_EQ_CSI1000]
+  china_growth:   [CN_EQ_CHINEXT, CN_EQ_STAR50]
+  china_semis:    [CN_SEC_SEMI]
+  china_ev:       [CN_SEC_EV, CN_SEC_NEWEN]
+  china_solar:    [CN_SEC_SOLAR]
+  china_health:   [CN_SEC_HEALTH, CN_SEC_PHARMA]
+  china_liquor:   [CN_SEC_LIQ]
+  china_banks:    [CN_SEC_BANK]
+  china_brokers:  [CN_SEC_SEC]
+  china_defense:  [CN_SEC_DEF]
+  china_dividend: [CN_SEC_DIV]
+  hk_equity:      [HK_EQ_HSI, HK_EQ_HSCEI, HK_EQ_2800]
+  hk_tech:        [HK_EQ_3033, HK_EQ_3067, CN_EQ_KWEB]
+
+  japan_equity:   [JP_EQ_N225, JP_EQ_TOPIX, JP_EQ_EWJ]
+  euro_equity:    [EA_EQ_SX5E, EA_EQ_VGK]
+  germany_equity: [DE_EQ_DAX, DE_EQ_EWG]
+  france_equity:  [FR_EQ_CAC]
+  italy_equity:   [IT_EQ_FTSEMIB]
+  spain_equity:   [ES_EQ_IBEX]
+  uk_equity:      [UK_EQ_FTSE, UK_EQ_EWU]
+  swiss_equity:   [CH_EQ_SMI]
+
+  korea_equity:   [KR_EQ_KOSPI]
+  taiwan_equity:  [TW_EQ_TAIEX]
+  india_equity:   [IN_EQ_SENSEX, IN_EQ_INDA]
+  brazil_equity:  [BR_EQ_EWZ]
+  canada_equity:  [CA_EQ_TSX]
+  australia_equity: [AU_EQ_ASX200]
+  mexico_equity:  [MX_EQ_IPC]
+  em_equity_broad: [WORLD_EQ_EEM, WORLD_EQ_VWO]
+  dm_ex_us_equity: [WORLD_EQ_EFA]
+
+  crypto_btc:     [CR_BTC]
+  crypto_eth:     [CR_ETH]
+  crypto_sol:     [CR_SOL]
+
+  volatility:     [US_VOL_VIX, US_VOL_VIX3M, US_VOL_VVIX, US_VOL_MOVE, US_VOL_SKEW]

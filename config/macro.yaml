@@ -1,0 +1,218 @@
+# Macro / statistical series.
+#
+# Values are stored exactly as published (no transforms applied at ingest).
+# ``transform`` is applied at analysis time so that the raw observation remains
+# auditable:
+#   level        use as published
+#   yoy          year-over-year % change (transform_lags=12 monthly, 4 quarterly)
+#   diff         period-over-period change in the published unit
+#   pct          period-over-period % change
+#
+# Unit conventions: index series are index points; rate series are percent;
+# counts are thousands (BLS convention); credit is USD millions (BIS convention).
+#
+# `series` encoding depends on provider:
+#   bls        BLS series id
+#   bis        "<flow>/<key>" e.g. "WS_CBPOL/M.US"
+#   eurostat   "<dataset>?<query string>"
+#   shiller    "CAPE" | "PE10"
+#
+# Publication lags are recorded in docs/DATA_SOURCES.md. Nothing here is used
+# before its publication date in the historical replay (point-in-time logic in
+# goe/validation.py applies a conservative release lag).
+
+series:
+
+  # ------------------------------------------------------------------- United States
+  US_CPI:
+    name: US CPI-U all items (index 1982-84=100, NSA)
+    provider: bls
+    series: CUUR0000SA0
+    unit: index
+    region: US
+    frequency: monthly
+    transform: yoy
+    transform_lags: 12
+    tier: official
+    importance: 0.95
+    notes: Headline CPI. BLS publishes mid-month following the reference month.
+
+  US_CORE_CPI:
+    name: US CPI-U all items less food and energy
+    provider: bls
+    series: CUUR0000SA0L1E
+    unit: index
+    region: US
+    frequency: monthly
+    transform: yoy
+    transform_lags: 12
+    tier: official
+    importance: 0.9
+
+  US_UNRATE:
+    name: US unemployment rate (SA)
+    provider: bls
+    series: LNS14000000
+    unit: percent
+    region: US
+    frequency: monthly
+    transform: level
+    tier: official
+    importance: 0.8
+
+  US_PAYROLLS:
+    name: US total nonfarm payrolls (SA, thousands)
+    provider: bls
+    series: CES0000000001
+    unit: thousands
+    region: US
+    frequency: monthly
+    transform: diff
+    tier: official
+    importance: 0.7
+    notes: Monthly change = diff of the level series.
+
+  US_POLICY_RATE:
+    name: US policy rate (Fed funds target mid-point)
+    provider: bis
+    series: WS_CBPOL/M.US
+    unit: percent
+    region: US
+    frequency: monthly
+    transform: level
+    tier: official
+    importance: 0.9
+
+  US_CREDIT:
+    name: US credit to private non-financial sector (all sectors, market value, USD bn)
+    provider: bis
+    series: WS_TC/Q.US.P.A.M
+    unit: USD_bn
+    region: US
+    frequency: quarterly
+    transform: yoy
+    transform_lags: 4
+    tier: official
+    importance: 0.6
+    notes: BIS total credit statistics; quarterly, ~2 quarter publication lag.
+
+  US_CAPE:
+    name: Shiller CAPE (cyclically adjusted P/E, S&P 500)
+    provider: shiller
+    series: CAPE
+    unit: ratio
+    region: US
+    frequency: monthly
+    transform: level
+    tier: official
+    importance: 0.7
+    notes: Academic series; last months are partly estimated by the author.
+
+  # --------------------------------------------------------------------- Euro area
+  EA_HICP:
+    name: Euro area HICP annual rate of change
+    provider: eurostat
+    series: "prc_hicp_manr?geo=EA&coicop=CP00&unit=RCH_A"
+    unit: percent
+    region: EA
+    frequency: monthly
+    transform: level
+    tier: official
+    importance: 0.85
+    notes: Already year-over-year; no transform applied.
+
+  EA_POLICY_RATE:
+    name: ECB deposit facility rate
+    provider: bis
+    series: WS_CBPOL/M.XM
+    unit: percent
+    region: EA
+    frequency: monthly
+    transform: level
+    tier: official
+    importance: 0.85
+
+  # -------------------------------------------------------------------------- Japan
+  JP_POLICY_RATE:
+    name: Bank of Japan policy rate
+    provider: bis
+    series: WS_CBPOL/M.JP
+    unit: percent
+    region: JP
+    frequency: monthly
+    transform: level
+    tier: official
+    importance: 0.8
+
+  JP_CPI:
+    name: Japan CPI annual rate of change (BIS long CPI, % yoy)
+    provider: bis
+    series: WS_LONG_CPI/M.JP
+    unit: percent
+    region: JP
+    frequency: monthly
+    transform: level
+    tier: official
+    importance: 0.7
+    notes: BIS long CPI series for Japan is published as percent change (unit 771).
+
+  # -------------------------------------------------------------------------- China
+  CN_POLICY_RATE:
+    name: China 1-year Loan Prime Rate
+    provider: bis
+    series: WS_CBPOL/M.CN
+    unit: percent
+    region: CN
+    frequency: monthly
+    transform: level
+    tier: official
+    importance: 0.85
+
+  CN_CPI:
+    name: China CPI (BIS long CPI, index 2015=100)
+    provider: bis
+    series: WS_LONG_CPI/M.CN
+    unit: index
+    region: CN
+    frequency: monthly
+    transform: yoy
+    transform_lags: 12
+    tier: official
+    importance: 0.75
+
+  CN_CREDIT:
+    name: China credit to private non-financial sector (all sectors, market value, CNY bn)
+    provider: bis
+    series: WS_TC/Q.CN.P.A.M
+    unit: CNY_bn
+    region: CN
+    frequency: quarterly
+    transform: yoy
+    transform_lags: 4
+    tier: official
+    importance: 0.7
+    notes: Proxy for China credit impulse at quarterly frequency.
+
+  # --------------------------------------------------------------------- United Kingdom
+  UK_POLICY_RATE:
+    name: Bank of England Bank Rate
+    provider: bis
+    series: WS_CBPOL/M.GB
+    unit: percent
+    region: UK
+    frequency: monthly
+    transform: level
+    tier: official
+    importance: 0.7
+
+  UK_CPI:
+    name: UK CPI annual rate of change (BIS long CPI, % yoy)
+    provider: bis
+    series: WS_LONG_CPI/M.GB
+    unit: percent
+    region: UK
+    frequency: monthly
+    transform: level
+    tier: official
+    importance: 0.65
+    notes: BIS long CPI series for the UK is published as percent change (unit 771).

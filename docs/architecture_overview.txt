@@ -1,0 +1,21 @@
+Global Market Data (prices / curves / macro / positioning / events)
+        |
+        v  goe ingest  (10 providers, provenance per row, retries, rate limits)
+   SQLite: prices, indicators, runs, quality_issues
+        |
+        v  goe scan
+  Feature layer (point-in-time, 7.5y window)
+        |
+        +--> Anomaly detectors (13, robust z / trailing percentile)
+        |
+        +--> Transmission evaluator (15 mechanisms, corr / lead-lag / conditional returns)
+        |
+        v
+  Opportunity pipeline (5 archetypes -> score -> theme dedupe -> lifecycle)
+        |
+        +--> reports/report_<date>.md
+        +--> exports/pipeline_<date>.json, research_tasks/RT-*.json
+        +--> dashboard (read-only)
+        |
+        v  goe handoff (adapter)
+  investment-agent: ia_cli.py research-run --question "..."

@@ -1,0 +1,178 @@
+# Data source registry.
+#
+# Every stored observation carries source_id + fetched_at. Source reliability is
+# documented here, not inferred. Tiers:
+#   official   - primary statistical / government / central-bank publication
+#   exchange   - exchange or index-provider publication
+#   aggregator - commercial aggregator redistributing official or vendor data
+#                (Yahoo Finance). Usable for liquid market prices; documented as
+#                a redistribution layer, not as a primary authoritative source.
+#   proxy      - derived instrument used when the direct series is unavailable
+#                (e.g. HYG/LQD for credit spreads). Always flagged as a proxy.
+#
+# latency:
+#   realtime_delayed - intraday/delayed quotes (Yahoo)
+#   eod              - end-of-day official close
+#   monthly / quarterly - statistical releases with publication lag
+#
+# known_gaps: explicit statement of what this source cannot provide, so that no
+# downstream component silently assumes coverage it does not have.
+
+sources:
+
+  yahoo:
+    name: Yahoo Finance public chart API
+    kind: price
+    tier: aggregator
+    latency: realtime_delayed
+    license_note: >-
+      Public endpoint used for research/education. Prices are redistribution of
+      exchange data; not licensed for redistribution or commercial use.
+      Do not use for trading decisions without independent verification.
+    covers: [equity_index, equity_etf, sector_equity, fixed_income, credit, fx, commodity, crypto, volatility]
+    known_gaps:
+      - Futures are front-month continuous contracts; roll effects are not removed.
+      - Some exchanges' adjusted close is unavailable; raw close is stored instead.
+      - Rate limits are enforced by the provider; ingestion throttles and caches.
+    endpoint: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+
+  coingecko:
+    name: CoinGecko public API
+    kind: price
+    tier: aggregator
+    latency: realtime_delayed
+    license_note: Free public API tier, rate limited.
+    covers: [crypto]
+    known_gaps: [Global market cap and dominance only, no per-exchange funding data]
+
+  treasury_us:
+    name: US Department of the Treasury - Daily Treasury Par Yield Curve
+    kind: indicator
+    tier: official
+    latency: eod
+    license_note: US Government public domain.
+    covers: [yield_curve]
+    known_gaps:
+      - Par yields, not zero-coupon; maturities below 1Y from bill auction data.
+      - Breakeven inflation is NOT published here (see limitations: TIPS ETF proxy).
+    endpoint: https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/{year}/all
+
+  mof_japan:
+    name: Japan Ministry of Finance - JGB interest rates
+    kind: indicator
+    tier: official
+    latency: eod
+    license_note: Japanese Government public data.
+    covers: [yield_curve]
+    known_gaps: [Publishes business-day curve, 1Y-40Y, no intraday]
+    endpoint: https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv
+
+  ecb:
+    name: European Central Bank Data Portal (SDMX)
+    kind: indicator
+    tier: official
+    latency: eod
+    license_note: ECB public data, attribution required.
+    covers: [yield_curve, policy_rate]
+    known_gaps:
+      - Euro area yield curve is AAA-rated central government bonds (not a single issuer).
+      - No country-level BTP/Bund spread from this dataset; use ECB spread series if available.
+
+  bls:
+    name: US Bureau of Labor Statistics public API v1
+    kind: indicator
+    tier: official
+    latency: monthly
+    license_note: US Government public domain.
+    covers: [cpi, core_cpi, unemployment, payrolls]
+    known_gaps: [v1 API allows 25 queries/day per IP without a key; cached aggressively]
+
+  bis:
+    name: Bank for International Settlements statistics API
+    kind: indicator
+    tier: official
+    latency: monthly/quarterly
+    license_note: BIS public statistics, attribution required.
+    covers: [policy_rate, long_cpi, credit_gap, property_prices]
+    known_gaps: [Release lag 1-2 months; credit gap is quarterly and revised]
+
+  eurostat:
+    name: Eurostat dissemination API
+    kind: indicator
+    tier: official
+    latency: monthly
+    license_note: Eurostat public data, attribution required.
+    covers: [hicp, unemployment, industrial_production]
+    known_gaps: [Euro area aggregates only where geo=EA]
+
+  cftc:
+    name: CFTC Commitments of Traders (public historical files)
+    kind: indicator
+    tier: official
+    latency: weekly
+    license_note: US Government public domain.
+    covers: [positioning]
+    known_gaps:
+      - Weekly, as of Tuesday close, published Friday.
+      - Legacy/ disaggregated report categories are not directly comparable.
+    endpoint: https://www.cftc.gov/files/dea/history/fut_fin_txt_{year}.zip
+
+  cboe:
+    name: CBOE index history files
+    kind: indicator
+    tier: exchange
+    latency: eod
+    license_note: CBOE public historical CSV; index values are CBOE property.
+    covers: [volatility]
+    known_gaps: [VIX history only; term structure beyond 3M needs paid data]
+
+  akshare_cn_index:
+    name: China A-share index daily history via akshare (Sina endpoint)
+    kind: price
+    tier: aggregator
+    latency: eod
+    license_note: >-
+      Index levels redistributed by akshare from Sina. Attribution: SSE/SZSE and
+      CSI index company. Used because Yahoo's mainland index history has been
+      incomplete/rate-limited in this environment.
+    covers: [equity_index]
+    known_gaps:
+      - Index level only (no dividends/adjustment).
+      - Sina endpoint can be blocked from some networks; failures are per-symbol.
+    endpoint: akshare.stock_zh_index_daily
+
+  akshare_cn_bond:
+    name: China government bond yields via akshare (sourced from ChinaBond/东财)
+    kind: indicator
+    tier: aggregator
+    latency: eod
+    license_note: >-
+      Redistribution of ChinaBond yield curve through an open-source library.
+      Cross-checked against the US Treasury CSV (the same call also returns US
+      yields) as an internal consistency control.
+    covers: [yield_curve, cn_us_spread]
+    known_gaps:
+      - Eastmoney/Jin10 endpoints are frequently blocked from some networks.
+      - No China breakeven inflation.
+    endpoint: akshare.bond_zh_us_rate
+
+  shiller:
+    name: Robert Shiller - Online Data (Yale)
+    kind: indicator
+    tier: official
+    latency: monthly
+    license_note: Academic public dataset, cite Shiller (2000, 2015).
+    covers: [valuation]
+    known_gaps:
+      - Monthly only, and the last months are partly estimated by the author.
+      - S&P 500 aggregate only; no sector-level CAPE.
+    endpoint: http://www.econ.yale.edu/~shiller/data/ie_data.xls
+
+  sp500_pe:
+    name: S&P 500 trailing P/E from ETF metadata aggregator
+    kind: indicator
+    tier: proxy
+    latency: eod
+    license_note: Derived from Yahoo ETF metadata; approximate.
+    covers: [valuation]
+    known_gaps: [Not an official index P/E; use as cross-check only]

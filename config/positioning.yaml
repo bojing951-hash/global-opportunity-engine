@@ -1,0 +1,144 @@
+# CFTC Commitments of Traders positioning series.
+#
+# Report layout facts verified against the 2026 public files:
+#   fin  (Traders in Financial Futures / TFF): columns Dealer_*, Asset_Mgr_*,
+#        Lev_Money_*  -> metric net_asset_manager | net_lev_money
+#   disagg (Disaggregated futures only): columns Prod_Merc_*, Swap_*, M_Money_*
+#        -> metric net_managed_money (M_Money long - short)
+#
+# Net position = long - short, in contracts. Open interest is stored separately
+# by the provider (series id suffix ":oi") so positioning can be normalised.
+# Reports are as of Tuesday close, published Friday ~15:30 ET: the validation
+# layer must respect that lag.
+#
+# Market names are exact strings from the CFTC files (verified 2026-11-13).
+
+series:
+
+  POS_SP500_LEV:
+    name: E-mini S&P 500 leveraged money net position
+    report: fin
+    market: E-MINI S&P 500 - CHICAGO MERCANTILE EXCHANGE
+    metric: net_lev_money
+    maps_to: US_EQ_SPY
+    importance: 0.6
+
+  POS_SP500_AM:
+    name: E-mini S&P 500 asset manager net position
+    report: fin
+    market: E-MINI S&P 500 - CHICAGO MERCANTILE EXCHANGE
+    metric: net_asset_manager
+    maps_to: US_EQ_SPY
+    importance: 0.6
+
+  POS_UST10Y_LEV:
+    name: UST 10Y note leveraged money net position
+    report: fin
+    market: UST 10Y NOTE - CHICAGO BOARD OF TRADE
+    metric: net_lev_money
+    maps_to: US_FI_IEF
+    importance: 0.6
+
+  POS_UST10Y_AM:
+    name: UST 10Y note asset manager net position
+    report: fin
+    market: UST 10Y NOTE - CHICAGO BOARD OF TRADE
+    metric: net_asset_manager
+    maps_to: US_FI_IEF
+    importance: 0.55
+
+  POS_USD_LEV:
+    name: USD index leveraged money net position
+    report: fin
+    market: USD INDEX - ICE FUTURES U.S.
+    metric: net_lev_money
+    maps_to: US_FX_DXY
+    importance: 0.6
+
+  POS_EUR_LEV:
+    name: Euro FX leveraged money net position
+    report: fin
+    market: EURO FX - CHICAGO MERCANTILE EXCHANGE
+    metric: net_lev_money
+    maps_to: GX_FX_EURUSD
+    importance: 0.5
+
+  POS_JPY_LEV:
+    name: Japanese yen leveraged money net position
+    report: fin
+    market: JAPANESE YEN - CHICAGO MERCANTILE EXCHANGE
+    metric: net_lev_money
+    maps_to: GX_FX_USDJPY
+    importance: 0.5
+
+  POS_VIX_LEV:
+    name: VIX futures leveraged money net position
+    report: fin
+    market: VIX FUTURES - CBOE FUTURES EXCHANGE
+    metric: net_lev_money
+    maps_to: US_VOL_VIX
+    importance: 0.45
+
+  POS_GOLD_MM:
+    name: Gold managed money net position
+    report: disagg
+    market: GOLD - COMMODITY EXCHANGE INC.
+    metric: net_managed_money
+    maps_to: CM_MET_GC
+    importance: 0.7
+
+  POS_SILVER_MM:
+    name: Silver managed money net position
+    report: disagg
+    market: SILVER - COMMODITY EXCHANGE INC.
+    metric: net_managed_money
+    maps_to: CM_MET_SI
+    importance: 0.4
+
+  POS_COPPER_MM:
+    name: Copper managed money net position
+    report: disagg
+    market: "COPPER- #1 - COMMODITY EXCHANGE INC."
+    metric: net_managed_money
+    maps_to: CM_MET_HG
+    importance: 0.45
+
+  POS_WTI_MM:
+    name: WTI crude managed money net position
+    report: disagg
+    market: WTI-PHYSICAL - NEW YORK MERCANTILE EXCHANGE
+    metric: net_managed_money
+    maps_to: CM_ENE_CL
+    importance: 0.6
+
+  POS_NATGAS_MM:
+    name: Henry Hub natural gas managed money net position
+    report: disagg
+    market: NAT GAS NYME - NEW YORK MERCANTILE EXCHANGE
+    metric: net_managed_money
+    maps_to: CM_ENE_NG
+    importance: 0.4
+
+  POS_CORN_MM:
+    name: Corn managed money net position
+    report: disagg
+    market: CORN - CHICAGO BOARD OF TRADE
+    metric: net_managed_money
+    maps_to: CM_AGR_ZC
+    importance: 0.35
+
+  POS_SOY_MM:
+    name: Soybeans managed money net position
+    report: disagg
+    market: SOYBEANS - CHICAGO BOARD OF TRADE
+    metric: net_managed_money
+    maps_to: CM_AGR_ZS
+    importance: 0.35
+
+  POS_WHEAT_MM:
+    name: SRW wheat managed money net position
+    report: disagg
+    market: WHEAT-SRW - CHICAGO BOARD OF TRADE
+    metric: net_managed_money
+    maps_to: CM_AGR_ZW
+    importance: 0.3

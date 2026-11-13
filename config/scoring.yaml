@@ -1,0 +1,78 @@
+# Opportunity scoring.
+#
+# The score ranks *research value*, not expected return. It answers: "which of
+# today's anomalies most deserves scarce deep-research capacity?" Nothing here
+# is calibrated on forward returns (that would turn the engine into a
+# backtested signal service, which it explicitly is not).
+#
+# Weights are justified below. They sum to 1.0. Every component is normalised
+# to [0,1] before weighting, so the total is interpretable as a weighted mean.
+# A hard gate sets status to excluded when the data cannot support a judgement.
+
+version: "1.0"
+
+weights:
+  anomaly_strength: 0.22      # how unusual is the observation itself
+  economic_impact: 0.18       # global importance x transmission breadth
+  expectation_gap: 0.20       # valuation / positioning / consensus deviation
+  repricing_potential: 0.12   # room to mean-revert or reprice, vol-adjusted
+  catalyst: 0.10              # scheduled events that can force a repricing
+  timing_window: 0.06         # whether the horizon fits the anomaly's decay
+  risk_liquidity: 0.06        # can the asset actually be researched/traded
+  evidence_quality: 0.06      # source tier, independent evidence, mechanism support
+
+rationale:
+  anomaly_strength: >-
+    A candidate must start from something genuinely unusual; without this the
+    pipeline devolves into daily rankings of the biggest movers.
+  economic_impact: >-
+    Global importance (market size/turnover) and the number of transmission
+    links the mechanism touches. Large, connected markets matter more.
+  expectation_gap: >-
+    The core of the user's thesis: opportunities arise where price and
+    fundamental/positioning/valuation evidence diverge. Weighted second-highest
+    because it is the most research-productive dimension, but cannot stand alone.
+  repricing_potential: >-
+    Distance from historical norms, scaled by volatility, is a proxy for how
+    much re-rating space exists. Deliberately lower weight: large gaps can
+    persist for structural reasons.
+  catalyst: >-
+    A thesis without a trigger is a permanent "watch". Weighted lower because
+    catalysts are often unobservable in advance and are not required.
+  timing_window: >-
+    Ensures the stated horizon matches the anomaly's half-life (a 1-day shock
+    does not justify a 12-month research cycle).
+  risk_liquidity: >-
+    Illiquid instruments are harder to act on; low score improves research
+    efficiency, not expected return.
+  evidence_quality: >-
+    Official sources, multiple independent observations and a mechanism with
+    supporting tests outrank single-source, aggregator-only signals.
+
+component_definitions:
+  anomaly_strength: "max normalised score across contributing anomalies (0-1)"
+  economic_impact: "mean(global importance of primary assets) x transmission breadth factor"
+  expectation_gap: "max(|valuation percentile deviation|, |positioning percentile deviation|, divergence flag, 0.6 x mechanism confidence for regime_repricing candidates)"
+  repricing_potential: "|z| of price vs 200d MA and vs 5y valuation, clipped, scaled by realized vol"
+  catalyst: "scheduled events in horizon: 1.0 if <=10d, 0.6 if <=30d, 0.2 if <=90d, else 0.1"
+  timing_window: "1.0 if horizon matches anomaly family half-life, 0.5 otherwise"
+  risk_liquidity: "liquidity rank 0-4 mapped to [0.1,1.0]"
+  evidence_quality: "0.5*source_tier_score + 0.3*independent_evidence + 0.2*mechanism_support"
+
+status_thresholds:
+  deep_research: 0.68        # hand to investment-agent now
+  watch: 0.52                # monitor, re-score every scan
+  low_priority: 0.38         # kept for completeness
+  archive_below: 0.38
+
+gates:
+  min_evidence_items: 2
+  min_data_quality: 0.30
+  require_mechanism_or_divergence: true
+
+horizon_by_archetype:
+  price_fundamental_divergence: "1-3m"
+  expectation_overshoot: "1-3m"
+  regime_repricing: "3-12m"
+  event_revision: "1w-1m"
+  relative_value: "1-3m"

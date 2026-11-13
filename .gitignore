@@ -1,0 +1,36 @@
+# --- runtime data (never commit real data snapshots) ---
+data/
+reports/
+exports/*
+!exports/examples/
+*.db
+*.db-wal
+*.db-shm
+*.duckdb
+*.parquet
+.uvcache/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+logs/
+*.log
+
+# --- secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+secrets/
+
+# --- macOS / editors ---
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# --- local scratch ---
+tmp/
+scratch/

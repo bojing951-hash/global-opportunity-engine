@@ -1,0 +1,1201 @@
+{
+  "summary": {
+    "n_cases": 7,
+    "n_passed": 7,
+    "generated_at": "2026-11-13T15:28:49Z",
+    "method": "point-in-time feature build; macro release lag applied; detection not profitability"
+  },
+  "cases": [
+    {
+      "case_id": "COVID_CRASH_2020",
+      "title": "2020 年 3 月全球风险资产崩跌",
+      "window": [
+        "2020-02-20",
+        "2020-04-30"
+      ],
+      "as_of": "2020-04-30",
+      "passed": true,
+      "detection_ok": true,
+      "mechanism_ok": true,
+      "mechanism_evaluated": true,
+      "relevant_candidate": true,
+      "relevant_candidates": [
+        {
+          "title": "SPDR S&P 500 ETF：多头拥挤且已出现浮亏（去杠杆风险） — 仓位极值 + 价格异常（待检验的预期差）",
+          "status": "deep_research",
+          "score": 0.769,
+          "primary": [
+            "US_EQ_SPY"
+          ]
+        },
+        {
+          "title": "黄金与实际利率 Gold versus real yields：COMEX Gold front month 可能处于重定价窗口",
+          "status": "watch",
+          "score": 0.64,
+          "primary": [
+            "CM_MET_GC"
+          ]
+        },
+        {
+          "title": "信用利差与股票风险溢价 Credit spreads versus equity risk premium：SPDR S&P 500 ETF 可能处于重定价窗口",
+          "status": "watch",
+          "score": 0.615,
+          "primary": [
+            "US_EQ_SPY"
+          ]
+        }
+      ],
+      "checks": {
+        "detectors_expected": [
+          "drawdown_extreme",
+          "price_return_shock",
+          "vol_regime_shift"
+        ],
+        "detectors_found": [
+          "credit_stress",
+          "cross_asset_divergence",
+          "curve_change",
+          "curve_change_slope",
+          "drawdown_extreme",
+          "macro_shift",
+          "positioning_extreme",
+          "price_return_shock",
+          "relative_strength_extreme",
+          "risk_appetite_shift",
+          "risk_appetite_shift_vix",
+          "trend_break",
+          "valuation_extreme",
+          "vol_regime_shift"
+        ],
+        "detectors_hit": [
+          "drawdown_extreme",
+          "price_return_shock",
+          "vol_regime_shift"
+        ],
+        "families_expected": [
+          "cross_asset"
+        ],
+        "families_found": [
+          "cross_asset",
+          "industry",
+          "macro",
+          "positioning",
+          "price",
+          "valuation"
+        ],
+        "mechanisms": {
+          "M10_CREDIT_SPREADS_EQUITY_RISK": "mixed",
+          "M12_VIX_TERM_STRUCTURE": "mixed"
+        }
+      },
+      "n_anomalies_in_window": 1168,
+      "n_anomalies_on_case_entities": 47,
+      "earliest_detection": {
+        "drawdown_extreme": "2020-02-20",
+        "price_return_shock": "2020-02-27",
+        "relative_strength_extreme": "2020-02-25",
+        "trend_break": "2020-02-20",
+        "vol_regime_shift": "2020-03-05"
+      },
+      "mechanisms": [
+        {
+          "id": "M05_ENERGY_INFLATION_CHAIN",
+          "status": "weak",
+          "confidence": 0.38
+        },
+        {
+          "id": "M06_OIL_TERM_STRUCTURE_INVENTORIES",
+          "status": "weak",
+          "confidence": 0.53
+        },
+        {
+          "id": "M10_CREDIT_SPREADS_EQUITY_RISK",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M12_VIX_TERM_STRUCTURE",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M14_JAPAN_CARRY_UNWIND",
+          "status": "mixed",
+          "confidence": 0.16
+        }
+      ],
+      "top_opportunities": [
+        {
+          "title": "SPDR S&P 500 ETF：多头拥挤且已出现浮亏（去杠杆风险） — 仓位极值 + 价格异常（待检验的预期差）",
+          "archetype": "expectation_overshoot",
+          "score": 0.7692,
+          "status": "deep_research",
+          "primary": [
+            "US_EQ_SPY"
+          ]
+        },
+        {
+          "title": "全球 COMEX Silver front month：价格下行与美元/实际利率/供需信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.7266,
+          "status": "deep_research",
+          "primary": [
+            "CM_MET_SI"
+          ]
+        },
+        {
+          "title": "EUR/USD：空头拥挤且价格上行（逼空风险） — 仓位极值 + 价格异常（待检验的预期差）",
+          "archetype": "expectation_overshoot",
+          "score": 0.7186,
+          "status": "deep_research",
+          "primary": [
+            "GX_FX_EURUSD"
+          ]
+        },
+        {
+          "title": "原油期限结构与库存 Oil term structure and inventories：WTI Crude front month 可能处于重定价窗口",
+          "archetype": "regime_repricing",
+          "score": 0.7106,
+          "status": "deep_research",
+          "primary": [
+            "CM_ENE_CL"
+          ]
+        },
+        {
+          "title": "全球 iShares Silver Trust：价格下行与美元/实际利率/供需信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.6872,
+          "status": "deep_research",
+          "primary": [
+            "CM_ETF_SLV"
+          ]
+        }
+      ],
+      "note": "流动性冲击与信用/波动率共振；检验系统在极端窗口是否给出可研究的线索，而不是预测顶部。",
+      "data_note": {
+        "n_instruments": 118,
+        "n_curves": 4,
+        "n_macro": 16,
+        "stale_macro_series": {}
+      }
+    },
+    {
+      "case_id": "RATE_SHOCK_2022",
+      "title": "2022 年美联储加息与股债双杀",
+      "window": [
+        "2022-01-01",
+        "2022-10-31"
+      ],
+      "as_of": "2022-10-31",
+      "passed": true,
+      "detection_ok": true,
+      "mechanism_ok": true,
+      "mechanism_evaluated": true,
+      "relevant_candidate": true,
+      "relevant_candidates": [
+        {
+          "title": "SPDR S&P 500 ETF：过度悲观 — 仓位极值 + 价格异常（待检验的预期差）",
+          "status": "deep_research",
+          "score": 0.775,
+          "primary": [
+            "US_EQ_SPY"
+          ]
+        },
+        {
+          "title": "美国 SPDR S&P 500 ETF：价格下行与估值/信用/风险溢价信号不一致（待检验的超跌假设）",
+          "status": "deep_research",
+          "score": 0.716,
+          "primary": [
+            "US_EQ_SPY"
+          ]
+        },
+        {
+          "title": "能源—通胀—利润率—股债 Energy to inflation to margins and assets：iShares 20+ Year Treasury Bond 可能处于重定价窗口",
+          "status": "deep_research",
+          "score": 0.715,
+          "primary": [
+            "US_FI_TLT"
+          ]
+        }
+      ],
+      "checks": {
+        "detectors_expected": [
+          "curve_change",
+          "drawdown_extreme",
+          "vol_regime_shift"
+        ],
+        "detectors_found": [
+          "credit_stress",
+          "cross_asset_divergence",
+          "curve_change",
+          "curve_change_inversion",
+          "curve_change_slope",
+          "drawdown_extreme",
+          "macro_shift",
+          "positioning_extreme",
+          "price_return_shock",
+          "relative_strength_extreme",
+          "risk_appetite_shift",
+          "risk_appetite_shift_vix",
+          "trend_break",
+          "valuation_extreme",
+          "vol_regime_shift"
+        ],
+        "detectors_hit": [
+          "curve_change",
+          "drawdown_extreme",
+          "vol_regime_shift"
+        ],
+        "families_expected": [
+          "macro",
+          "price"
+        ],
+        "families_found": [
+          "cross_asset",
+          "industry",
+          "macro",
+          "positioning",
+          "price",
+          "valuation"
+        ],
+        "mechanisms": {
+          "M01_REAL_RATES_USD_ALLOCATION": "supported",
+          "M11_CURVE_BANK_PROFITABILITY": "weak"
+        }
+      },
+      "n_anomalies_in_window": 3074,
+      "n_anomalies_on_case_entities": 91,
+      "earliest_detection": {
+        "curve_change": "2022-05-06",
+        "drawdown_extreme": "2022-01-27",
+        "price_return_shock": "2022-01-27",
+        "relative_strength_extreme": "2022-01-25",
+        "trend_break": "2022-01-03",
+        "vol_regime_shift": "2022-03-31"
+      },
+      "mechanisms": [
+        {
+          "id": "M01_REAL_RATES_USD_ALLOCATION",
+          "status": "supported",
+          "confidence": 0.66
+        },
+        {
+          "id": "M04_CHINA_POLICY_HK_TECH",
+          "status": "unsupported",
+          "confidence": 0.05
+        },
+        {
+          "id": "M07_COPPER_GOLD_GROWTH",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M08_COMMODITY_SUPPLY_SHOCK",
+          "status": "weak",
+          "confidence": 0.53
+        },
+        {
+          "id": "M09_DOLLAR_LIQUIDITY_EM_STRESS",
+          "status": "supported",
+          "confidence": 0.79
+        },
+        {
+          "id": "M10_CREDIT_SPREADS_EQUITY_RISK",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M11_CURVE_BANK_PROFITABILITY",
+          "status": "weak",
+          "confidence": 0.48
+        }
+      ],
+      "top_opportunities": [
+        {
+          "title": "SPDR S&P 500 ETF：过度悲观 — 仓位极值 + 价格异常（待检验的预期差）",
+          "archetype": "expectation_overshoot",
+          "score": 0.7747,
+          "status": "deep_research",
+          "primary": [
+            "US_EQ_SPY"
+          ]
+        },
+        {
+          "title": "中国 CSI 300 Index：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.7635,
+          "status": "deep_research",
+          "primary": [
+            "CN_EQ_CSI300"
+          ]
+        },
+        {
+          "title": "中国香港 Hang Seng Index：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.7514,
+          "status": "deep_research",
+          "primary": [
+            "HK_EQ_HSI"
+          ]
+        },
+        {
+          "title": "美国 Technology Select Sector SPDR：价格下行与估值/信用/风险溢价信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.7435,
+          "status": "deep_research",
+          "primary": [
+            "US_SEC_XLK"
+          ]
+        },
+        {
+          "title": "中国 iShares China Large-Cap：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.7338,
+          "status": "deep_research",
+          "primary": [
+            "CN_EQ_FXI"
+          ]
+        }
+      ],
+      "note": "实际利率→美元→全球配置链条；检验利率与跨资产联动是否被识别。",
+      "data_note": {
+        "n_instruments": 125,
+        "n_curves": 4,
+        "n_macro": 16,
+        "stale_macro_series": {}
+      }
+    },
+    {
+      "case_id": "UK_GILT_CRISIS_2022",
+      "title": "2022 年 9 月英国国债/养老金 LDI 冲击",
+      "window": [
+        "2022-09-01",
+        "2022-10-31"
+      ],
+      "as_of": "2022-10-31",
+      "passed": true,
+      "detection_ok": true,
+      "mechanism_ok": true,
+      "mechanism_evaluated": true,
+      "relevant_candidate": true,
+      "relevant_candidates": [
+        {
+          "title": "实际利率—美元—全球配置 Real rates, the dollar and global allocation：GBP/USD 可能处于重定价窗口",
+          "status": "watch",
+          "score": 0.647,
+          "primary": [
+            "GX_FX_GBPUSD"
+          ]
+        },
+        {
+          "title": "实际利率—美元—全球配置 Real rates, the dollar and global allocation：FTSE 100 可能处于重定价窗口",
+          "status": "watch",
+          "score": 0.601,
+          "primary": [
+            "UK_EQ_FTSE"
+          ]
+        },
+        {
+          "title": "信用利差与股票风险溢价 Credit spreads versus equity risk premium：FTSE 100 可能处于重定价窗口",
+          "status": "watch",
+          "score": 0.548,
+          "primary": [
+            "UK_EQ_FTSE"
+          ]
+        }
+      ],
+      "checks": {
+        "detectors_expected": [
+          "price_return_shock",
+          "vol_regime_shift"
+        ],
+        "detectors_found": [
+          "credit_stress",
+          "cross_asset_divergence",
+          "curve_change",
+          "curve_change_slope",
+          "drawdown_extreme",
+          "macro_shift",
+          "positioning_extreme",
+          "price_return_shock",
+          "relative_strength_extreme",
+          "risk_appetite_shift",
+          "risk_appetite_shift_vix",
+          "trend_break",
+          "vol_regime_shift"
+        ],
+        "detectors_hit": [
+          "price_return_shock",
+          "vol_regime_shift"
+        ],
+        "families_expected": [
+          "cross_asset",
+          "price"
+        ],
+        "families_found": [
+          "cross_asset",
+          "industry",
+          "macro",
+          "positioning",
+          "price"
+        ],
+        "mechanisms": {
+          "M01_REAL_RATES_USD_ALLOCATION": "supported"
+        }
+      },
+      "n_anomalies_in_window": 562,
+      "n_anomalies_on_case_entities": 13,
+      "earliest_detection": {
+        "drawdown_extreme": "2022-09-01",
+        "price_return_shock": "2022-09-05",
+        "relative_strength_extreme": "2022-10-03",
+        "trend_break": "2022-09-01"
+      },
+      "mechanisms": [
+        {
+          "id": "M01_REAL_RATES_USD_ALLOCATION",
+          "status": "supported",
+          "confidence": 0.66
+        },
+        {
+          "id": "M07_COPPER_GOLD_GROWTH",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M08_COMMODITY_SUPPLY_SHOCK",
+          "status": "weak",
+          "confidence": 0.53
+        },
+        {
+          "id": "M09_DOLLAR_LIQUIDITY_EM_STRESS",
+          "status": "supported",
+          "confidence": 0.79
+        },
+        {
+          "id": "M10_CREDIT_SPREADS_EQUITY_RISK",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M11_CURVE_BANK_PROFITABILITY",
+          "status": "weak",
+          "confidence": 0.48
+        }
+      ],
+      "top_opportunities": [
+        {
+          "title": "SPDR S&P 500 ETF：过度悲观 — 仓位极值 + 价格异常（待检验的预期差）",
+          "archetype": "expectation_overshoot",
+          "score": 0.7739,
+          "status": "deep_research",
+          "primary": [
+            "US_EQ_SPY"
+          ]
+        },
+        {
+          "title": "中国 CSI 300 Index：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.7635,
+          "status": "deep_research",
+          "primary": [
+            "CN_EQ_CSI300"
+          ]
+        },
+        {
+          "title": "美国 Invesco QQQ (Nasdaq 100)：价格下行与估值/信用/风险溢价信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.7632,
+          "status": "deep_research",
+          "primary": [
+            "US_EQ_QQQ"
+          ]
+        },
+        {
+          "title": "中国香港 Hang Seng Index：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.7514,
+          "status": "deep_research",
+          "primary": [
+            "HK_EQ_HSI"
+          ]
+        },
+        {
+          "title": "美国 Technology Select Sector SPDR：价格下行与估值/信用/风险溢价信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.7462,
+          "status": "deep_research",
+          "primary": [
+            "US_SEC_XLK"
+          ]
+        }
+      ],
+      "note": "财政/流动性冲击的本地化表现；系统能否把英国资产与全球利率波动区分开。",
+      "data_note": {
+        "n_instruments": 125,
+        "n_curves": 4,
+        "n_macro": 16,
+        "stale_macro_series": {}
+      }
+    },
+    {
+      "case_id": "SVB_CREDIT_STRESS_2023",
+      "title": "2023 年 3 月美国区域银行事件",
+      "window": [
+        "2023-03-01",
+        "2023-04-15"
+      ],
+      "as_of": "2023-04-15",
+      "passed": true,
+      "detection_ok": true,
+      "mechanism_ok": true,
+      "mechanism_evaluated": true,
+      "relevant_candidate": true,
+      "relevant_candidates": [
+        {
+          "title": "VIX 期限结构与波动状态 VIX term structure and volatility regime：iShares iBoxx High Yield Corporate Bond 可能处于重定价窗口",
+          "status": "watch",
+          "score": 0.562,
+          "primary": [
+            "US_CR_HYG"
+          ]
+        },
+        {
+          "title": "美国 Financial Select Sector SPDR：价格下行与估值/信用/风险溢价信号不一致（待检验的超跌假设）",
+          "status": "watch",
+          "score": 0.559,
+          "primary": [
+            "US_SEC_XLF"
+          ]
+        },
+        {
+          "title": "实际利率—美元—全球配置 Real rates, the dollar and global allocation：iShares 20+ Year Treasury Bond 可能处于重定价窗口",
+          "status": "low_priority",
+          "score": 0.487,
+          "primary": [
+            "US_FI_TLT"
+          ]
+        }
+      ],
+      "checks": {
+        "detectors_expected": [
+          "credit_stress",
+          "drawdown_extreme",
+          "vol_regime_shift"
+        ],
+        "detectors_found": [
+          "credit_stress",
+          "cross_asset_divergence",
+          "curve_change",
+          "curve_change_slope",
+          "drawdown_extreme",
+          "macro_shift",
+          "positioning_extreme",
+          "price_return_shock",
+          "relative_strength_extreme",
+          "trend_break",
+          "vol_regime_shift"
+        ],
+        "detectors_hit": [
+          "credit_stress",
+          "drawdown_extreme",
+          "vol_regime_shift"
+        ],
+        "families_expected": [
+          "cross_asset",
+          "macro"
+        ],
+        "families_found": [
+          "cross_asset",
+          "industry",
+          "macro",
+          "positioning",
+          "price"
+        ],
+        "mechanisms": {
+          "M10_CREDIT_SPREADS_EQUITY_RISK": "mixed"
+        }
+      },
+      "n_anomalies_in_window": 582,
+      "n_anomalies_on_case_entities": 27,
+      "earliest_detection": {
+        "price_return_shock": "2023-03-17",
+        "relative_strength_extreme": "2023-03-10",
+        "trend_break": "2023-03-01",
+        "vol_regime_shift": "2023-03-17"
+      },
+      "mechanisms": [
+        {
+          "id": "M01_REAL_RATES_USD_ALLOCATION",
+          "status": "mixed",
+          "confidence": 0.51
+        },
+        {
+          "id": "M09_DOLLAR_LIQUIDITY_EM_STRESS",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M12_VIX_TERM_STRUCTURE",
+          "status": "mixed",
+          "confidence": 0.38
+        }
+      ],
+      "top_opportunities": [
+        {
+          "title": "CBOT Wheat front month：过度悲观 — 仓位极值 + 价格异常（待检验的预期差）",
+          "archetype": "expectation_overshoot",
+          "score": 0.7712,
+          "status": "deep_research",
+          "primary": [
+            "CM_AGR_ZW"
+          ]
+        },
+        {
+          "title": "WTI Crude front month：过度悲观 — 仓位极值 + 价格异常（待检验的预期差）",
+          "archetype": "expectation_overshoot",
+          "score": 0.77,
+          "status": "deep_research",
+          "primary": [
+            "CM_ENE_CL"
+          ]
+        },
+        {
+          "title": "中国 China EV Sector ETF：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.6793,
+          "status": "watch",
+          "primary": [
+            "CN_SEC_EV"
+          ]
+        },
+        {
+          "title": "实际利率—美元—全球配置 Real rates, the dollar and global allocation：COMEX Gold front month 可能处于重定价窗口",
+          "archetype": "regime_repricing",
+          "score": 0.6325,
+          "status": "watch",
+          "primary": [
+            "CM_MET_GC"
+          ]
+        },
+        {
+          "title": "中国 China New Energy ETF：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.6317,
+          "status": "watch",
+          "primary": [
+            "CN_SEC_NEWEN"
+          ]
+        }
+      ],
+      "note": "信用利差代理与银行板块；检验\"价格下跌 vs 信用恶化\"的区分能力。",
+      "data_note": {
+        "n_instruments": 125,
+        "n_curves": 4,
+        "n_macro": 16,
+        "stale_macro_series": {}
+      }
+    },
+    {
+      "case_id": "JAPAN_CARRY_UNWIND_2024",
+      "title": "2024 年 8 月日元套息交易平仓",
+      "window": [
+        "2024-07-15",
+        "2024-09-15"
+      ],
+      "as_of": "2024-09-15",
+      "passed": true,
+      "detection_ok": true,
+      "mechanism_ok": false,
+      "mechanism_evaluated": true,
+      "relevant_candidate": true,
+      "relevant_candidates": [
+        {
+          "title": "日本 Nikkei 225：价格下行与全球信用/风险偏好/广度信号不一致（待检验的超跌假设）",
+          "status": "watch",
+          "score": 0.676,
+          "primary": [
+            "JP_EQ_N225"
+          ]
+        },
+        {
+          "title": "CBOE Volatility Index：过度乐观 — 仓位极值 + 价格异常（待检验的预期差）",
+          "status": "watch",
+          "score": 0.578,
+          "primary": [
+            "US_VOL_VIX"
+          ]
+        },
+        {
+          "title": "VIX 期限结构与波动状态 VIX term structure and volatility regime：SPDR S&P 500 ETF 可能处于重定价窗口",
+          "status": "watch",
+          "score": 0.543,
+          "primary": [
+            "US_EQ_SPY"
+          ]
+        }
+      ],
+      "checks": {
+        "detectors_expected": [
+          "price_return_shock",
+          "relative_strength_extreme",
+          "vol_regime_shift"
+        ],
+        "detectors_found": [
+          "credit_stress",
+          "cross_asset_divergence",
+          "curve_change",
+          "curve_change_inversion",
+          "drawdown_extreme",
+          "macro_shift",
+          "positioning_extreme",
+          "price_return_shock",
+          "relative_strength_extreme",
+          "risk_appetite_shift",
+          "risk_appetite_shift_vix",
+          "trend_break",
+          "vol_regime_shift"
+        ],
+        "detectors_hit": [
+          "price_return_shock",
+          "relative_strength_extreme",
+          "vol_regime_shift"
+        ],
+        "families_expected": [
+          "cross_asset",
+          "price"
+        ],
+        "families_found": [
+          "cross_asset",
+          "industry",
+          "macro",
+          "positioning",
+          "price"
+        ],
+        "mechanisms": {
+          "M14_JAPAN_CARRY_UNWIND": "unsupported"
+        }
+      },
+      "n_anomalies_in_window": 837,
+      "n_anomalies_on_case_entities": 47,
+      "earliest_detection": {
+        "drawdown_extreme": "2024-08-02",
+        "price_return_shock": "2024-07-25",
+        "relative_strength_extreme": "2024-07-24",
+        "trend_break": "2024-07-15",
+        "vol_regime_shift": "2024-08-06"
+      },
+      "mechanisms": [
+        {
+          "id": "M02_GOLD_REAL_YIELD",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M04_CHINA_POLICY_HK_TECH",
+          "status": "unsupported",
+          "confidence": 0.05
+        },
+        {
+          "id": "M09_DOLLAR_LIQUIDITY_EM_STRESS",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M10_CREDIT_SPREADS_EQUITY_RISK",
+          "status": "weak",
+          "confidence": 0.53
+        },
+        {
+          "id": "M12_VIX_TERM_STRUCTURE",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M13_POSITIONING_EXTREMES",
+          "status": "unsupported",
+          "confidence": 0.05
+        },
+        {
+          "id": "M14_JAPAN_CARRY_UNWIND",
+          "status": "unsupported",
+          "confidence": 0.05
+        }
+      ],
+      "top_opportunities": [
+        {
+          "title": "CBOT Soybean front month：过度悲观 — 仓位极值 + 价格异常（待检验的预期差）",
+          "archetype": "expectation_overshoot",
+          "score": 0.7884,
+          "status": "deep_research",
+          "primary": [
+            "CM_AGR_ZS"
+          ]
+        },
+        {
+          "title": "iShares 7-10 Year Treasury Bond：过度乐观 — 仓位极值 + 价格异常（待检验的预期差）",
+          "archetype": "expectation_overshoot",
+          "score": 0.7152,
+          "status": "deep_research",
+          "primary": [
+            "US_FI_IEF"
+          ]
+        },
+        {
+          "title": "中国 China Liquor Sector ETF：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.6987,
+          "status": "deep_research",
+          "primary": [
+            "CN_SEC_LIQ"
+          ]
+        },
+        {
+          "title": "中国 CSI 1000 Index：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.6801,
+          "status": "deep_research",
+          "primary": [
+            "CN_EQ_CSI1000"
+          ]
+        },
+        {
+          "title": "日本 Nikkei 225：价格下行与全球信用/风险偏好/广度信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.6759,
+          "status": "watch",
+          "primary": [
+            "JP_EQ_N225"
+          ]
+        }
+      ],
+      "note": "跨市场去杠杆；检验机制 M14 在事件窗口是否被激活且有支持证据。",
+      "data_note": {
+        "n_instruments": 125,
+        "n_curves": 4,
+        "n_macro": 15,
+        "stale_macro_series": {
+          "US_CAPE": 380
+        }
+      }
+    },
+    {
+      "case_id": "CHINA_POLICY_RALLY_2024",
+      "title": "2024 年 9 月中国政策转向与股市急涨",
+      "window": [
+        "2024-09-15",
+        "2024-11-15"
+      ],
+      "as_of": "2024-11-15",
+      "passed": true,
+      "detection_ok": true,
+      "mechanism_ok": false,
+      "mechanism_evaluated": true,
+      "relevant_candidate": true,
+      "relevant_candidates": [
+        {
+          "title": "中国香港 Hang Seng Index：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "status": "deep_research",
+          "score": 0.694,
+          "primary": [
+            "HK_EQ_HSI"
+          ]
+        },
+        {
+          "title": "中国 Huatai-PB CSI300 ETF：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "status": "watch",
+          "score": 0.675,
+          "primary": [
+            "CN_EQ_ETF300"
+          ]
+        },
+        {
+          "title": "中国香港 CSOP Hang Seng TECH ETF：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "status": "watch",
+          "score": 0.651,
+          "primary": [
+            "HK_EQ_3033"
+          ]
+        }
+      ],
+      "checks": {
+        "detectors_expected": [
+          "breadth_extreme",
+          "price_return_shock",
+          "relative_strength_extreme"
+        ],
+        "detectors_found": [
+          "curve_change",
+          "drawdown_extreme",
+          "macro_shift",
+          "positioning_extreme",
+          "price_return_shock",
+          "relative_strength_extreme",
+          "risk_appetite_shift",
+          "trend_break",
+          "vol_regime_shift"
+        ],
+        "detectors_hit": [
+          "price_return_shock",
+          "relative_strength_extreme"
+        ],
+        "families_expected": [
+          "industry",
+          "price"
+        ],
+        "families_found": [
+          "cross_asset",
+          "industry",
+          "macro",
+          "positioning",
+          "price"
+        ],
+        "mechanisms": {
+          "M04_CHINA_POLICY_HK_TECH": "unsupported"
+        }
+      },
+      "n_anomalies_in_window": 849,
+      "n_anomalies_on_case_entities": 42,
+      "earliest_detection": {
+        "drawdown_extreme": "2024-09-26",
+        "price_return_shock": "2024-09-24",
+        "relative_strength_extreme": "2024-09-27",
+        "trend_break": "2024-09-16",
+        "vol_regime_shift": "2024-10-10"
+      },
+      "mechanisms": [
+        {
+          "id": "M01_REAL_RATES_USD_ALLOCATION",
+          "status": "mixed",
+          "confidence": 0.41
+        },
+        {
+          "id": "M08_COMMODITY_SUPPLY_SHOCK",
+          "status": "weak",
+          "confidence": 0.53
+        },
+        {
+          "id": "M09_DOLLAR_LIQUIDITY_EM_STRESS",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M10_CREDIT_SPREADS_EQUITY_RISK",
+          "status": "weak",
+          "confidence": 0.53
+        },
+        {
+          "id": "M12_VIX_TERM_STRUCTURE",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M14_JAPAN_CARRY_UNWIND",
+          "status": "unsupported",
+          "confidence": 0.05
+        }
+      ],
+      "top_opportunities": [
+        {
+          "title": "COMEX Gold front month：过度乐观 — 仓位极值 + 价格异常（待检验的预期差）",
+          "archetype": "expectation_overshoot",
+          "score": 0.7262,
+          "status": "deep_research",
+          "primary": [
+            "CM_MET_GC"
+          ]
+        },
+        {
+          "title": "CBOE Volatility Index：多头拥挤且已出现浮亏（去杠杆风险） — 仓位极值 + 价格异常（待检验的预期差）",
+          "archetype": "expectation_overshoot",
+          "score": 0.7006,
+          "status": "deep_research",
+          "primary": [
+            "US_VOL_VIX"
+          ]
+        },
+        {
+          "title": "中国 ChiNext ETF：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.6986,
+          "status": "deep_research",
+          "primary": [
+            "CN_EQ_CHINEXT"
+          ]
+        },
+        {
+          "title": "iShares 7-10 Year Treasury Bond：空头拥挤且价格上行（逼空风险） — 仓位极值 + 价格异常（待检验的预期差）",
+          "archetype": "expectation_overshoot",
+          "score": 0.6959,
+          "status": "deep_research",
+          "primary": [
+            "US_FI_IEF"
+          ]
+        },
+        {
+          "title": "中国香港 Hang Seng Index：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.6937,
+          "status": "deep_research",
+          "primary": [
+            "HK_EQ_HSI"
+          ]
+        }
+      ],
+      "note": "政策事件驱动的重定价；检验上涨异常是否被记录（而非只记录下跌）。",
+      "data_note": {
+        "n_instruments": 125,
+        "n_curves": 4,
+        "n_macro": 15,
+        "stale_macro_series": {
+          "US_CAPE": 441
+        }
+      }
+    },
+    {
+      "case_id": "GOLD_VS_REAL_RATES_2025",
+      "title": "2025 年黄金与实际利率/美元的关系变化",
+      "window": [
+        "2025-01-01",
+        "2025-12-31"
+      ],
+      "as_of": "2025-12-31",
+      "passed": true,
+      "detection_ok": true,
+      "mechanism_ok": true,
+      "mechanism_evaluated": true,
+      "relevant_candidate": true,
+      "relevant_candidates": [
+        {
+          "title": "能源—通胀—利润率—股债 Energy to inflation to margins and assets：iShares TIPS Bond 可能处于重定价窗口",
+          "status": "low_priority",
+          "score": 0.472,
+          "primary": [
+            "US_FI_TIP"
+          ]
+        }
+      ],
+      "checks": {
+        "detectors_expected": [
+          "cross_asset_divergence",
+          "price_return_shock"
+        ],
+        "detectors_found": [
+          "credit_stress",
+          "cross_asset_divergence",
+          "curve_change",
+          "curve_change_slope",
+          "drawdown_extreme",
+          "macro_shift",
+          "positioning_extreme",
+          "price_return_shock",
+          "relative_strength_extreme",
+          "risk_appetite_shift",
+          "risk_appetite_shift_vix",
+          "trend_break",
+          "vol_regime_shift"
+        ],
+        "detectors_hit": [
+          "cross_asset_divergence",
+          "price_return_shock"
+        ],
+        "families_expected": [
+          "cross_asset",
+          "price"
+        ],
+        "families_found": [
+          "cross_asset",
+          "industry",
+          "macro",
+          "positioning",
+          "price"
+        ],
+        "mechanisms": {
+          "M02_GOLD_REAL_YIELD": "mixed"
+        }
+      },
+      "n_anomalies_in_window": 4847,
+      "n_anomalies_on_case_entities": 102,
+      "earliest_detection": {
+        "drawdown_extreme": "2025-01-02",
+        "price_return_shock": "2025-03-06",
+        "relative_strength_extreme": "2025-04-04",
+        "trend_break": "2025-01-02",
+        "vol_regime_shift": "2025-04-25"
+      },
+      "mechanisms": [
+        {
+          "id": "M09_DOLLAR_LIQUIDITY_EM_STRESS",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M12_VIX_TERM_STRUCTURE",
+          "status": "mixed",
+          "confidence": 0.38
+        },
+        {
+          "id": "M13_POSITIONING_EXTREMES",
+          "status": "unsupported",
+          "confidence": 0.05
+        }
+      ],
+      "top_opportunities": [
+        {
+          "title": "COMEX Silver front month：过度乐观 — 仓位极值 + 价格异常（待检验的预期差）",
+          "archetype": "expectation_overshoot",
+          "score": 0.7436,
+          "status": "deep_research",
+          "primary": [
+            "CM_MET_SI"
+          ]
+        },
+        {
+          "title": "COMEX Copper front month：过度乐观 — 仓位极值 + 价格异常（待检验的预期差）",
+          "archetype": "expectation_overshoot",
+          "score": 0.7297,
+          "status": "deep_research",
+          "primary": [
+            "CM_MET_HG"
+          ]
+        },
+        {
+          "title": "全球 COMEX Silver front month：价格下行与美元/实际利率/供需信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.686,
+          "status": "deep_research",
+          "primary": [
+            "CM_MET_SI"
+          ]
+        },
+        {
+          "title": "中国 STAR 50 ETF：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.6695,
+          "status": "watch",
+          "primary": [
+            "CN_EQ_STAR50"
+          ]
+        },
+        {
+          "title": "中国 China Semiconductor ETF：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+          "archetype": "price_fundamental_divergence",
+          "score": 0.6691,
+          "status": "watch",
+          "primary": [
+            "CN_SEC_SEMI"
+          ]
+        }
+      ],
+      "note": "传统机制失效/减弱的检验；若机制证据不足，系统应输出\"不支持/证据不足\"而非强行叙事。",
+      "data_note": {
+        "n_instruments": 125,
+        "n_curves": 4,
+        "n_macro": 15,
+        "stale_macro_series": {
+          "US_CAPE": 852
+        }
+      }
+    }
+  ]
+}

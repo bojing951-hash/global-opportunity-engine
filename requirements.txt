@@ -1,0 +1,13 @@
+# Runtime + test dependencies (pinned to the verified environment, macOS arm64 / Python 3.12).
+# Install with: UV_CACHE_DIR=.uvcache ~/.local/bin/uv pip install --python .venv/bin/python -r requirements.txt
+pandas==3.1.1
+numpy==2.5.4
+requests==2.34.2
+PyYAML==6.0.3
+yfinance==1.8.0
+xlrd==2.0.2
+akshare==1.20.42
+# optional: parquet feature snapshots (FeatureSet.save)
+pyarrow==26.0.1
+# tests
+pytest==9.2.0
