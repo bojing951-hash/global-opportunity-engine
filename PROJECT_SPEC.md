@@ -84,7 +84,7 @@
 | 9 | 历史测试、数据质量、端到端测试 | ✅ | 97 项离线 + 9 项联网测试通过；7 个历史情景全部通过（最终回放见 reports/validation_cases_*.md）；`TEST_RESULTS.md`、`docs/VALIDATION.md` |
 | 10 | 自动运行、失败恢复、状态持久化 | ✅ | `scripts/run_daily.sh` + launchd 模板；SQLite 持久化 + `PROJECT_STATE.md`；`scan_runs` 失败记录 |
 | 11 | 可查看的研究结果与运行说明 | ✅ | `reports/`、`goe web`、README 快速开始 |
-| 12 | 完整代码上传 GitHub 并可审计 | ⚠ 部分 | 本地完整仓库 + 提交已就绪；远程仓库创建缺少 API 授权（唯一阻塞，见 `PROJECT_STATE.md` §5） |
+| 12 | 完整代码上传 GitHub 并可审计 | ✅ | 私有仓库 https://github.com/bojing951-hash/global-opportunity-engine ，提交 `1a7a5f5`，远程与本地一致 |
 
 ## 7. 非目标
 

@@ -203,6 +203,11 @@ exports/        交接 JSON（gitignore，示例见 docs/examples）
 - 事件日历只收录官方可核验日期；未核验的一律不写入。
 - 回放验证衡量检测能力，不等于可交易收益；评分是研究优先级，不是预期收益。
 
+## 仓库
+
+- GitHub（private）：https://github.com/bojing951-hash/global-opportunity-engine
+- 提交：`1a7a5f5` ｜ 分支 `main`
+
 ## 环境
 
 - macOS（Apple Silicon 实测）/ Linux 均可；Python ≥ 3.10（开发环境 3.12）
