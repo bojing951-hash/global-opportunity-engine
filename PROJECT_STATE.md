@@ -88,6 +88,6 @@ GitHub 远程仓库等待授权）。
 
 - 仓库：https://github.com/bojing951-hash/global-opportunity-engine （private）
 - 分支：`main`
-- 最终提交：`1a7a5f5c7f98710f017584a34a99c7799bc97d66`（功能提交）
+- 功能提交：`1a7a5f5c7f98710f017584a34a99c7799bc97d66`；其后的文档提交一并推送（HEAD 以 `git log -1 --format=%H` 为准）
 - 独立 QA：`docs/QA_AUDIT.md` — PASS WITH MINOR ISSUES（两轮，3 个 blocker 已修复并复审）
 - 历史案例：7/7（`docs/examples/validation_cases_2026-11-13.md`）
