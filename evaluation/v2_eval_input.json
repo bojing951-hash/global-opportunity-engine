@@ -51,56 +51,26 @@
       }
     },
     {
-      "as_of": "2022-10-31",
+      "as_of": "2023-03-31",
       "object_id": "V02",
       "facts": {
         "object_id": "V02",
-        "name": "CBOE VVIX (vol of VIX)",
-        "market": "US",
-        "asset_class": "volatility",
-        "return_1m": -0.2574,
-        "return_3m": -0.1086,
-        "return_12m": -0.2502,
-        "vol_pctile_5y": 0.2764,
-        "drawdown_pctile_5y": 0.0675,
-        "ma_gap_200d": -0.2498,
-        "positioning_net_pctile_5y": null,
-        "recent_anomalies": [
-          {
-            "detector": "relative_strength_extreme",
-            "direction": "underperform",
-            "score": 0.11,
-            "available_date": "2022-10-28"
-          }
-        ],
-        "mechanisms": [],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
-      "as_of": "2023-03-31",
-      "object_id": "V03",
-      "facts": {
-        "object_id": "V03",
-        "name": "Bitcoin / USD",
-        "market": "WORLD",
-        "asset_class": "crypto",
-        "return_1m": 0.2043,
-        "return_3m": 0.7153,
-        "return_12m": -0.3746,
-        "vol_pctile_5y": 0.2385,
-        "drawdown_pctile_5y": 0.9775,
-        "ma_gap_200d": 0.399,
-        "positioning_net_pctile_5y": null,
+        "name": "USD/JPY",
+        "market": "JP",
+        "asset_class": "fx",
+        "return_1m": -0.022,
+        "return_3m": 0.0184,
+        "return_12m": 0.0621,
+        "vol_pctile_5y": 0.8562,
+        "drawdown_pctile_5y": 0.0389,
+        "ma_gap_200d": -0.0299,
+        "positioning_net_pctile_5y": 0.0309,
         "recent_anomalies": [
           {
             "detector": "drawdown_extreme",
-            "direction": "near_high",
-            "score": 0.89,
-            "available_date": "2023-03-29"
+            "direction": "deep_drawdown",
+            "score": 0.93,
+            "available_date": "2023-03-24"
           }
         ],
         "mechanisms": [
@@ -108,7 +78,7 @@
             "id": "M14_JAPAN_CARRY_UNWIND",
             "status": "unsupported",
             "confidence": 0.05,
-            "role": "secondary"
+            "role": "primary"
           }
         ],
         "data_gaps": [
@@ -118,26 +88,38 @@
       }
     },
     {
-      "as_of": "2022-10-31",
-      "object_id": "V04",
+      "as_of": "2021-12-31",
+      "object_id": "V03",
       "facts": {
-        "object_id": "V04",
-        "name": "SPDR Dow Jones Industrial Average",
-        "market": "US",
+        "object_id": "V03",
+        "name": "KraneShares CSI China Internet",
+        "market": "CN",
         "asset_class": "equity_etf",
-        "return_1m": 0.1403,
-        "return_3m": 0.0157,
-        "return_12m": -0.0685,
-        "vol_pctile_5y": 0.8062,
-        "drawdown_pctile_5y": 0.1835,
-        "ma_gap_200d": 0.0109,
+        "return_1m": -0.0978,
+        "return_3m": -0.1541,
+        "return_12m": -0.4901,
+        "vol_pctile_5y": 0.9508,
+        "drawdown_pctile_5y": 0.004,
+        "ma_gap_200d": -0.3219,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
-            "detector": "relative_strength_extreme",
-            "direction": "outperform",
-            "score": 0.66,
-            "available_date": "2022-10-31"
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 0.07,
+            "available_date": "2021-12-27"
+          },
+          {
+            "detector": "price_return_shock",
+            "direction": "up",
+            "score": 0.33,
+            "available_date": "2021-12-30"
+          },
+          {
+            "detector": "vol_regime_shift",
+            "direction": "expansion",
+            "score": 0.15,
+            "available_date": "2021-12-30"
           }
         ],
         "mechanisms": [],
@@ -149,9 +131,9 @@
     },
     {
       "as_of": "2024-09-30",
-      "object_id": "V05",
+      "object_id": "V04",
       "facts": {
-        "object_id": "V05",
+        "object_id": "V04",
         "name": "CSI 500 Index",
         "market": "CN",
         "asset_class": "equity_index",
@@ -185,117 +167,33 @@
     },
     {
       "as_of": "2024-09-30",
-      "object_id": "V06",
+      "object_id": "V05",
       "facts": {
-        "object_id": "V06",
-        "name": "ChiNext ETF",
-        "market": "CN",
-        "asset_class": "equity_etf",
-        "return_1m": 0.487,
-        "return_3m": 0.3527,
-        "return_12m": 0.1307,
-        "vol_pctile_5y": 1.0,
-        "drawdown_pctile_5y": 0.9813,
-        "ma_gap_200d": 0.3107,
-        "positioning_net_pctile_5y": null,
-        "recent_anomalies": [
-          {
-            "detector": "price_return_shock",
-            "direction": "up",
-            "score": 1.0,
-            "available_date": "2024-09-27"
-          },
-          {
-            "detector": "relative_strength_extreme",
-            "direction": "outperform",
-            "score": 1.0,
-            "available_date": "2024-09-30"
-          },
-          {
-            "detector": "vol_regime_shift",
-            "direction": "expansion",
-            "score": 1.0,
-            "available_date": "2024-09-30"
-          }
-        ],
-        "mechanisms": [],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
-      "as_of": "2024-09-30",
-      "object_id": "V07",
-      "facts": {
-        "object_id": "V07",
-        "name": "China Securities Sector ETF",
-        "market": "CN",
-        "asset_class": "sector_equity",
-        "return_1m": 0.403,
-        "return_3m": 0.412,
-        "return_12m": 0.1567,
-        "vol_pctile_5y": 0.8896,
-        "drawdown_pctile_5y": 0.9952,
-        "ma_gap_200d": 0.3049,
-        "positioning_net_pctile_5y": null,
-        "recent_anomalies": [
-          {
-            "detector": "drawdown_extreme",
-            "direction": "near_high",
-            "score": 0.98,
-            "available_date": "2024-09-27"
-          },
-          {
-            "detector": "price_return_shock",
-            "direction": "up",
-            "score": 1.0,
-            "available_date": "2024-09-30"
-          },
-          {
-            "detector": "relative_strength_extreme",
-            "direction": "outperform",
-            "score": 0.75,
-            "available_date": "2024-09-30"
-          }
-        ],
-        "mechanisms": [],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
-      "as_of": "2022-10-31",
-      "object_id": "V08",
-      "facts": {
-        "object_id": "V08",
-        "name": "ICE US Dollar Index (DXY spot)",
+        "object_id": "V05",
+        "name": "Consumer Discretionary Select Sector SPDR",
         "market": "US",
-        "asset_class": "fx",
-        "return_1m": -0.0053,
-        "return_3m": 0.0498,
-        "return_12m": 0.185,
-        "vol_pctile_5y": 0.9881,
-        "drawdown_pctile_5y": 0.4376,
-        "ma_gap_200d": 0.073,
-        "positioning_net_pctile_5y": 0.1583,
+        "asset_class": "sector_equity",
+        "return_1m": 0.0892,
+        "return_3m": 0.0971,
+        "return_12m": 0.2616,
+        "vol_pctile_5y": 0.6593,
+        "drawdown_pctile_5y": 0.8864,
+        "ma_gap_200d": 0.1123,
+        "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
-            "detector": "vol_regime_shift",
-            "direction": "expansion",
-            "score": 1.0,
-            "available_date": "2022-10-26"
+            "detector": "relative_strength_extreme",
+            "direction": "outperform",
+            "score": 0.0,
+            "available_date": "2024-09-27"
           }
         ],
         "mechanisms": [
           {
-            "id": "M01_REAL_RATES_USD_ALLOCATION",
-            "status": "unsupported",
-            "confidence": 0.05,
-            "role": "transmission"
+            "id": "M05_ENERGY_INFLATION_CHAIN",
+            "status": "mixed",
+            "confidence": 0.17,
+            "role": "secondary"
           }
         ],
         "data_gaps": [
@@ -306,24 +204,24 @@
     },
     {
       "as_of": "2022-10-31",
-      "object_id": "V09",
+      "object_id": "V06",
       "facts": {
-        "object_id": "V09",
-        "name": "NY Harbor ULSD Heating Oil",
-        "market": "WORLD",
-        "asset_class": "commodity",
-        "return_1m": 0.244,
-        "return_3m": 0.2398,
-        "return_12m": 0.6788,
-        "vol_pctile_5y": 0.8427,
-        "drawdown_pctile_5y": 0.4186,
-        "ma_gap_200d": 0.1513,
+        "object_id": "V06",
+        "name": "CBOE VVIX (vol of VIX)",
+        "market": "US",
+        "asset_class": "volatility",
+        "return_1m": -0.2574,
+        "return_3m": -0.1086,
+        "return_12m": -0.2502,
+        "vol_pctile_5y": 0.2764,
+        "drawdown_pctile_5y": 0.0675,
+        "ma_gap_200d": -0.2498,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
             "detector": "relative_strength_extreme",
-            "direction": "outperform",
-            "score": 0.03,
+            "direction": "underperform",
+            "score": 0.11,
             "available_date": "2022-10-28"
           }
         ],
@@ -336,9 +234,9 @@
     },
     {
       "as_of": "2021-12-31",
-      "object_id": "V10",
+      "object_id": "V07",
       "facts": {
-        "object_id": "V10",
+        "object_id": "V07",
         "name": "Live Cattle front month",
         "market": "WORLD",
         "asset_class": "commodity",
@@ -365,24 +263,43 @@
       }
     },
     {
-      "as_of": "2023-03-31",
-      "object_id": "V11",
+      "as_of": "2024-09-30",
+      "object_id": "V08",
       "facts": {
-        "object_id": "V11",
-        "name": "SPDR S&P 500 ETF",
-        "market": "US",
-        "asset_class": "equity_etf",
-        "return_1m": 0.033,
-        "return_3m": 0.0718,
-        "return_12m": -0.0924,
-        "vol_pctile_5y": 0.5139,
-        "drawdown_pctile_5y": 0.2883,
-        "ma_gap_200d": 0.051,
-        "positioning_net_pctile_5y": 0.3938,
-        "recent_anomalies": [],
+        "object_id": "V08",
+        "name": "CSI 300 Index",
+        "market": "CN",
+        "asset_class": "equity_index",
+        "return_1m": 0.2225,
+        "return_3m": 0.1552,
+        "return_12m": 0.0753,
+        "vol_pctile_5y": 0.9285,
+        "drawdown_pctile_5y": 0.9885,
+        "ma_gap_200d": 0.1672,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "drawdown_extreme",
+            "direction": "near_high",
+            "score": 0.94,
+            "available_date": "2024-09-30"
+          },
+          {
+            "detector": "price_return_shock",
+            "direction": "up",
+            "score": 1.0,
+            "available_date": "2024-09-30"
+          }
+        ],
         "mechanisms": [
           {
-            "id": "M14_JAPAN_CARRY_UNWIND",
+            "id": "M03_CHINA_CREDIT_IMPULSE",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "secondary"
+          },
+          {
+            "id": "M04_CHINA_POLICY_HK_TECH",
             "status": "unsupported",
             "confidence": 0.05,
             "role": "secondary"
@@ -395,10 +312,47 @@
       }
     },
     {
-      "as_of": "2021-12-31",
-      "object_id": "V12",
+      "as_of": "2023-03-31",
+      "object_id": "V09",
       "facts": {
-        "object_id": "V12",
+        "object_id": "V09",
+        "name": "USD/JPY",
+        "market": "JP",
+        "asset_class": "fx",
+        "return_1m": -0.022,
+        "return_3m": 0.0184,
+        "return_12m": 0.0621,
+        "vol_pctile_5y": 0.8562,
+        "drawdown_pctile_5y": 0.0389,
+        "ma_gap_200d": -0.0299,
+        "positioning_net_pctile_5y": 0.0309,
+        "recent_anomalies": [
+          {
+            "detector": "drawdown_extreme",
+            "direction": "deep_drawdown",
+            "score": 0.93,
+            "available_date": "2023-03-24"
+          }
+        ],
+        "mechanisms": [
+          {
+            "id": "M14_JAPAN_CARRY_UNWIND",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "primary"
+          }
+        ],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2021-12-31",
+      "object_id": "V10",
+      "facts": {
+        "object_id": "V10",
         "name": "CBOE Volatility Index",
         "market": "US",
         "asset_class": "volatility",
@@ -418,76 +372,10 @@
       }
     },
     {
-      "as_of": "2021-12-31",
-      "object_id": "V13",
-      "facts": {
-        "object_id": "V13",
-        "name": "FTSE 100",
-        "market": "UK",
-        "asset_class": "equity_index",
-        "return_1m": 0.046,
-        "return_3m": 0.0509,
-        "return_12m": 0.1236,
-        "vol_pctile_5y": 0.6124,
-        "drawdown_pctile_5y": 0.9015,
-        "ma_gap_200d": 0.0409,
-        "positioning_net_pctile_5y": null,
-        "recent_anomalies": [
-          {
-            "detector": "drawdown_extreme",
-            "direction": "near_high",
-            "score": 0.9,
-            "available_date": "2021-12-29"
-          }
-        ],
-        "mechanisms": [],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
-      "as_of": "2022-10-31",
-      "object_id": "V14",
-      "facts": {
-        "object_id": "V14",
-        "name": "USD/CNY onshore",
-        "market": "CN",
-        "asset_class": "fx",
-        "return_1m": 0.0179,
-        "return_3m": 0.074,
-        "return_12m": 0.1351,
-        "vol_pctile_5y": 0.9968,
-        "drawdown_pctile_5y": 0.8515,
-        "ma_gap_200d": 0.0852,
-        "positioning_net_pctile_5y": null,
-        "recent_anomalies": [
-          {
-            "detector": "price_return_shock",
-            "direction": "down",
-            "score": 1.0,
-            "available_date": "2022-10-27"
-          },
-          {
-            "detector": "relative_strength_extreme",
-            "direction": "outperform",
-            "score": 0.17,
-            "available_date": "2022-10-31"
-          }
-        ],
-        "mechanisms": [],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
       "as_of": "2023-03-31",
-      "object_id": "V15",
+      "object_id": "V11",
       "facts": {
-        "object_id": "V15",
+        "object_id": "V11",
         "name": "Bitcoin / USD",
         "market": "WORLD",
         "asset_class": "crypto",
@@ -522,9 +410,9 @@
     },
     {
       "as_of": "2022-10-31",
-      "object_id": "V16",
+      "object_id": "V12",
       "facts": {
-        "object_id": "V16",
+        "object_id": "V12",
         "name": "ICE US Dollar Index (DXY spot)",
         "market": "US",
         "asset_class": "fx",
@@ -558,10 +446,312 @@
       }
     },
     {
+      "as_of": "2023-03-31",
+      "object_id": "V13",
+      "facts": {
+        "object_id": "V13",
+        "name": "Technology Select Sector SPDR",
+        "market": "US",
+        "asset_class": "sector_equity",
+        "return_1m": 0.1032,
+        "return_3m": 0.2145,
+        "return_12m": -0.0544,
+        "vol_pctile_5y": 0.4448,
+        "drawdown_pctile_5y": 0.4575,
+        "ma_gap_200d": 0.1374,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "relative_strength_extreme",
+            "direction": "outperform",
+            "score": 0.27,
+            "available_date": "2023-03-30"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
       "as_of": "2022-10-31",
+      "object_id": "V14",
+      "facts": {
+        "object_id": "V14",
+        "name": "NY Harbor ULSD Heating Oil",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "return_1m": 0.244,
+        "return_3m": 0.2398,
+        "return_12m": 0.6788,
+        "vol_pctile_5y": 0.8427,
+        "drawdown_pctile_5y": 0.4186,
+        "ma_gap_200d": 0.1513,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "relative_strength_extreme",
+            "direction": "outperform",
+            "score": 0.03,
+            "available_date": "2022-10-28"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2022-10-31",
+      "object_id": "V15",
+      "facts": {
+        "object_id": "V15",
+        "name": "Industrial Select Sector SPDR",
+        "market": "US",
+        "asset_class": "sector_equity",
+        "return_1m": 0.1389,
+        "return_3m": 0.0008,
+        "return_12m": -0.0823,
+        "vol_pctile_5y": 0.8578,
+        "drawdown_pctile_5y": 0.2081,
+        "ma_gap_200d": 0.004,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "relative_strength_extreme",
+            "direction": "outperform",
+            "score": 0.03,
+            "available_date": "2022-10-31"
+          }
+        ],
+        "mechanisms": [
+          {
+            "id": "M07_COPPER_GOLD_GROWTH",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "primary"
+          }
+        ],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2022-10-31",
+      "object_id": "V16",
+      "facts": {
+        "object_id": "V16",
+        "name": "USD/CNY onshore",
+        "market": "CN",
+        "asset_class": "fx",
+        "return_1m": 0.0179,
+        "return_3m": 0.074,
+        "return_12m": 0.1351,
+        "vol_pctile_5y": 0.9968,
+        "drawdown_pctile_5y": 0.8515,
+        "ma_gap_200d": 0.0852,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 1.0,
+            "available_date": "2022-10-27"
+          },
+          {
+            "detector": "relative_strength_extreme",
+            "direction": "outperform",
+            "score": 0.17,
+            "available_date": "2022-10-31"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2021-12-31",
       "object_id": "V17",
       "facts": {
         "object_id": "V17",
+        "name": "USD/JPY",
+        "market": "JP",
+        "asset_class": "fx",
+        "return_1m": 0.0193,
+        "return_3m": 0.0369,
+        "return_12m": 0.109,
+        "vol_pctile_5y": 0.3352,
+        "drawdown_pctile_5y": 0.973,
+        "ma_gap_200d": 0.0359,
+        "positioning_net_pctile_5y": 0.4981,
+        "recent_anomalies": [
+          {
+            "detector": "drawdown_extreme",
+            "direction": "near_high",
+            "score": 0.86,
+            "available_date": "2021-12-31"
+          }
+        ],
+        "mechanisms": [
+          {
+            "id": "M13_POSITIONING_EXTREMES",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "secondary"
+          }
+        ],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2021-12-31",
+      "object_id": "V18",
+      "facts": {
+        "object_id": "V18",
+        "name": "Health Care Select Sector SPDR",
+        "market": "US",
+        "asset_class": "sector_equity",
+        "return_1m": 0.0921,
+        "return_3m": 0.1107,
+        "return_12m": 0.2604,
+        "vol_pctile_5y": 0.4059,
+        "drawdown_pctile_5y": 0.7943,
+        "ma_gap_200d": 0.1033,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2023-03-31",
+      "object_id": "V19",
+      "facts": {
+        "object_id": "V19",
+        "name": "United States Natural Gas Fund",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "return_1m": -0.2432,
+        "return_3m": -0.5227,
+        "return_12m": -0.6419,
+        "vol_pctile_5y": 0.8793,
+        "drawdown_pctile_5y": 0.0024,
+        "ma_gap_200d": -0.6364,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2023-03-31",
+      "object_id": "V20",
+      "facts": {
+        "object_id": "V20",
+        "name": "USD/JPY",
+        "market": "JP",
+        "asset_class": "fx",
+        "return_1m": -0.022,
+        "return_3m": 0.0184,
+        "return_12m": 0.0621,
+        "vol_pctile_5y": 0.8562,
+        "drawdown_pctile_5y": 0.0389,
+        "ma_gap_200d": -0.0299,
+        "positioning_net_pctile_5y": 0.0309,
+        "recent_anomalies": [
+          {
+            "detector": "drawdown_extreme",
+            "direction": "deep_drawdown",
+            "score": 0.93,
+            "available_date": "2023-03-24"
+          }
+        ],
+        "mechanisms": [
+          {
+            "id": "M14_JAPAN_CARRY_UNWIND",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "primary"
+          }
+        ],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2022-10-31",
+      "object_id": "V21",
+      "facts": {
+        "object_id": "V21",
+        "name": "iShares MSCI Emerging Markets",
+        "market": "WORLD",
+        "asset_class": "equity_etf",
+        "return_1m": -0.0198,
+        "return_3m": -0.1329,
+        "return_12m": -0.3128,
+        "vol_pctile_5y": 0.672,
+        "drawdown_pctile_5y": 0.0048,
+        "ma_gap_200d": -0.1739,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "relative_strength_extreme",
+            "direction": "underperform",
+            "score": 0.37,
+            "available_date": "2022-10-25"
+          }
+        ],
+        "mechanisms": [
+          {
+            "id": "M01_REAL_RATES_USD_ALLOCATION",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "primary"
+          },
+          {
+            "id": "M08_COMMODITY_SUPPLY_SHOCK",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "secondary"
+          },
+          {
+            "id": "M09_DOLLAR_LIQUIDITY_EM_STRESS",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "primary"
+          }
+        ],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2022-10-31",
+      "object_id": "V22",
+      "facts": {
+        "object_id": "V22",
         "name": "iShares China Large-Cap",
         "market": "CN",
         "asset_class": "equity_etf",
@@ -614,9 +804,39 @@
     },
     {
       "as_of": "2023-03-31",
-      "object_id": "V18",
+      "object_id": "V23",
       "facts": {
-        "object_id": "V18",
+        "object_id": "V23",
+        "name": "SPDR S&P 500 ETF",
+        "market": "US",
+        "asset_class": "equity_etf",
+        "return_1m": 0.033,
+        "return_3m": 0.0718,
+        "return_12m": -0.0924,
+        "vol_pctile_5y": 0.5139,
+        "drawdown_pctile_5y": 0.2883,
+        "ma_gap_200d": 0.051,
+        "positioning_net_pctile_5y": 0.3938,
+        "recent_anomalies": [],
+        "mechanisms": [
+          {
+            "id": "M14_JAPAN_CARRY_UNWIND",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "secondary"
+          }
+        ],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2023-03-31",
+      "object_id": "V24",
+      "facts": {
+        "object_id": "V24",
         "name": "iShares 1-3 Year Treasury Bond",
         "market": "US",
         "asset_class": "fixed_income",
@@ -649,36 +869,59 @@
       }
     },
     {
-      "as_of": "2021-12-31",
-      "object_id": "V19",
+      "as_of": "2023-03-31",
+      "object_id": "V25",
       "facts": {
-        "object_id": "V19",
-        "name": "USD/JPY",
-        "market": "JP",
-        "asset_class": "fx",
-        "return_1m": 0.0193,
-        "return_3m": 0.0369,
-        "return_12m": 0.109,
-        "vol_pctile_5y": 0.3352,
-        "drawdown_pctile_5y": 0.973,
-        "ma_gap_200d": 0.0359,
-        "positioning_net_pctile_5y": 0.4981,
+        "object_id": "V25",
+        "name": "Euro Stoxx 50",
+        "market": "EA",
+        "asset_class": "equity_index",
+        "return_1m": 0.0176,
+        "return_3m": 0.1115,
+        "return_12m": 0.0921,
+        "vol_pctile_5y": 0.6021,
+        "drawdown_pctile_5y": 0.9686,
+        "ma_gap_200d": 0.1317,
+        "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
             "detector": "drawdown_extreme",
             "direction": "near_high",
-            "score": 0.86,
+            "score": 0.84,
+            "available_date": "2023-03-31"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2021-12-31",
+      "object_id": "V26",
+      "facts": {
+        "object_id": "V26",
+        "name": "iShares MSCI USA Min Vol Factor",
+        "market": "US",
+        "asset_class": "equity_etf",
+        "return_1m": 0.0758,
+        "return_3m": 0.0981,
+        "return_12m": 0.2085,
+        "vol_pctile_5y": 0.5346,
+        "drawdown_pctile_5y": 0.7633,
+        "ma_gap_200d": 0.0854,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "price_return_shock",
+            "direction": "up",
+            "score": 0.08,
             "available_date": "2021-12-31"
           }
         ],
-        "mechanisms": [
-          {
-            "id": "M13_POSITIONING_EXTREMES",
-            "status": "unsupported",
-            "confidence": 0.05,
-            "role": "secondary"
-          }
-        ],
+        "mechanisms": [],
         "data_gaps": [
           "no consensus earnings",
           "no options-implied distribution"
@@ -687,9 +930,9 @@
     },
     {
       "as_of": "2023-03-31",
-      "object_id": "V20",
+      "object_id": "V27",
       "facts": {
-        "object_id": "V20",
+        "object_id": "V27",
         "name": "COMEX Silver front month",
         "market": "WORLD",
         "asset_class": "commodity",
@@ -709,28 +952,21 @@
       }
     },
     {
-      "as_of": "2023-03-31",
-      "object_id": "V21",
+      "as_of": "2021-12-31",
+      "object_id": "V28",
       "facts": {
-        "object_id": "V21",
-        "name": "Technology Select Sector SPDR",
-        "market": "US",
-        "asset_class": "sector_equity",
-        "return_1m": 0.1032,
-        "return_3m": 0.2145,
-        "return_12m": -0.0544,
-        "vol_pctile_5y": 0.4448,
-        "drawdown_pctile_5y": 0.4575,
-        "ma_gap_200d": 0.1374,
+        "object_id": "V28",
+        "name": "Ether / USD",
+        "market": "WORLD",
+        "asset_class": "crypto",
+        "return_1m": -0.1972,
+        "return_3m": 0.1134,
+        "return_12m": 3.9913,
+        "vol_pctile_5y": 0.102,
+        "drawdown_pctile_5y": 0.6313,
+        "ma_gap_200d": 0.0946,
         "positioning_net_pctile_5y": null,
-        "recent_anomalies": [
-          {
-            "detector": "relative_strength_extreme",
-            "direction": "outperform",
-            "score": 0.27,
-            "available_date": "2023-03-30"
-          }
-        ],
+        "recent_anomalies": [],
         "mechanisms": [],
         "data_gaps": [
           "no consensus earnings",
@@ -740,9 +976,9 @@
     },
     {
       "as_of": "2022-10-31",
-      "object_id": "V22",
+      "object_id": "V29",
       "facts": {
-        "object_id": "V22",
+        "object_id": "V29",
         "name": "SPDR S&P 500 ETF",
         "market": "US",
         "asset_class": "equity_etf",
@@ -782,24 +1018,24 @@
     },
     {
       "as_of": "2021-12-31",
-      "object_id": "V23",
+      "object_id": "V30",
       "facts": {
-        "object_id": "V23",
-        "name": "iShares Hang Seng TECH ETF",
-        "market": "HK",
-        "asset_class": "equity_etf",
-        "return_1m": -0.0563,
-        "return_3m": -0.0768,
-        "return_12m": -0.3231,
-        "vol_pctile_5y": 0.2475,
-        "drawdown_pctile_5y": 0.0349,
-        "ma_gap_200d": -0.196,
+        "object_id": "V30",
+        "name": "FTSE 100",
+        "market": "UK",
+        "asset_class": "equity_index",
+        "return_1m": 0.046,
+        "return_3m": 0.0509,
+        "return_12m": 0.1236,
+        "vol_pctile_5y": 0.6124,
+        "drawdown_pctile_5y": 0.9015,
+        "ma_gap_200d": 0.0409,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
             "detector": "drawdown_extreme",
-            "direction": "deep_drawdown",
-            "score": 1.0,
+            "direction": "near_high",
+            "score": 0.9,
             "available_date": "2021-12-29"
           }
         ],
@@ -812,25 +1048,25 @@
     },
     {
       "as_of": "2023-03-31",
-      "object_id": "V24",
+      "object_id": "V31",
       "facts": {
-        "object_id": "V24",
-        "name": "USD/JPY",
-        "market": "JP",
-        "asset_class": "fx",
-        "return_1m": -0.022,
-        "return_3m": 0.0184,
-        "return_12m": 0.0621,
-        "vol_pctile_5y": 0.8562,
-        "drawdown_pctile_5y": 0.0389,
-        "ma_gap_200d": -0.0299,
-        "positioning_net_pctile_5y": 0.0309,
+        "object_id": "V31",
+        "name": "Bitcoin / USD",
+        "market": "WORLD",
+        "asset_class": "crypto",
+        "return_1m": 0.2043,
+        "return_3m": 0.7153,
+        "return_12m": -0.3746,
+        "vol_pctile_5y": 0.2385,
+        "drawdown_pctile_5y": 0.9775,
+        "ma_gap_200d": 0.399,
+        "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
             "detector": "drawdown_extreme",
-            "direction": "deep_drawdown",
-            "score": 0.93,
-            "available_date": "2023-03-24"
+            "direction": "near_high",
+            "score": 0.89,
+            "available_date": "2023-03-29"
           }
         ],
         "mechanisms": [
@@ -838,7 +1074,7 @@
             "id": "M14_JAPAN_CARRY_UNWIND",
             "status": "unsupported",
             "confidence": 0.05,
-            "role": "primary"
+            "role": "secondary"
           }
         ],
         "data_gaps": [
@@ -849,9 +1085,9 @@
     },
     {
       "as_of": "2024-09-30",
-      "object_id": "V25",
+      "object_id": "V32",
       "facts": {
-        "object_id": "V25",
+        "object_id": "V32",
         "name": "China Securities Sector ETF",
         "market": "CN",
         "asset_class": "sector_equity",
@@ -890,70 +1126,10 @@
       }
     },
     {
-      "as_of": "2023-03-31",
-      "object_id": "V26",
-      "facts": {
-        "object_id": "V26",
-        "name": "United States Natural Gas Fund",
-        "market": "WORLD",
-        "asset_class": "commodity",
-        "return_1m": -0.2432,
-        "return_3m": -0.5227,
-        "return_12m": -0.6419,
-        "vol_pctile_5y": 0.8793,
-        "drawdown_pctile_5y": 0.0024,
-        "ma_gap_200d": -0.6364,
-        "positioning_net_pctile_5y": null,
-        "recent_anomalies": [],
-        "mechanisms": [],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
-      "as_of": "2023-03-31",
-      "object_id": "V27",
-      "facts": {
-        "object_id": "V27",
-        "name": "USD/JPY",
-        "market": "JP",
-        "asset_class": "fx",
-        "return_1m": -0.022,
-        "return_3m": 0.0184,
-        "return_12m": 0.0621,
-        "vol_pctile_5y": 0.8562,
-        "drawdown_pctile_5y": 0.0389,
-        "ma_gap_200d": -0.0299,
-        "positioning_net_pctile_5y": 0.0309,
-        "recent_anomalies": [
-          {
-            "detector": "drawdown_extreme",
-            "direction": "deep_drawdown",
-            "score": 0.93,
-            "available_date": "2023-03-24"
-          }
-        ],
-        "mechanisms": [
-          {
-            "id": "M14_JAPAN_CARRY_UNWIND",
-            "status": "unsupported",
-            "confidence": 0.05,
-            "role": "primary"
-          }
-        ],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
       "as_of": "2024-09-30",
-      "object_id": "V28",
+      "object_id": "V33",
       "facts": {
-        "object_id": "V28",
+        "object_id": "V33",
         "name": "ChiNext ETF",
         "market": "CN",
         "asset_class": "equity_etf",
@@ -992,100 +1168,10 @@
       }
     },
     {
-      "as_of": "2023-03-31",
-      "object_id": "V29",
-      "facts": {
-        "object_id": "V29",
-        "name": "Euro Stoxx 50",
-        "market": "EA",
-        "asset_class": "equity_index",
-        "return_1m": 0.0176,
-        "return_3m": 0.1115,
-        "return_12m": 0.0921,
-        "vol_pctile_5y": 0.6021,
-        "drawdown_pctile_5y": 0.9686,
-        "ma_gap_200d": 0.1317,
-        "positioning_net_pctile_5y": null,
-        "recent_anomalies": [
-          {
-            "detector": "drawdown_extreme",
-            "direction": "near_high",
-            "score": 0.84,
-            "available_date": "2023-03-31"
-          }
-        ],
-        "mechanisms": [],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
-      "as_of": "2023-03-31",
-      "object_id": "V30",
-      "facts": {
-        "object_id": "V30",
-        "name": "USD/JPY",
-        "market": "JP",
-        "asset_class": "fx",
-        "return_1m": -0.022,
-        "return_3m": 0.0184,
-        "return_12m": 0.0621,
-        "vol_pctile_5y": 0.8562,
-        "drawdown_pctile_5y": 0.0389,
-        "ma_gap_200d": -0.0299,
-        "positioning_net_pctile_5y": 0.0309,
-        "recent_anomalies": [
-          {
-            "detector": "drawdown_extreme",
-            "direction": "deep_drawdown",
-            "score": 0.93,
-            "available_date": "2023-03-24"
-          }
-        ],
-        "mechanisms": [
-          {
-            "id": "M14_JAPAN_CARRY_UNWIND",
-            "status": "unsupported",
-            "confidence": 0.05,
-            "role": "primary"
-          }
-        ],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
-      "as_of": "2021-12-31",
-      "object_id": "V31",
-      "facts": {
-        "object_id": "V31",
-        "name": "Ether / USD",
-        "market": "WORLD",
-        "asset_class": "crypto",
-        "return_1m": -0.1972,
-        "return_3m": 0.1134,
-        "return_12m": 3.9913,
-        "vol_pctile_5y": 0.102,
-        "drawdown_pctile_5y": 0.6313,
-        "ma_gap_200d": 0.0946,
-        "positioning_net_pctile_5y": null,
-        "recent_anomalies": [],
-        "mechanisms": [],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
       "as_of": "2024-09-30",
-      "object_id": "V32",
+      "object_id": "V34",
       "facts": {
-        "object_id": "V32",
+        "object_id": "V34",
         "name": "CSOP Hang Seng TECH ETF",
         "market": "HK",
         "asset_class": "equity_etf",
@@ -1138,37 +1224,25 @@
     },
     {
       "as_of": "2021-12-31",
-      "object_id": "V33",
+      "object_id": "V35",
       "facts": {
-        "object_id": "V33",
-        "name": "KraneShares CSI China Internet",
-        "market": "CN",
+        "object_id": "V35",
+        "name": "iShares Hang Seng TECH ETF",
+        "market": "HK",
         "asset_class": "equity_etf",
-        "return_1m": -0.0978,
-        "return_3m": -0.1541,
-        "return_12m": -0.4901,
-        "vol_pctile_5y": 0.9508,
-        "drawdown_pctile_5y": 0.004,
-        "ma_gap_200d": -0.3219,
+        "return_1m": -0.0563,
+        "return_3m": -0.0768,
+        "return_12m": -0.3231,
+        "vol_pctile_5y": 0.2475,
+        "drawdown_pctile_5y": 0.0349,
+        "ma_gap_200d": -0.196,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
-            "detector": "price_return_shock",
-            "direction": "down",
-            "score": 0.07,
-            "available_date": "2021-12-27"
-          },
-          {
-            "detector": "price_return_shock",
-            "direction": "up",
-            "score": 0.33,
-            "available_date": "2021-12-30"
-          },
-          {
-            "detector": "vol_regime_shift",
-            "direction": "expansion",
-            "score": 0.15,
-            "available_date": "2021-12-30"
+            "detector": "drawdown_extreme",
+            "direction": "deep_drawdown",
+            "score": 1.0,
+            "available_date": "2021-12-29"
           }
         ],
         "mechanisms": [],
@@ -1180,9 +1254,9 @@
     },
     {
       "as_of": "2022-10-31",
-      "object_id": "V34",
+      "object_id": "V36",
       "facts": {
-        "object_id": "V34",
+        "object_id": "V36",
         "name": "CSI 300 Index",
         "market": "CN",
         "asset_class": "equity_index",
@@ -1223,9 +1297,9 @@
     },
     {
       "as_of": "2024-09-30",
-      "object_id": "V35",
+      "object_id": "V37",
       "facts": {
-        "object_id": "V35",
+        "object_id": "V37",
         "name": "STAR 50 ETF",
         "market": "CN",
         "asset_class": "equity_etf",
@@ -1265,98 +1339,39 @@
     },
     {
       "as_of": "2021-12-31",
-      "object_id": "V36",
-      "facts": {
-        "object_id": "V36",
-        "name": "Health Care Select Sector SPDR",
-        "market": "US",
-        "asset_class": "sector_equity",
-        "return_1m": 0.0921,
-        "return_3m": 0.1107,
-        "return_12m": 0.2604,
-        "vol_pctile_5y": 0.4059,
-        "drawdown_pctile_5y": 0.7943,
-        "ma_gap_200d": 0.1033,
-        "positioning_net_pctile_5y": null,
-        "recent_anomalies": [],
-        "mechanisms": [],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
-      "as_of": "2024-09-30",
-      "object_id": "V37",
-      "facts": {
-        "object_id": "V37",
-        "name": "CSI 300 Index",
-        "market": "CN",
-        "asset_class": "equity_index",
-        "return_1m": 0.2225,
-        "return_3m": 0.1552,
-        "return_12m": 0.0753,
-        "vol_pctile_5y": 0.9285,
-        "drawdown_pctile_5y": 0.9885,
-        "ma_gap_200d": 0.1672,
-        "positioning_net_pctile_5y": null,
-        "recent_anomalies": [
-          {
-            "detector": "drawdown_extreme",
-            "direction": "near_high",
-            "score": 0.94,
-            "available_date": "2024-09-30"
-          },
-          {
-            "detector": "price_return_shock",
-            "direction": "up",
-            "score": 1.0,
-            "available_date": "2024-09-30"
-          }
-        ],
-        "mechanisms": [
-          {
-            "id": "M03_CHINA_CREDIT_IMPULSE",
-            "status": "unsupported",
-            "confidence": 0.05,
-            "role": "secondary"
-          },
-          {
-            "id": "M04_CHINA_POLICY_HK_TECH",
-            "status": "unsupported",
-            "confidence": 0.05,
-            "role": "secondary"
-          }
-        ],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
-      "as_of": "2022-10-31",
       "object_id": "V38",
       "facts": {
         "object_id": "V38",
-        "name": "Energy Select Sector SPDR",
+        "name": "Consumer Staples Select Sector SPDR",
         "market": "US",
         "asset_class": "sector_equity",
-        "return_1m": 0.2497,
-        "return_3m": 0.1874,
-        "return_12m": 0.6371,
-        "vol_pctile_5y": 0.7522,
-        "drawdown_pctile_5y": 0.9285,
-        "ma_gap_200d": 0.1952,
+        "return_1m": 0.1099,
+        "return_3m": 0.1249,
+        "return_12m": 0.1721,
+        "vol_pctile_5y": 0.5417,
+        "drawdown_pctile_5y": 0.9488,
+        "ma_gap_200d": 0.0981,
         "positioning_net_pctile_5y": null,
-        "recent_anomalies": [],
+        "recent_anomalies": [
+          {
+            "detector": "price_return_shock",
+            "direction": "up",
+            "score": 0.48,
+            "available_date": "2021-12-31"
+          },
+          {
+            "detector": "relative_strength_extreme",
+            "direction": "outperform",
+            "score": 0.1,
+            "available_date": "2021-12-31"
+          }
+        ],
         "mechanisms": [
           {
             "id": "M05_ENERGY_INFLATION_CHAIN",
             "status": "mixed",
             "confidence": 0.17,
-            "role": "primary"
+            "role": "secondary"
           }
         ],
         "data_gaps": [
@@ -1419,6 +1434,85 @@
       "object_id": "V40",
       "facts": {
         "object_id": "V40",
+        "name": "Energy Select Sector SPDR",
+        "market": "US",
+        "asset_class": "sector_equity",
+        "return_1m": 0.2497,
+        "return_3m": 0.1874,
+        "return_12m": 0.6371,
+        "vol_pctile_5y": 0.7522,
+        "drawdown_pctile_5y": 0.9285,
+        "ma_gap_200d": 0.1952,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [],
+        "mechanisms": [
+          {
+            "id": "M05_ENERGY_INFLATION_CHAIN",
+            "status": "mixed",
+            "confidence": 0.17,
+            "role": "primary"
+          }
+        ],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2024-09-30",
+      "object_id": "V41",
+      "facts": {
+        "object_id": "V41",
+        "name": "CSI 300 Index",
+        "market": "CN",
+        "asset_class": "equity_index",
+        "return_1m": 0.2225,
+        "return_3m": 0.1552,
+        "return_12m": 0.0753,
+        "vol_pctile_5y": 0.9285,
+        "drawdown_pctile_5y": 0.9885,
+        "ma_gap_200d": 0.1672,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "drawdown_extreme",
+            "direction": "near_high",
+            "score": 0.94,
+            "available_date": "2024-09-30"
+          },
+          {
+            "detector": "price_return_shock",
+            "direction": "up",
+            "score": 1.0,
+            "available_date": "2024-09-30"
+          }
+        ],
+        "mechanisms": [
+          {
+            "id": "M03_CHINA_CREDIT_IMPULSE",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "secondary"
+          },
+          {
+            "id": "M04_CHINA_POLICY_HK_TECH",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "secondary"
+          }
+        ],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2022-10-31",
+      "object_id": "V42",
+      "facts": {
+        "object_id": "V42",
         "name": "Invesco QQQ (Nasdaq 100)",
         "market": "US",
         "asset_class": "equity_etf",
@@ -1446,9 +1540,9 @@
     },
     {
       "as_of": "2024-09-30",
-      "object_id": "V41",
+      "object_id": "V43",
       "facts": {
-        "object_id": "V41",
+        "object_id": "V43",
         "name": "iShares MSCI Emerging Markets",
         "market": "WORLD",
         "asset_class": "equity_etf",
@@ -1507,9 +1601,9 @@
     },
     {
       "as_of": "2024-09-30",
-      "object_id": "V42",
+      "object_id": "V44",
       "facts": {
-        "object_id": "V42",
+        "object_id": "V44",
         "name": "COMEX Silver front month",
         "market": "WORLD",
         "asset_class": "commodity",
@@ -1544,9 +1638,9 @@
     },
     {
       "as_of": "2021-12-31",
-      "object_id": "V43",
+      "object_id": "V45",
       "facts": {
-        "object_id": "V43",
+        "object_id": "V45",
         "name": "Solana / USD",
         "market": "WORLD",
         "asset_class": "crypto",
@@ -1567,42 +1661,54 @@
     },
     {
       "as_of": "2024-09-30",
-      "object_id": "V44",
+      "object_id": "V46",
       "facts": {
-        "object_id": "V44",
-        "name": "CSI 300 Index",
-        "market": "CN",
-        "asset_class": "equity_index",
-        "return_1m": 0.2225,
-        "return_3m": 0.1552,
-        "return_12m": 0.0753,
-        "vol_pctile_5y": 0.9285,
-        "drawdown_pctile_5y": 0.9885,
-        "ma_gap_200d": 0.1672,
+        "object_id": "V46",
+        "name": "iShares MSCI Emerging Markets",
+        "market": "WORLD",
+        "asset_class": "equity_etf",
+        "return_1m": 0.0596,
+        "return_3m": 0.0743,
+        "return_12m": 0.2408,
+        "vol_pctile_5y": 0.664,
+        "drawdown_pctile_5y": 0.8539,
+        "ma_gap_200d": 0.1091,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
             "detector": "drawdown_extreme",
             "direction": "near_high",
-            "score": 0.94,
-            "available_date": "2024-09-30"
+            "score": 0.87,
+            "available_date": "2024-09-24"
           },
           {
             "detector": "price_return_shock",
             "direction": "up",
-            "score": 1.0,
-            "available_date": "2024-09-30"
+            "score": 0.1,
+            "available_date": "2024-09-24"
+          },
+          {
+            "detector": "relative_strength_extreme",
+            "direction": "outperform",
+            "score": 0.19,
+            "available_date": "2024-09-27"
           }
         ],
         "mechanisms": [
           {
-            "id": "M03_CHINA_CREDIT_IMPULSE",
+            "id": "M09_DOLLAR_LIQUIDITY_EM_STRESS",
             "status": "unsupported",
             "confidence": 0.05,
+            "role": "primary"
+          },
+          {
+            "id": "M12_VIX_TERM_STRUCTURE",
+            "status": "mixed",
+            "confidence": 0.55,
             "role": "secondary"
           },
           {
-            "id": "M04_CHINA_POLICY_HK_TECH",
+            "id": "M14_JAPAN_CARRY_UNWIND",
             "status": "unsupported",
             "confidence": 0.05,
             "role": "secondary"
@@ -1616,9 +1722,9 @@
     },
     {
       "as_of": "2023-03-31",
-      "object_id": "V45",
+      "object_id": "V47",
       "facts": {
-        "object_id": "V45",
+        "object_id": "V47",
         "name": "iShares MBS ETF",
         "market": "US",
         "asset_class": "fixed_income",
@@ -1652,9 +1758,9 @@
     },
     {
       "as_of": "2022-10-31",
-      "object_id": "V46",
+      "object_id": "V48",
       "facts": {
-        "object_id": "V46",
+        "object_id": "V48",
         "name": "Hang Seng China Enterprises Index",
         "market": "HK",
         "asset_class": "equity_index",

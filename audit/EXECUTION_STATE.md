@@ -55,3 +55,9 @@ cd global-opportunity-engine
 .venv/bin/python -m goe.cli replay --cases
 .venv/bin/python -m goe.cli handoff --ia-path ~/investment-agent-dev --limit 1
 ```
+
+## V2 state
+- Branch `architecture/research-v2`; V1 tag `v1-frozen-1f2b341`.
+- Contracts + ResearchCandidate + V2 triage + four-method evaluation implemented.
+- 165 offline tests; V2 blind result NOT VALIDATED; A→B fact-only handoff returns unmapped/refused.
+- See `audit/V2_FINAL_ACCEPTANCE.md`, `audit/V2_ISSUES.md`, `evaluation/V2_EVALUATION_RESULTS.md`.
