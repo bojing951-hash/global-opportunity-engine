@@ -1,6 +1,7 @@
 # EXECUTION STATE
 
-- Updated: 2026-11-14 14:45 HKT
+- Updated: 2026-11-14 15:05 HKT
+- Final commit: 28ec3a2 (pushed to origin/fix/autonomous-audit-remediation)
 - Branch: `fix/autonomous-audit-remediation`
 - Base (main/remote): `e5da620cafce5b6214252de35538c70f7112aa3a`
 - Working commit: audit baseline `bb02363` + final remediation changes (see FIX_LOG); commits pending
@@ -26,6 +27,9 @@ Final scan: 1,511 anomalies, 5 mechanisms (2 mixed/3 unsupported), 11 candidates
 (3 watch, 2 low_priority, 1 invalidated, 5 excluded), zero duplicate primaries, 0 deep_research.
 
 ## Pending
+0. **No P0/P1 work remains.** The only open items are documented P2/P3 limitations
+   (`ROUND2_FIX_SUMMARY.md`, `LIMITATIONS.md`): human/expert labels, HAC p-values, same-move
+   orthogonality, futures roll metadata, FX conversion, mid-report file residue.
 1. ~~Historical case rerun~~ done (7/7); descriptive forward-return study added (`audit/FORWARD_RETURNS.md`).
 2. Research-quality evaluation vs simple rankings + blind review (input being built) → audit/RESEARCH_QUALITY.md.
 3. Independent QA re-audit of fixes (subagent) → final verdict.
