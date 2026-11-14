@@ -42,7 +42,20 @@
 | `US_CAPE` | Shiller CAPE（月度，陈旧时停用） |
 | `POS_GOLD_MM`, `POS_SP500_LEV` … | CFTC 净持仓；`:oi` 后缀为未平仓量 |
 
-## 4. 时效与发布滞后（回放时强制）
+## 4. 时间语义（观测日 / 发布日 / 可用日 / 研究 as-of）
+
+| 概念 | 字段/实现 | 示例 |
+|---|---|---|
+| Observation date | `prices.date` / `indicators.date` | CPI 2026-09 参考期 = 2026-09-01 |
+| Ingestion timestamp | `fetched_at`（UTC） | 2026-11-13T13:29:00Z |
+| Data available at | 由频率决定的发布滞后：日 0 / 周 4 天 / 月 45 天 / 季 120 天 | CPI 2026-09 可用日 = 2026-10-16 |
+| Research as-of | 扫描参数 `--as-of`；默认最后一根**已完成**K线 | 2026-11-13 |
+
+规则：任何 as-of 都不能使用“可用日 > as-of”的数据。异常记录同时保存观测日 `as_of` 与
+可用日 `available_date`；筛选/机制触发按可用日 + 频率窗口（日 7d/周 21d/月 75d/季 150d）。
+历史回放对每个评估日独立切片，并过滤宏观按可用日（`FeatureSet.slice_as_of`）。
+
+### 时效与发布滞后（回放时强制）
 
 | 频率 | 滞后（日历日） | 用途 |
 |---|---|---|

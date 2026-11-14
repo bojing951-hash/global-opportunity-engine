@@ -1,6 +1,6 @@
 # PROJECT_STATE — 项目状态（唯一权威进度记录）
 
-> 最后更新：2026-11-14 00:05 HKT
+> 最后更新：2026-11-14 11:20 HKT
 > 更新规则：每次会话结束或关键阶段完成后更新；状态必须对应真实文件、测试结果与 git 提交。
 > 恢复流程：读 `PROJECT_SPEC.md` → 本文件 → 检查 `git log` / `pytest` / `goe doctor` → 继续未完成项。
 
@@ -16,7 +16,7 @@ GitHub 远程仓库等待授权）。
 | 项目骨架、配置体系（universe/curves/macro/positioning/themes/thresholds/scoring/cases） | `config/`、`goe/config.py`、`goe doctor` 输出 125 标的/4 曲线/16 宏观/16 仓位 |
 | SQLite 存储与审计表 | `goe/db.py`（14 张表）、`data/goe.db` 约 120MB |
 | 10 个数据源适配器（9 指标 + Yahoo 价格） | `goe/sources/*.py`、`docs/DATA_SOURCE_NOTES.md`、联网测试 9 项 |
-| 价格回填 2015-2026 | 125 标的 / 358,310 行 / 最新 2026-11-13（`prices` 表） |
+| 价格回填 2015-2026 | 125 标的 / 358,310 行；最新完整 K 线 2026-11-12（11-13 美股盘中 bar 被丢弃） |
 | 指标回填 2014-2026 | 92 序列 / 159,508 行（Treasury/MOF/ECB/ChinaBond/BLS/BIS/Eurostat/CFTC/Shiller） |
 | 时点特征层（价格/曲线/信用/仓位/宏观/估值/广度/相关性） | `goe/features.py`；7.5 年窗口；宏观发布滞后；陈旧序列剔除 |
 | 14 类异常检测器 + 限流去重 | `goe/anomalies.py`；live 扫描 2,935 条（200 天窗） |

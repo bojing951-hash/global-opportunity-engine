@@ -1,0 +1,305 @@
+{
+  "mapping": {
+    "X01": {
+      "as_of": "2022-10-31",
+      "method": "A_price_move",
+      "rank": 1,
+      "entity_id": "CM_ENE_HO",
+      "theme": "refined_products"
+    },
+    "X02": {
+      "as_of": "2022-10-31",
+      "method": "A_price_move",
+      "rank": 2,
+      "entity_id": "US_VOL_VVIX",
+      "theme": "volatility"
+    },
+    "X03": {
+      "as_of": "2022-10-31",
+      "method": "A_price_move",
+      "rank": 3,
+      "entity_id": "CM_AGR_KC",
+      "theme": "softs"
+    },
+    "X04": {
+      "as_of": "2022-10-31",
+      "method": "B_anomaly_score",
+      "rank": 1,
+      "entity_id": "US_FX_DXY",
+      "theme": "usd"
+    },
+    "X05": {
+      "as_of": "2022-10-31",
+      "method": "B_anomaly_score",
+      "rank": 2,
+      "entity_id": "HK_EQ_HSCEI",
+      "theme": "hk_equity"
+    },
+    "X06": {
+      "as_of": "2022-10-31",
+      "method": "B_anomaly_score",
+      "rank": 3,
+      "entity_id": "US_FI_MBB",
+      "theme": "us_mbs"
+    },
+    "X07": {
+      "as_of": "2022-10-31",
+      "method": "C_engine",
+      "rank": 1,
+      "entity_id": "US_EQ_SPY",
+      "theme": "us_equity_broad"
+    },
+    "X08": {
+      "as_of": "2022-10-31",
+      "method": "C_engine",
+      "rank": 2,
+      "entity_id": "US_EQ_QQQ",
+      "theme": "us_equity_growth"
+    },
+    "X09": {
+      "as_of": "2022-10-31",
+      "method": "C_engine",
+      "rank": 3,
+      "entity_id": "CN_EQ_CSI300",
+      "theme": "china_broad"
+    },
+    "X10": {
+      "as_of": "2023-03-31",
+      "method": "A_price_move",
+      "rank": 1,
+      "entity_id": "CM_ETF_UNG",
+      "theme": "natural_gas"
+    },
+    "X11": {
+      "as_of": "2023-03-31",
+      "method": "A_price_move",
+      "rank": 2,
+      "entity_id": "CR_BTC",
+      "theme": "crypto_btc"
+    },
+    "X12": {
+      "as_of": "2023-03-31",
+      "method": "A_price_move",
+      "rank": 3,
+      "entity_id": "US_VOL_MOVE",
+      "theme": "volatility"
+    },
+    "X13": {
+      "as_of": "2023-03-31",
+      "method": "B_anomaly_score",
+      "rank": 1,
+      "entity_id": "US_FI_MBB",
+      "theme": "us_mbs"
+    },
+    "X14": {
+      "as_of": "2023-03-31",
+      "method": "B_anomaly_score",
+      "rank": 2,
+      "entity_id": "US_FI_SHY",
+      "theme": "us_rates_short"
+    },
+    "X15": {
+      "as_of": "2023-03-31",
+      "method": "B_anomaly_score",
+      "rank": 3,
+      "entity_id": "GX_FX_USDJPY",
+      "theme": "usdjpy"
+    },
+    "X16": {
+      "as_of": "2023-03-31",
+      "method": "C_engine",
+      "rank": 1,
+      "entity_id": "US_EQ_SPY",
+      "theme": "us_equity_broad"
+    },
+    "X17": {
+      "as_of": "2023-03-31",
+      "method": "C_engine",
+      "rank": 2,
+      "entity_id": "EA_EQ_SX5E",
+      "theme": "euro_equity"
+    },
+    "X18": {
+      "as_of": "2023-03-31",
+      "method": "C_engine",
+      "rank": 3,
+      "entity_id": "GX_FX_USDJPY",
+      "theme": "usdjpy"
+    },
+    "X19": {
+      "as_of": "2024-09-30",
+      "method": "A_price_move",
+      "rank": 1,
+      "entity_id": "CM_ENE_NG",
+      "theme": "natural_gas"
+    },
+    "X20": {
+      "as_of": "2024-09-30",
+      "method": "A_price_move",
+      "rank": 2,
+      "entity_id": "CN_EQ_CHINEXT",
+      "theme": "china_growth"
+    },
+    "X21": {
+      "as_of": "2024-09-30",
+      "method": "A_price_move",
+      "rank": 3,
+      "entity_id": "CN_SEC_SEC",
+      "theme": "china_brokers"
+    },
+    "X22": {
+      "as_of": "2024-09-30",
+      "method": "B_anomaly_score",
+      "rank": 1,
+      "entity_id": "CN_EQ_ETF300",
+      "theme": "china_broad"
+    },
+    "X23": {
+      "as_of": "2024-09-30",
+      "method": "B_anomaly_score",
+      "rank": 2,
+      "entity_id": "CN_EQ_CHINEXT",
+      "theme": "china_growth"
+    },
+    "X24": {
+      "as_of": "2024-09-30",
+      "method": "B_anomaly_score",
+      "rank": 3,
+      "entity_id": "CN_SEC_EV",
+      "theme": "china_ev"
+    },
+    "X25": {
+      "as_of": "2024-09-30",
+      "method": "C_engine",
+      "rank": 1,
+      "entity_id": "CN_EQ_CSI300",
+      "theme": "china_broad"
+    },
+    "X26": {
+      "as_of": "2024-09-30",
+      "method": "C_engine",
+      "rank": 2,
+      "entity_id": "CM_MET_SI",
+      "theme": "silver"
+    },
+    "X27": {
+      "as_of": "2024-09-30",
+      "method": "C_engine",
+      "rank": 3,
+      "entity_id": "WORLD_EQ_EEM",
+      "theme": "em_equity_broad"
+    },
+    "X28": {
+      "as_of": "2025-06-30",
+      "method": "A_price_move",
+      "rank": 1,
+      "entity_id": "CM_MET_PL",
+      "theme": "platinum"
+    },
+    "X29": {
+      "as_of": "2025-06-30",
+      "method": "A_price_move",
+      "rank": 2,
+      "entity_id": "CM_ENE_NG",
+      "theme": "natural_gas"
+    },
+    "X30": {
+      "as_of": "2025-06-30",
+      "method": "A_price_move",
+      "rank": 3,
+      "entity_id": "CM_ETF_URA",
+      "theme": "uranium"
+    },
+    "X31": {
+      "as_of": "2025-06-30",
+      "method": "B_anomaly_score",
+      "rank": 1,
+      "entity_id": "HK_EQ_2800",
+      "theme": "hk_equity"
+    },
+    "X32": {
+      "as_of": "2025-06-30",
+      "method": "B_anomaly_score",
+      "rank": 2,
+      "entity_id": "GX_FX_EURUSD",
+      "theme": "eurusd"
+    },
+    "X33": {
+      "as_of": "2025-06-30",
+      "method": "B_anomaly_score",
+      "rank": 3,
+      "entity_id": "CM_MET_PL",
+      "theme": "platinum"
+    },
+    "X34": {
+      "as_of": "2025-06-30",
+      "method": "C_engine",
+      "rank": 1,
+      "entity_id": "EA_EQ_VGK",
+      "theme": "euro_equity"
+    },
+    "X35": {
+      "as_of": "2025-06-30",
+      "method": "C_engine",
+      "rank": 2,
+      "entity_id": "JP_EQ_N225",
+      "theme": "japan_equity"
+    },
+    "X36": {
+      "as_of": "2025-06-30",
+      "method": "C_engine",
+      "rank": 3,
+      "entity_id": "UK_EQ_EWU",
+      "theme": "uk_equity"
+    }
+  },
+  "diagnostics": {
+    "2022-10-31": {
+      "as_of": "2022-10-31",
+      "n_anomalies": 1543,
+      "n_recent": 115,
+      "n_mechanisms": 10,
+      "engine_candidates": 28,
+      "engine_statuses": {
+        "watch": 17,
+        "low_priority": 7,
+        "excluded": 4
+      }
+    },
+    "2023-03-31": {
+      "as_of": "2023-03-31",
+      "n_anomalies": 1414,
+      "n_recent": 75,
+      "n_mechanisms": 3,
+      "engine_candidates": 9,
+      "engine_statuses": {
+        "watch": 6,
+        "excluded": 3
+      }
+    },
+    "2024-09-30": {
+      "as_of": "2024-09-30",
+      "n_anomalies": 1245,
+      "n_recent": 129,
+      "n_mechanisms": 9,
+      "engine_candidates": 13,
+      "engine_statuses": {
+        "watch": 10,
+        "low_priority": 2,
+        "excluded": 1
+      }
+    },
+    "2025-06-30": {
+      "as_of": "2025-06-30",
+      "n_anomalies": 1430,
+      "n_recent": 73,
+      "n_mechanisms": 6,
+      "engine_candidates": 8,
+      "engine_statuses": {
+        "watch": 5,
+        "excluded": 3
+      }
+    }
+  },
+  "generated_at": "2026-11-14T03:12:15Z"
+}

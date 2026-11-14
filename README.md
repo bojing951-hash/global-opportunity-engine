@@ -87,10 +87,10 @@ make web                       # 只读仪表盘 http://127.0.0.1:8765
 见 [`docs/examples/report_2026-11-13.md`](docs/examples/report_2026-11-13.md)（示例输出目录 `docs/examples/`，含机会管线 JSON 与研究任务 JSON）。核心结构：
 
 ```
-OPP-0001  0.70  deep_research  WORLD  regime_repricing
-   实际利率—美元—全球配置：COMEX Gold front month 可能处于重定价窗口
-OPP-0002  0.68  deep_research  JP     price_fundamental_divergence
-   日本 Nikkei 225：价格下行与全球信用/风险偏好/广度信号不一致（待检验的超跌假设）
+OPP-0001  0.67  watch  US  event_revision
+   美国 政策变化后的重定价：Invesco QQQ（Nasdaq 100）（US_POLICY_RATE hike）
+OPP-0002  0.66  watch  US  regime_repricing
+   VIX 期限结构与波动状态：SPDR S&P 500 ETF 可能处于重定价窗口
 ```
 
 每条机会包含 `discovery / mechanism / evidence_for / evidence_against / catalysts /
@@ -211,6 +211,7 @@ exports/        交接 JSON（gitignore，示例见 docs/examples）
 ## 环境
 
 - macOS（Apple Silicon 实测）/ Linux 均可；Python ≥ 3.10（开发环境 3.12）
-- 测试：97 离线 + 9 联网全部通过（见 TEST_RESULTS.md）
+- 测试：121 离线 + 9 联网（见 TEST_RESULTS.md）
+- 2026-11-14 独立审计与修复：见 `audit/ISSUE_LEDGER.md`、`audit/FIX_LOG.md`
 - 磁盘占用：SQLite 约 120 MB（10 年全量）；无 GPU、无付费 API、无外部数据库
 - 不连接任何实盘交易账户，不下单，不提供投资建议

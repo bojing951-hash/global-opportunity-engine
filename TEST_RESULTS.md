@@ -11,10 +11,10 @@
 
 | 指标 | 结果 |
 |---|---|
-| 通过 | **97** |
+| 通过 | **121** |
 | 失败 | 0 |
 | 跳过/取消 | 9（标记为 `network` 的联网测试） |
-| 耗时 | 28s |
+| 耗时 | 35s |
 | 退出码 | 0 |
 
 覆盖模块（`tests/`）：
@@ -32,7 +32,7 @@
 | `test_pipeline_e2e.py` | 2 | 端到端扫描（报告/JSON/导出）、重复扫描不重复建机会、scan 哈希 |
 | `test_reports.py` | 3 | Markdown 章节与免责声明、市场快照列、曲线快照 |
 | `test_archetypes.py` | 4 | 五类原型的最小触发：相对价值、预期过度（拥挤多头+上涨）、事件修正（已核验/未核验） |
-| `test_data_integrity.py` | 4 | CPI 同比按日历月对齐（缺失月）、ETF 拆股调整 vs 指数毛刺隔离、条件收益发布滞后、共线检验不抬升置信度 |
+| `test_data_integrity.py` | 11 | CPI 同比按日历月对齐（缺失月）、ETF 拆股调整 vs 指数毛刺隔离、条件收益发布滞后、共线检验不抬升置信度 |
 
 测试暴露并修复的 3 个真实缺陷（已保留为回归测试）：
 
@@ -57,7 +57,7 @@
 见 `PROJECT_STATE.md` §6 与仓库内 `reports/`（示例拷贝在 `docs/examples/`）：
 
 - `goe ingest --mode backfill`：价格 358,310 行 / 125 标的；指标 159,508 行 / 92 序列；失败 0。
-- `goe scan --no-ingest`（最终）：异常 2,935；机制 8（6 mixed / 1 weak / 1 unsupported）；机会 15（2 deep_research / 11 watch / 2 low_priority）；报告与导出全部生成。
+- 审计后最终扫描：异常 1,651；机制 5（3 mixed / 2 unsupported，p 值 + BH-FDR）；机会 18（10 watch / 6 low_priority / 2 excluded / 0 deep_research）。
 - `goe handoff --ia-path ~/investment-agent-dev --limit 1`：investment-agent `research-run` 返回 rc=0，
   产出 `report.md` / `report.json`。
 
@@ -68,7 +68,7 @@
 .venv/bin/python -m goe.cli replay --start ... --step 21  # 逐时点回放
 ```
 
-结果文件：`reports/validation_cases_*.md`、`reports/replay_*.md`；最终归档 `docs/examples/validation_cases_2026-11-13.md`（7/7 通过）。
+审计后最终结果：**7/7**（逐评估日独立 PIT 切片）；归档 `reports/validation_cases_*.md` + `audit/VALIDATION_RESULTS.md`。
 方法与解读见 `docs/VALIDATION.md`；该验证衡量检测能力，不衡量收益。
 
 ## 5. 未覆盖 / 已知测试缺口
