@@ -301,6 +301,8 @@ def cmd_triage(args: argparse.Namespace) -> int:
     store = _store(args)
     as_of = args.as_of or store.scalar("SELECT MAX(date) FROM prices")
     rows = run_triage(store, as_of=as_of, max_candidates=args.limit)
+    for r in rows:
+        store.upsert_research_candidate(r.to_dict(), status="intelligence" if r.priority_tier == "intelligence" else "active")
     out = Path(args.out) if args.out else (project_root() / "exports")
     out.mkdir(parents=True, exist_ok=True)
     path = out / f"research_candidates_{as_of}.json"
@@ -321,6 +323,23 @@ def cmd_triage(args: argparse.Namespace) -> int:
         persist_v2_result(store, rows[0].to_dict(), res, target)
         print(f"handoff {rows[0].research_id}: {res.get('status')} semantic={res.get('semantic_status')}")
         return 0 if res.get("status") == "ok" else 2
+    return 0
+
+
+def cmd_release(args: argparse.Namespace) -> int:
+    """Create a freeze manifest only from machine-verifiable test evidence."""
+    from .release import build_manifest, run_test_proof
+
+    store = _store(args)
+    if args.run_tests:
+        proof = run_test_proof()
+        args.proof = proof["proof_path"]
+    if not args.proof:
+        raise SystemExit("--proof is required unless --run-tests is used")
+    manifest = build_manifest(store, proof_path=args.proof, out_dir=args.out, notes=args.notes)
+    print(f"release manifest: {manifest['path']}")
+    print(f"commit={manifest['git_commit']} tests={manifest['test_evidence']['passed']} "
+          f"scan={manifest['scan']['scan_id']}")
     return 0
 
 
@@ -473,6 +492,14 @@ def build_parser() -> argparse.ArgumentParser:
     t.add_argument("--ia-out", default=None)
     t.add_argument("--ia-timeout", type=int, default=300)
     t.set_defaults(func=cmd_triage)
+
+    rel = sub.add_parser("release", help="用可验证测试证明冻结发布清单")
+    rel.add_argument("--db", default=None)
+    rel.add_argument("--proof", default=None)
+    rel.add_argument("--run-tests", action="store_true")
+    rel.add_argument("--out", default="audit/releases")
+    rel.add_argument("--notes", default="")
+    rel.set_defaults(func=cmd_release)
 
     e = sub.add_parser("export", help="重新导出最近机会管线的交接文件")
     e.add_argument("--db")

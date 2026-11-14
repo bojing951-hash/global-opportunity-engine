@@ -17,6 +17,7 @@ import pandas as pd
 
 from .config import load_themes, load_universe
 from .expectations import compute_expectation_gap
+from .hypotheses import build_hypotheses
 from .timesemantics import filter_recent
 
 MISSING_DATA = ["分析师一致预期/修正", "期权隐含分布", "ETF 资金流", "信用 OAS（仅有 HYG/IEF 代理）"]
@@ -173,133 +174,41 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
         mech_conflict = any(getattr(m, "status", "") in ("mixed", "unsupported", "weak") for m in mechs)
         gap_score = float(residual.value) if (residual and residual.value is not None) else 0.0
 
-        hypotheses = [
-            {"id": "H1", "label": "风险溢价/风险厌恶变化", "type": "risk_premium",
-             "status": "open" if mech_conflict or gap_open else "untestable",
-             "implications": "信用/波动率与风险资产应同向；不需盈利下修。",
-             "evidence_for": [_ev("机制/预期差代理显示未解释变化", f"gap={gap_score:.2f}", "statistical_association", "derived", as_of)]
-             if (mech_conflict or gap_open) else [],
-             "evidence_against": [] if mech_conflict else [_ev("没有独立的信用/波动证据", "needs CREDIT_RISK", "unknown", "data_gap", as_of)]},
-            {"id": "H2", "label": "基本面/盈利预期变化", "type": "fundamental",
-             "status": "untestable",
-             "implications": "盈利修正应领先或同步；本系统无一致预期，需外部验证。",
-             "evidence_for": [], "evidence_against": [_ev("一致预期未接入", "cannot test directly", "unknown", "data_gap", as_of)]},
-            {"id": "H3", "label": "仓位/资金流驱动的技术性移动", "type": "positioning_flow",
-             "status": "open" if (gap.components.get("positioning") is not None
-                                  and gap.components["positioning"].value is not None)
-             else "untestable",
-             "implications": "CFTC 极端仓位、随后反转；ETF/期权资金流需补充。",
-             "evidence_for": [_ev("CFTC 分位可用", "positioning component present", "observed_fact", "CFTC", as_of)]
-             if (gap.components.get("positioning") is not None and gap.components["positioning"].value is not None) else [],
-             "evidence_against": [_ev("仓位不在极端", "neutral/unknown", "unknown", "CFTC", as_of)]
-             if gap.components.get("positioning") is None or gap.components["positioning"].value is None else []},
-            {"id": "H4", "label": "全球共同风险冲击（跨资产同日）", "type": "global_risk",
-             "status": "open" if abs(float(ret1m or 0)) >= 0.03 else "untestable",
-             "implications": "同日多资产同向下跌/上涨，beta 解释而非本地故事。",
-             "evidence_for": [_ev("资产出现较大单月变动", f"1m={ret1m}", "observed_fact", "prices", as_of)]
-             if np.isfinite(ret1m) and abs(float(ret1m)) >= 0.03 else [],
-             "evidence_against": [_ev("没有同日的独立跨资产样本", "not established in this card", "unknown", "cross_asset", as_of)]},
-            {"id": "H5", "label": "数据伪影（换月/拆股/盘中/陈旧）", "type": "data_artifact",
-             "status": "open" if spec.asset_class in ("commodity", "crypto") else "untestable",
-             "implications": "换月/拆股/数据修订可解释；需核对原始合约与抓取时间。",
-             "evidence_for": [_ev("资产有连续合约/交易日风险", spec.asset_class, "observed_fact", "data_quality", as_of)]
-             if spec.asset_class in ("commodity", "crypto") else [],
-             "evidence_against": [_ev("未记录价格清洗问题", "no price_data_issue", "observed_fact", "data_quality", as_of)]},
-        ]
-        evidence = [
+        pos_comp = gap.components.get("positioning")
+        pos_value = float(pos_comp.value) if (pos_comp is not None and pos_comp.value is not None) else None
+        bundle = build_hypotheses(
+            spec, detector=str(r.detector), direction=str(r.direction),
+            ret1m=float(ret1m) if np.isfinite(ret1m) else None,
+            ddpct=float(ddpct) if np.isfinite(ddpct) else None,
+            gap_value=gap_score if gap_open else None,
+            positioning_value=pos_value,
+            mechanism_statuses=[getattr(m, "status", "") for m in mechs],
+            has_price_issue=False, as_of=as_of,
+        )
+        hypotheses = bundle["hypotheses"]
+        falsification = list(bundle["tests"])
+        discriminating = bool(bundle["discriminating"])
+        decision = bundle["decision_impact"]
+        unknowns = list(bundle["unknowns"])
+        if not discriminating:
+            unknowns.append("无法形成两个可区分且可检验的竞争解释")
+        evidence_for = [e for h in hypotheses for e in h["evidence_for"]]
+        evidence_against = [e for h in hypotheses for e in h["evidence_against"]]
+        evidence = evidence_for[:4] or [
             _ev("近期异常", f"{r.detector} {r.direction} 分数 {score:.2f}", "observed_fact",
                 "engine/anomalies", str(r.available_date)),
-            _ev("1 个月收益", f"{float(ret1m):+.1%}" if np.isfinite(ret1m) else "unknown",
-                "observed_fact", "prices", as_of),
         ]
-        evidence_for = [
-            _ev("可观察异常", f"{r.detector} {r.direction} score={score:.2f}", "observed_fact",
-                "engine/anomalies", str(r.available_date)),
-            _ev("价格变化", f"1m={float(ret1m):+.1%}" if np.isfinite(ret1m) else "unknown",
-                "observed_fact", "prices", as_of),
-        ]
-        evidence_against = []
-        if mech_conflict:
-            evidence_against.append(_ev("机制检验失败/不稳定", "mechanism status mixed/unsupported/weak",
-                                        "statistical_association", "mechanism_stats", as_of))
-        if not np.isfinite(ret1m) or abs(float(ret1m)) < 0.03:
-            evidence_against.append(_ev("价格变动幅度不足以支持重大重定价", f"1m={ret1m}",
-                                        "observed_fact", "prices", as_of))
-        if spec.asset_class == "commodity":
-            evidence_against.append(_ev("连续合约换月/拆股伪影风险", "未调整换月",
-                                        "unknown", "data_quality", as_of))
-        if not evidence_against:
-            evidence_against.append(_ev("竞争解释尚未被排除", "缺少独立证据区分风险溢价/基本面/仓位",
-                                        "unknown", "data_gap", as_of))
-        # distinguishability: at least two independent observable test families
-        test_families = 0
-        if gap.components.get("residual_divergence") is not None and gap.components["residual_divergence"].value is not None:
-            test_families += 1
-        if gap.components.get("positioning") is not None and gap.components["positioning"].value is not None:
-            test_families += 1
-        if mech_conflict:
-            test_families += 1
-        distinguishability = float(min(1.0, test_families / 2.0))
-        decision_impact = float(min(1.0, 0.5 * float(spec.importance) + (0.5 if gap_open or mech_conflict else 0.0)))
-        if residual is not None and residual.value is not None:
-            evidence.append(_ev("驱动残差背离", f"z={residual.evidence.get('residual_z')}, "
-                                               f"R²={residual.evidence.get('r2')}",
-                                "statistical_association", "derived/residual", as_of))
-        for m in mechs[:2]:
-            evidence.append(_ev(f"机制 {m.mechanism_id} 状态 {m.status}",
-                                f"confidence={m.confidence:.2f}", "statistical_association",
-                                "mechanism_stats", str(m.as_of)))
-        evidence.append(_ev("盈利预期/期权分布缺失", "无法区分基本面与风险溢价",
-                            "unknown", "data_gap", as_of))
-
-        unknowns = list(MISSING_DATA)
-        if gap.value is None:
-            unknowns.append("预期差代理不可测量（仓位/估值/残差均不可用）")
-        if not mechs:
-            unknowns.append("该资产没有可检验的宏观传导机制")
-        falsification = []
-        credit_z = fs.value("CREDIT_RISK", "hy_minus_treasury_z_3y")
-        if np.isfinite(credit_z):
-            falsification.append({"test": "信用利差代理回升（风险溢价解释被削弱）",
-                                  "threshold": f"z > -1 (current {credit_z:.2f})", "data": "CREDIT_RISK"})
-        rel_z = fs.value(iid, "rel_strength_z_3y", "1m")
-        if np.isfinite(rel_z):
-            falsification.append({"test": "相对强弱 z 回归 0（本地冲击论点被削弱）",
-                                  "threshold": f"z crosses 0 (current {rel_z:.2f})", "data": "prices"})
-        pos_comp = gap.components.get("positioning")
-        if pos_comp is not None and pos_comp.value is not None:
-            falsification.append({"test": "CFTC 净头寸分位回到中性",
-                                  "threshold": "40%-60%", "data": "CFTC"})
-        if mechs:
-            falsification.append({"test": f"机制 {mechs[0].mechanism_id} 的滚动相关恢复原符号",
-                                  "threshold": "sign stable 60d", "data": "mechanism"})
-        if spec.asset_class in ("commodity", "crypto"):
-            falsification.append({"test": "核对原始合约/交易日，排除换月或坏价",
-                                  "threshold": "raw contract data", "data": "exchange/provider"})
-        for f in falsification:
-            f["hypothesis_id"] = "H1"
-        falsification.append({"test": "后续价格/仓位/宏观证据与当前解释相反",
-                              "threshold": "documented review", "data": "open",
-                              "hypothesis_id": "H1"})
-        if len(falsification) < 2:
-            falsification.append({"test": "新数据无法区分竞争性解释", "threshold": "review",
-                                  "data": "open", "hypothesis_id": "H2"})
-        # observed/testable facts belong in the candidate provenance
-
-        cost_hours = 4 + 2 * len([g for g in unknowns if g != "分析师一致预期/修正"]) + (
-            2 if spec.asset_class == "commodity" else 0)
-        cost = {"hours": int(min(20, cost_hours)),
+        cost_hours = 4 + 2 * len(unknowns) + (2 if spec.asset_class == "commodity" else 0)
+        cost = {"hours": int(min(24, cost_hours)),
                 "data_access": "high" if spec.asset_class == "commodity" else "medium"}
-        decision = {
-            "if_true": "若风险溢价/数据伪影解释成立，下调该线索的研究优先级，不改变仓位判断。",
-            "if_false": "若基本面或仓位假设获得支持，交给 B 做估值/情景研究。",
-        }
+
         # hard gate: materiality; explanatory gap; distinguishability; decision impact
         gap_level = 2 if gap_score >= 0.3 else (1 if (gap_open or mech_conflict) else 0)
+        test_families = len({t.get("hypothesis_id") for t in bundle["tests"]})
         dist_level = 2 if test_families >= 2 else (1 if test_families == 1 else 0)
         impact_level = 2 if (float(spec.importance) >= 0.8 and gap_level > 0) else \
             (1 if float(spec.importance) >= 0.5 else 0)
-        if mat_level < 1 or gap_level == 0:
+        if mat_level < 1 or gap_level == 0 or not discriminating:
             tier = "intelligence"
         elif mat_level >= 3 and gap_level >= 2 and dist_level >= 2 and impact_level >= 2:
             tier = "A"
@@ -327,9 +236,9 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
             required_data=OPEN_DATA + MISSING_DATA,
             research_cost=cost, decision_impact=decision,
             priority_tier=tier, priority_rank=0,
-            rationale=f"tier {tier}: materiality L{mat_level}, gap L{gap_level}, "
-                      f"distinguishability L{dist_level}, impact L{impact_level}, "
-                      f"mechanism_conflict={mech_conflict}, cost={cost['hours']}h",
+            rationale=f"tier {tier}: case={bundle['case']}, materiality L{mat_level}, "
+                      f"gap L{gap_level}, distinguishability L{dist_level}, impact L{impact_level}, "
+                      f"open_hypotheses={bundle['open_count']}, cost={cost['hours']}h",
             data_quality={"score": float(gap.confidence), "gaps": unknowns},
             evidence_gaps=unknowns, theme=theme,
             evidence_for=evidence_for, evidence_against=evidence_against,

@@ -67,8 +67,10 @@ def validate_research_candidate(c: dict[str, Any]) -> None:
     if missing:
         raise ContractError(f"research candidate missing: {missing}")
     hyps = c["competing_hypotheses"]
-    if not isinstance(hyps, list) or len(hyps) < 2:
-        raise ContractError("research candidate needs >=2 competing hypotheses")
+    is_intel = c.get("priority_tier") == "intelligence"
+    minimum = 1 if is_intel else 2
+    if not isinstance(hyps, list) or len(hyps) < minimum:
+        raise ContractError(f"research candidate needs >={minimum} competing hypotheses")
     for h in hyps:
         for k in ("id", "label", "type", "status", "implications",
                   "evidence_for", "evidence_against"):
@@ -109,8 +111,11 @@ def validate_research_candidate(c: dict[str, Any]) -> None:
     if not c["falsification_conditions"]:
         raise ContractError("research candidate needs falsification conditions")
     hyp_ids = {h["id"] for h in hyps}
-    if len(c["falsification_conditions"]) < 2:
-        raise ContractError("research candidate needs >=2 falsification conditions")
+    if not is_intel:
+        if len(c["falsification_conditions"]) < 2:
+            raise ContractError("research candidate needs >=2 falsification conditions")
+        if len({f.get("hypothesis_id") for f in c["falsification_conditions"]}) < 2:
+            raise ContractError("falsification tests must discriminate >=2 hypotheses")
     for f in c["falsification_conditions"]:
         if not isinstance(f, dict) or not all(k in f for k in ("test", "threshold", "data", "hypothesis_id")):
             raise ContractError("falsification condition must have test/threshold/data/hypothesis_id")

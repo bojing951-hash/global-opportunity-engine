@@ -125,6 +125,46 @@ CREATE TABLE IF NOT EXISTS research_tasks (
   target_system TEXT, payload_json TEXT, exported_at TEXT, export_path TEXT, status TEXT
 );
 
+CREATE TABLE IF NOT EXISTS research_v2_candidates (
+  research_id TEXT PRIMARY KEY, as_of TEXT NOT NULL, market TEXT, asset_class TEXT,
+  instruments_json TEXT, phenomenon TEXT, tier TEXT, status TEXT NOT NULL DEFAULT 'active',
+  priority_rank INTEGER, payload_json TEXT, created_at TEXT, updated_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_rc_status ON research_v2_candidates(status, priority_rank);
+
+CREATE TABLE IF NOT EXISTS research_v2_hypotheses (
+  hypothesis_id TEXT PRIMARY KEY, research_id TEXT NOT NULL REFERENCES research_v2_candidates(research_id) ON DELETE CASCADE,
+  hypothesis_key TEXT NOT NULL, type TEXT, status TEXT, label TEXT, payload_json TEXT,
+  created_at TEXT, UNIQUE(research_id, hypothesis_key)
+);
+
+CREATE TABLE IF NOT EXISTS research_v2_evidence (
+  evidence_id TEXT PRIMARY KEY, research_id TEXT NOT NULL REFERENCES research_v2_candidates(research_id) ON DELETE CASCADE,
+  hypothesis_id TEXT REFERENCES research_v2_hypotheses(hypothesis_id) ON DELETE CASCADE,
+  evidence_class TEXT NOT NULL, claim TEXT, source TEXT, available_at TEXT, payload_json TEXT,
+  created_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_re_research ON research_v2_evidence(research_id);
+
+CREATE TABLE IF NOT EXISTS research_v2_tasks (
+  task_id TEXT PRIMARY KEY, research_id TEXT NOT NULL REFERENCES research_v2_candidates(research_id) ON DELETE RESTRICT,
+  target_system TEXT, status TEXT NOT NULL, payload_json TEXT, created_at TEXT, updated_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS research_v2_events (
+  event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  research_id TEXT NOT NULL REFERENCES research_v2_candidates(research_id) ON DELETE CASCADE,
+  task_id TEXT REFERENCES research_v2_tasks(task_id) ON DELETE SET NULL,
+  at TEXT NOT NULL, event_type TEXT NOT NULL, note TEXT, payload_json TEXT
+);
+
+CREATE TABLE IF NOT EXISTS research_v2_results (
+  result_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  research_id TEXT NOT NULL REFERENCES research_v2_candidates(research_id) ON DELETE RESTRICT,
+  task_id TEXT NOT NULL REFERENCES research_v2_tasks(task_id) ON DELETE RESTRICT,
+  semantic_status TEXT, run_ok INTEGER NOT NULL, payload_json TEXT, created_at TEXT
+);
+
 CREATE TABLE IF NOT EXISTS counters (name TEXT PRIMARY KEY, value INTEGER NOT NULL);
 """
 
@@ -172,6 +212,7 @@ class Store:
                 "INSERT INTO schema_meta(key,value) VALUES('schema_version',?)", (SCHEMA_VERSION,)
             )
         self.conn.commit()
+        self._migrate_legacy_v2()
 
     def close(self) -> None:
         self.conn.close()
@@ -698,6 +739,180 @@ class Store:
                     task.get("exported_at"), task.get("export_path"), task.get("status", "pending"),
                 ),
             )
+
+    def _migrate_legacy_v2(self) -> None:
+        """Move old RC-* rows out of V1 task/event tables into the V2 object model.
+
+        Older V2 prototypes reused V1 ``research_tasks``/``opportunity_events`` with
+        RC-* ids, producing invalid references. Copy them once, then remove the
+        legacy rows; V1 OPP-* rows are untouched.
+        """
+        tasks = self.conn.execute(
+            "SELECT * FROM research_tasks WHERE task_id LIKE 'RC-%' OR opportunity_id LIKE 'RC-%'"
+        ).fetchall()
+        events = self.conn.execute(
+            "SELECT * FROM opportunity_events WHERE opportunity_id LIKE 'RC-%'"
+        ).fetchall()
+        if not tasks and not events:
+            return
+        with self.transaction() as c:
+            for t in tasks:
+                rid = t["opportunity_id"] or t["task_id"]
+                payload = json.loads(t["payload_json"] or "{}")
+                cand = payload.get("candidate") or {}
+                if not cand:
+                    cand = {"research_id": rid, "as_of": "unknown", "market": "unknown",
+                            "asset_class": "unknown", "instruments": [],
+                            "observed_phenomenon": "legacy V2 record",
+                            "priority_tier": "intelligence", "competing_hypotheses": [],
+                            "evidence": []}
+                cand["research_id"] = rid
+                if not c.execute("SELECT 1 FROM research_v2_candidates WHERE research_id=?", (rid,)).fetchone():
+                    c.execute(
+                        """INSERT INTO research_v2_candidates(research_id,as_of,market,asset_class,
+                             instruments_json,phenomenon,tier,status,priority_rank,payload_json,created_at,updated_at)
+                           VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""",
+                        (rid, cand.get("as_of") or "unknown", cand.get("market"),
+                         cand.get("asset_class"), json.dumps(cand.get("instruments", []), ensure_ascii=False),
+                         cand.get("observed_phenomenon"), cand.get("priority_tier") or "intelligence",
+                         "handoff_failed" if str(t["status"]).startswith("not_completed") else "active", 0,
+                         json.dumps(cand, ensure_ascii=False, default=str), utc_now(), utc_now()))
+                c.execute(
+                    """INSERT OR IGNORE INTO research_v2_tasks(task_id,research_id,target_system,status,
+                         payload_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?)""",
+                    (t["task_id"], rid, t["target_system"], t["status"], t["payload_json"],
+                     t["created_at"] or utc_now(), utc_now()))
+                c.execute("DELETE FROM research_tasks WHERE task_id=?", (t["task_id"],))
+            for e in events:
+                rid = e["opportunity_id"]
+                if not c.execute("SELECT 1 FROM research_v2_candidates WHERE research_id=?", (rid,)).fetchone():
+                    c.execute(
+                        """INSERT INTO research_v2_candidates(research_id,as_of,market,asset_class,
+                             instruments_json,phenomenon,tier,status,priority_rank,payload_json,created_at,updated_at)
+                           VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""",
+                        (rid, "unknown", None, None, "[]", "legacy V2 event", "intelligence",
+                         "handoff_failed", 0, "{}", utc_now(), utc_now()))
+                c.execute(
+                    """INSERT INTO research_v2_events(research_id,at,event_type,note,payload_json)
+                       VALUES(?,?,?,?,?)""",
+                    (rid, e["at"] or utc_now(), e["event_type"], e["note"] or "", e["run_id"]))
+                c.execute("DELETE FROM opportunity_events WHERE event_id=?", (e["event_id"],))
+
+    # ------------------------------------------------------- research v2 objects
+    RESEARCH_STATUSES = {"active", "intelligence", "handoff_pending", "handoff_failed",
+                         "research_complete", "archived"}
+
+    def upsert_research_candidate(self, candidate: dict[str, Any], *, status: str = "active") -> None:
+        """Persist a V2 candidate + hypotheses/evidence; never touches V1 tables."""
+        if status not in self.RESEARCH_STATUSES:
+            raise ValueError(f"invalid research status {status}")
+        rid = str(candidate["research_id"])
+        now = utc_now()
+        with self.transaction() as c:
+            c.execute(
+                """INSERT INTO research_v2_candidates(research_id,as_of,market,asset_class,
+                     instruments_json,phenomenon,tier,status,priority_rank,payload_json,created_at,updated_at)
+                   VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+                   ON CONFLICT(research_id) DO UPDATE SET as_of=excluded.as_of,
+                     market=excluded.market, asset_class=excluded.asset_class,
+                     instruments_json=excluded.instruments_json, phenomenon=excluded.phenomenon,
+                     tier=excluded.tier, priority_rank=excluded.priority_rank,
+                     payload_json=excluded.payload_json, updated_at=excluded.updated_at""",
+                (rid, candidate.get("as_of"), candidate.get("market"), candidate.get("asset_class"),
+                 json.dumps(candidate.get("instruments", []), ensure_ascii=False, default=str),
+                 candidate.get("observed_phenomenon"), candidate.get("priority_tier"),
+                 status, int(candidate.get("priority_rank", 0) or 0),
+                 json.dumps(candidate, ensure_ascii=False, default=str), now, now),
+            )
+            for h in candidate.get("competing_hypotheses", []):
+                key = str(h.get("id"))
+                hid = f"{rid}:{key}"
+                c.execute(
+                    """INSERT INTO research_v2_hypotheses(hypothesis_id,research_id,hypothesis_key,
+                         type,status,label,payload_json,created_at) VALUES(?,?,?,?,?,?,?,?)
+                       ON CONFLICT(research_id,hypothesis_key) DO UPDATE SET type=excluded.type,
+                         status=excluded.status, label=excluded.label, payload_json=excluded.payload_json""",
+                    (hid, rid, key, h.get("type"), h.get("status"), h.get("label"),
+                     json.dumps(h, ensure_ascii=False, default=str), now),
+                )
+            for e in list(candidate.get("evidence", [])) + list(candidate.get("evidence_for", [])) + list(candidate.get("evidence_against", [])):
+                eid = hash_json([rid, e.get("claim"), e.get("source"), e.get("available_at"), e.get("class")])
+                c.execute(
+                    """INSERT OR IGNORE INTO research_v2_evidence(evidence_id,research_id,hypothesis_id,
+                         evidence_class,claim,source,available_at,payload_json,created_at)
+                       VALUES(?,?,?,?,?,?,?,?,?)""",
+                    (eid, rid, e.get("hypothesis_id") and f"{rid}:{e['hypothesis_id']}",
+                     e.get("class", "unknown"), e.get("claim"), e.get("source"),
+                     e.get("available_at"), json.dumps(e, ensure_ascii=False, default=str), now),
+                )
+
+    def set_research_status(self, research_id: str, status: str, note: str = "",
+                            task_id: str | None = None, payload: dict | None = None) -> None:
+        if status not in self.RESEARCH_STATUSES:
+            raise ValueError(f"invalid research status {status}")
+        now = utc_now()
+        with self.transaction() as c:
+            c.execute("UPDATE research_v2_candidates SET status=?,updated_at=? WHERE research_id=?",
+                      (status, now, research_id))
+            c.execute("""INSERT INTO research_v2_events(research_id,task_id,at,event_type,note,payload_json)
+                         VALUES(?,?,?,?,?,?)""",
+                      (research_id, task_id, now, f"status:{status}", note,
+                       json.dumps(payload or {}, ensure_ascii=False, default=str)))
+
+    def add_research_event(self, research_id: str, event_type: str, note: str = "",
+                           task_id: str | None = None, payload: dict | None = None) -> None:
+        with self.transaction() as c:
+            c.execute("""INSERT INTO research_v2_events(research_id,task_id,at,event_type,note,payload_json)
+                         VALUES(?,?,?,?,?,?)""",
+                      (research_id, task_id, utc_now(), event_type, note,
+                       json.dumps(payload or {}, ensure_ascii=False, default=str)))
+
+    def upsert_research_task_v2(self, task: dict[str, Any]) -> None:
+        rid = str(task["research_id"])
+        now = utc_now()
+        with self.transaction() as c:
+            exists = c.execute("SELECT 1 FROM research_v2_candidates WHERE research_id=?", (rid,)).fetchone()
+            if not exists:
+                raise ValueError(f"research candidate does not exist: {rid}")
+            c.execute(
+                """INSERT INTO research_v2_tasks(task_id,research_id,target_system,status,payload_json,created_at,updated_at)
+                   VALUES(?,?,?,?,?,?,?)
+                   ON CONFLICT(task_id) DO UPDATE SET status=excluded.status,payload_json=excluded.payload_json,
+                     updated_at=excluded.updated_at""",
+                (task["task_id"], rid, task.get("target_system", "investment-agent"),
+                 task.get("status", "pending"), json.dumps(task.get("payload", {}), ensure_ascii=False, default=str),
+                 now, now),
+            )
+
+    def add_research_result(self, research_id: str, task_id: str, semantic_status: str,
+                            run_ok: bool, payload: dict | None = None) -> None:
+        with self.transaction() as c:
+            c.execute(
+                """INSERT INTO research_v2_results(research_id,task_id,semantic_status,run_ok,payload_json,created_at)
+                   VALUES(?,?,?,?,?,?)""",
+                (research_id, task_id, semantic_status, 1 if run_ok else 0,
+                 json.dumps(payload or {}, ensure_ascii=False, default=str), utc_now()),
+            )
+
+    def research_candidate(self, research_id: str) -> sqlite3.Row | None:
+        return self.conn.execute("SELECT * FROM research_v2_candidates WHERE research_id=?",
+                                 (research_id,)).fetchone()
+
+    def research_integrity(self) -> dict[str, int]:
+        """Counts that must all be zero except candidates; used by tests and QA."""
+        q = lambda sql: self.scalar(sql) or 0
+        return {
+            "orphan_hypotheses": q("""SELECT COUNT(*) FROM research_v2_hypotheses h LEFT JOIN
+                research_v2_candidates c ON h.research_id=c.research_id WHERE c.research_id IS NULL"""),
+            "orphan_evidence": q("""SELECT COUNT(*) FROM research_v2_evidence e LEFT JOIN
+                research_v2_candidates c ON e.research_id=c.research_id WHERE c.research_id IS NULL"""),
+            "orphan_tasks": q("""SELECT COUNT(*) FROM research_v2_tasks t LEFT JOIN
+                research_v2_candidates c ON t.research_id=c.research_id WHERE c.research_id IS NULL"""),
+            "orphan_results": q("""SELECT COUNT(*) FROM research_v2_results r LEFT JOIN
+                research_v2_tasks t ON r.task_id=t.task_id WHERE t.task_id IS NULL"""),
+            "legacy_v1_rc_tasks": q("SELECT COUNT(*) FROM research_tasks WHERE task_id LIKE 'RC-%' OR opportunity_id LIKE 'RC-%'"),
+            "legacy_v1_rc_events": q("SELECT COUNT(*) FROM opportunity_events WHERE opportunity_id LIKE 'RC-%'"),
+        }
 
     # ------------------------------------------------------------------ utility
     def scalar(self, sql: str, params: Sequence[Any] = ()) -> Any:

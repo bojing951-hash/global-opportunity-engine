@@ -24,23 +24,22 @@ def test_feature_contract_columns():
                                .rename(columns={"value": "val"}))
 
 
-def test_anomaly_contract_on_real_scan():
-    import sqlite3
-    c = sqlite3.connect("data/goe.db")
-    rows = c.execute("SELECT anomaly_id, as_of, available_date, detector, family, instrument_id, "
-                     "direction, window, evidence_json FROM anomalies LIMIT 50").fetchall()
-    if not rows:
-        pytest.skip("no scan database")
-    recs = []
-    for r in rows:
-        recs.append({"anomaly_id": r[0], "date": r[1], "available_date": r[2],
-                     "detector": r[3], "family": r[4], "entity_id": r[5],
-                     "entity_kind": "instrument", "direction": r[6], "window": r[7],
-                     "measure": "", "magnitude": 0.0, "score": 0.5,
-                     "evidence": json.loads(r[8] or "{}")})
-    if recs and not recs[0]["evidence"]:
-        pytest.skip("legacy anomaly rows lack evidence")
-    validate_anomaly_records(recs)
+def test_anomaly_contract_synthetic():
+    """Contract test uses an in-memory-style record; no developer DB dependency."""
+    rec = {
+        "anomaly_id": "A-1", "date": "2024-01-02", "available_date": "2024-01-02",
+        "detector": "price_return_shock", "family": "price", "entity_id": "US_EQ_SPY",
+        "entity_kind": "instrument", "direction": "down", "window": "1d",
+        "measure": "return_z", "magnitude": -4.0, "score": 0.9,
+        "evidence": {"threshold": -3, "formula": "z(ret)", "raw": -4.0,
+                     "source": {"id": "yahoo", "tier": "exchange"},
+                     "data_quality": 0.9},
+    }
+    validate_anomaly_records([rec])
+    bad = dict(rec, evidence={})
+    with pytest.raises(ContractError):
+        validate_anomaly_records([bad])
+
 
 
 def test_research_candidate_contract():
@@ -85,6 +84,7 @@ def test_scoring_and_handoff_contracts():
 
 
 
+@pytest.mark.realdata
 @pytest.mark.skipif(__import__("os").environ.get("GOE_SLOW") != "1",
                     reason="slow real-data V2 integration; run with GOE_SLOW=1")
 def test_research_v2_real_scan_contract():
@@ -103,12 +103,24 @@ def test_research_v2_real_scan_contract():
     assert any(r.priority_tier in ("A", "B", "C") for r in rows)
 
 
-def test_release_gate_refuses_dirty_or_untested(monkeypatch, store):
+def test_release_rejects_missing_or_forged_proof(monkeypatch, store, tmp_path):
+    import hashlib, json
     import goe.release as rel
 
-    monkeypatch.setattr(rel, "_git", lambda *a: "M file")
-    with pytest.raises(rel.ReleaseError, match="dirty"):
-        rel.build_manifest(store, test_count=1)
-    monkeypatch.setattr(rel, "_git", lambda *a: "")
-    with pytest.raises(rel.ReleaseError, match="test_count"):
-        rel.build_manifest(store, test_count=None)
+    monkeypatch.setattr(rel, "_git", lambda *a: "abc123")
+    with pytest.raises(rel.ReleaseError, match="missing"):
+        rel.verify_test_proof(tmp_path / "nope.json")
+
+    log = tmp_path / "run.log"
+    log.write_text("167 passed, 1 skipped in 60s\n", encoding="utf-8")
+    proof = {"schema": "goe-test-proof/v1", "git_commit": "abc123", "git_dirty": False,
+             "command": ["python", "-m", "pytest", "tests", "-q"], "exit_code": 0,
+             "passed": 167, "failed": 0, "errors": 0, "skipped": 1,
+             "log_path": str(log), "log_sha256": hashlib.sha256(log.read_bytes()).hexdigest()}
+    path = tmp_path / "proof.json"
+    path.write_text(json.dumps(proof), encoding="utf-8")
+    assert rel.verify_test_proof(path)["passed"] == 167
+    forged = dict(proof, passed=9999)
+    path.write_text(json.dumps(forged), encoding="utf-8")
+    with pytest.raises(rel.ReleaseError, match="disagrees|hash"):
+        rel.verify_test_proof(path)

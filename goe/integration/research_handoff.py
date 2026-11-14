@@ -59,8 +59,13 @@ def handoff_v2(adapter: IAAdapter, candidate: dict[str, Any], out_dir: str | Pat
 
 
 def persist_v2_result(store, candidate: dict[str, Any], res: dict[str, Any],
-                      target: str | Path) -> None:
-    """Persist the handoff without pretending a refused/partial run is success."""
+                      target: str | Path) -> dict[str, Any]:
+    """Persist the V2 research object lifecycle without touching V1 tables.
+
+    The candidate is always retained. A refused/rejected/timeout run creates a
+    task + result + event and marks the candidate handoff_failed; only a genuine
+    ok_valid run may mark it research_complete.
+    """
     import json
     from datetime import datetime, timezone
 
@@ -70,15 +75,17 @@ def persist_v2_result(store, candidate: dict[str, Any], res: dict[str, Any],
     run_ok = res.get("status") == "ok" and sem == "ok_valid"
     rid = str(candidate.get("research_id"))
     task_id = rid if rid.startswith("RC-") else f"RC-{rid}"
-    store.add_opportunity_event(rid, "ia_research_run" if run_ok else "ia_research_not_completed",
-                                None, None,
-                                f"V2 handoff: {sem} ({res.get('semantic_reason', '')})")
-    store.upsert_research_task({
-        "task_id": task_id, "opportunity_id": rid,
-        "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "target_system": "investment-agent",
-        "payload": {"candidate": candidate, "result": res},
-        "exported_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "export_path": str(target),
+    store.upsert_research_candidate(candidate, status="handoff_pending")
+    store.upsert_research_task_v2({
+        "task_id": task_id, "research_id": rid, "target_system": "investment-agent",
+        "payload": {"candidate": candidate, "result": res, "target": str(target)},
         "status": "completed" if run_ok else f"not_completed:{sem}",
     })
+    store.add_research_result(rid, task_id, sem, run_ok, {"result": res})
+    store.add_research_event(rid, "ia_research_run" if run_ok else "ia_research_not_completed",
+                             f"V2 handoff: {sem} ({res.get('semantic_reason', '')})",
+                             task_id=task_id, payload={"semantic": sem})
+    store.set_research_status(rid, "research_complete" if run_ok else "handoff_failed",
+                              note=f"V2 handoff {sem}", task_id=task_id)
+    return {"task_id": task_id, "status": "completed" if run_ok else f"not_completed:{sem}",
+            "semantic_status": sem}

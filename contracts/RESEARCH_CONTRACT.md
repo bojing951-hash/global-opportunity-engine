@@ -56,3 +56,21 @@ Tier:
 
 These are transparent rules, not weights. They are frozen before the assessment; changing them after
 seeing evaluation results invalidates the claim.
+
+## Research object data model (V2)
+V2 MUST NOT reuse V1 `opportunities`/`opportunity_events`/`research_tasks` as its object store.
+Tables (SQLite, foreign keys ON):
+| Table | Key | References | Purpose |
+|---|---|---|---|
+| `research_v2_candidates` | `research_id` | — | immutable identity + current status/payload |
+| `research_v2_hypotheses` | `hypothesis_id` | candidate CASCADE | >=1 per candidate; keyed by `research_id:hypothesis_key` |
+| `research_v2_evidence` | `evidence_id` | candidate CASCADE, hypothesis nullable | facts/associations/unknowns with source & available_at |
+| `research_v2_tasks` | `task_id` | candidate RESTRICT | A→B attempts; task survives candidate? candidate cannot be deleted while task exists |
+| `research_v2_events` | auto | candidate CASCADE, task SET NULL | append-only status/handoff history |
+| `research_v2_results` | auto | candidate/task RESTRICT | every A→B semantic result, success or failure |
+
+Lifecycle: `active|intelligence` → `handoff_pending` → `handoff_failed` or `research_complete` → `archived`.
+A failed handoff MUST leave the candidate and all hypotheses/evidence intact; it only updates status and
+adds task/result/event. Candidate update never deletes old events. No RC-* row may live in V1 tables;
+legacy RC-* rows are migrated once by `Store._migrate_legacy_v2()`.
+`Store.research_integrity()` must return zero for all orphan counters and legacy RC rows.

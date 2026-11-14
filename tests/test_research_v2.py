@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from goe.integration.research_handoff import build_v2_question
 
 
@@ -37,19 +39,25 @@ def test_v2_handoff_question_is_fact_only():
 def test_v2_refused_result_is_not_completed(store):
     from goe.integration.research_handoff import persist_v2_result
 
-    cand = {"research_id": "RC-TEST", "opportunity_id": "RC-TEST"}
+    cand = {"research_id": "RC-TEST", "as_of": "2026-01-01", "market": "US",
+            "asset_class": "equity_etf", "instruments": ["US_EQ_SPY"],
+            "observed_phenomenon": "x", "priority_tier": "B",
+            "competing_hypotheses": [], "evidence": []}
     persist_v2_result(store, cand, {"status": "not_ok", "semantic_status": "ok_valid",
                                     "returncode": 17}, "/tmp/rc-test")
-    task = store.conn.execute("SELECT status FROM research_tasks WHERE task_id='RC-TEST'").fetchone()
+    task = store.conn.execute("SELECT status FROM research_v2_tasks WHERE task_id='RC-TEST'").fetchone()
     assert task["status"] != "completed"
 
 
 def test_v2_timeout_is_not_unknown(store):
     from goe.integration.research_handoff import persist_v2_result
 
-    cand = {"research_id": "RC-TIMEOUT"}
+    cand = {"research_id": "RC-TIMEOUT", "as_of": "2026-01-01", "market": "US",
+            "asset_class": "equity_etf", "instruments": ["US_EQ_SPY"],
+            "observed_phenomenon": "x", "priority_tier": "B",
+            "competing_hypotheses": [], "evidence": []}
     persist_v2_result(store, cand, {"status": "timeout", "semantic_status": None}, "/tmp/rc-timeout")
-    task = store.conn.execute("SELECT status FROM research_tasks WHERE task_id='RC-TIMEOUT'").fetchone()
+    task = store.conn.execute("SELECT status FROM research_v2_tasks WHERE task_id='RC-TIMEOUT'").fetchone()
     assert task["status"] == "not_completed:timeout"
 
 
@@ -103,3 +111,71 @@ def test_evaluation_decision_rule_requires_test_and_both_metrics(tmp_path):
     rat2, mp2 = make([])
     no_test = score_ratings(rat2, mp2, tmp_path / "none")
     assert no_test["discovery_value"] == "NOT VALIDATED"
+
+
+def _lifecycle_candidate():
+    return {
+        "research_id": "RC-LIFE", "as_of": "2026-01-01", "market": "US",
+        "asset_class": "equity_etf", "instruments": ["US_EQ_SPY"],
+        "observed_phenomenon": "material move", "priority_tier": "B", "priority_rank": 1,
+        "competing_hypotheses": [
+            {"id": "H1", "label": "risk premium", "type": "risk_premium", "status": "open",
+             "evidence_for": [], "evidence_against": []},
+            {"id": "H2", "label": "data artifact", "type": "data_artifact",
+             "status": "untestable", "evidence_for": [], "evidence_against": []}],
+        "evidence": [{"claim": "fact", "class": "observed_fact", "source": "db",
+                      "available_at": "2026-01-01"}],
+        "evidence_for": [], "evidence_against": [],
+    }
+
+
+def test_v2_lifecycle_retains_candidate_and_has_no_orphans(store):
+    from goe.integration.research_handoff import persist_v2_result
+
+    cand = _lifecycle_candidate()
+    res = persist_v2_result(store, cand, {"status": "not_ok", "semantic_status": "timeout"}, "/tmp/x")
+    assert res["status"] == "not_completed:timeout"
+    assert store.research_candidate("RC-LIFE")["status"] == "handoff_failed"
+    assert store.conn.execute("SELECT COUNT(*) FROM research_v2_tasks WHERE research_id='RC-LIFE'").fetchone()[0] == 1
+    assert store.conn.execute("SELECT COUNT(*) FROM research_v2_results WHERE research_id='RC-LIFE'").fetchone()[0] == 1
+    assert store.conn.execute("SELECT COUNT(*) FROM research_v2_hypotheses WHERE research_id='RC-LIFE'").fetchone()[0] == 2
+    assert all(v == 0 for v in store.research_integrity().values())
+
+
+def test_v2_task_cannot_reference_missing_candidate(store):
+    with pytest.raises(ValueError, match="does not exist"):
+        store.upsert_research_task_v2({"task_id": "T-X", "research_id": "RC-MISSING"})
+    assert store.research_integrity()["orphan_tasks"] == 0
+
+
+def test_v2_does_not_touch_v1_tables(store):
+    from goe.integration.research_handoff import persist_v2_result
+
+    before = (store.conn.execute("SELECT COUNT(*) FROM opportunities").fetchone()[0],
+              store.conn.execute("SELECT COUNT(*) FROM research_tasks").fetchone()[0],
+              store.conn.execute("SELECT COUNT(*) FROM opportunity_events").fetchone()[0])
+    persist_v2_result(store, _lifecycle_candidate(), {"status": "timeout"}, "/tmp/x")
+    after = (store.conn.execute("SELECT COUNT(*) FROM opportunities").fetchone()[0],
+             store.conn.execute("SELECT COUNT(*) FROM research_tasks").fetchone()[0],
+             store.conn.execute("SELECT COUNT(*) FROM opportunity_events").fetchone()[0])
+    assert before == after
+
+
+def test_legacy_rc_rows_are_migrated_out_of_v1_tables(tmp_path):
+    from goe.db import Store
+
+    s = Store(tmp_path / "legacy.db")
+    s.conn.execute("""INSERT INTO research_tasks(task_id,opportunity_id,created_at,target_system,
+                     payload_json,exported_at,export_path,status) VALUES(?,?,?,?,?,?,?,?)""",
+                   ("RC-OLD", "RC-OLD", "2026-01-01T00:00:00Z", "investment-agent",
+                    '{"candidate":{"research_id":"RC-OLD","as_of":"2026-01-01","market":"US","asset_class":"fx","instruments":["US_FX_DXY"],"observed_phenomenon":"x","priority_tier":"B","competing_hypotheses":[],"evidence":[]}}',
+                    None, "/tmp/x", "not_completed:rejected"))
+    s.conn.execute("""INSERT INTO opportunity_events(opportunity_id,at,event_type,note)
+                      VALUES('RC-OLD','2026-01-01T00:00:00Z','ia_research_not_completed','x')""")
+    s.conn.commit()
+    s2 = Store(tmp_path / "legacy.db")
+    assert s2.research_integrity()["legacy_v1_rc_tasks"] == 0
+    assert s2.research_integrity()["legacy_v1_rc_events"] == 0
+    assert s2.research_candidate("RC-OLD") is not None
+    assert s2.conn.execute("SELECT COUNT(*) FROM research_v2_tasks WHERE research_id='RC-OLD'").fetchone()[0] == 1
+    assert all(v == 0 for v in s2.research_integrity().values())
