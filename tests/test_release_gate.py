@@ -257,3 +257,17 @@ def test_root_doc_change_after_proof_is_allowed(small_repo):
     _git(small_repo, "add", "-A")
     _git(small_repo, "commit", "-qm", "docs")
     rel.verify_test_proof(proof["proof_path"], cwd=small_repo, rerun=False)
+
+
+def test_export_ignore_cannot_hide_a_failing_test(small_repo):
+    """P1 round 3: git archive honours export-ignore; the gate must not."""
+    (small_repo / "tests" / "test_zz_fail.py").write_text(
+        "def test_must_fail():\n    assert False\n", encoding="utf-8"
+    )
+    (small_repo / ".gitattributes").write_text(
+        "tests/test_zz_fail.py export-ignore\n", encoding="utf-8"
+    )
+    _git(small_repo, "add", "-A")
+    _git(small_repo, "commit", "-qm", "hidden failure")
+    with pytest.raises(rel.ReleaseError, match="not clean|did not pass"):
+        rel.run_test_proof(cwd=small_repo)

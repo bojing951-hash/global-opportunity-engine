@@ -59,9 +59,11 @@ CATEGORY_MARKERS: dict[str, str] = {
 }
 DEFAULT_CATEGORY = "offline"
 RELEASE_CATEGORY = "offline"
-MIN_REQUIRED: dict[str, int] = {"offline": 198, "network": 9, "realdata": 1}
+MIN_REQUIRED: dict[str, int] = {"offline": 199, "network": 9, "realdata": 1}
 
 _HARDENED_ENV = (
+    "PYTHONOPTIMIZE",
+    "PYTHONINSPECT",
     "PYTEST_ADDOPTS",
     "PYTEST_PLUGINS",
     "PYTEST_CFG",
@@ -195,19 +197,71 @@ def _assert_command_is_canonical(command: list[str], category: str) -> None:
 # --------------------------------------------------------------- node id sets
 
 
+def _blob_hash(data: bytes) -> str:
+    return hashlib.sha1(b"blob %d\x00" % len(data) + data).hexdigest()
+
+
 def _export_tree(root: Path, commit: str) -> Path:
-    """Materialise exactly the committed tree: local untracked/ignored files cannot leak in."""
+    """Materialise exactly the committed tree, then prove it matches the commit.
+
+    ``git archive`` is deliberately NOT used: it honours ``export-ignore`` /
+    ``export-subst`` attributes, so a committed failing test could be filtered
+    out of the "clean" tree (red-team round 3, P1). A detached worktree is a real
+    checkout; every file is then compared with its ``ls-tree`` blob hash so a
+    smudge filter or attribute trick cannot change the content either.
+    """
+    dest = Path(tempfile.mkdtemp(prefix="goe-tree-"))
     proc = subprocess.run(
-        ["git", "-C", str(root), "archive", "--format=tar", commit],
+        ["git", "-C", str(root), "worktree", "add", "--detach", "--quiet", str(dest), commit],
         capture_output=True,
+        text=True,
         env=_git_env(),
     )
     if proc.returncode != 0:
-        raise ReleaseError(f"cannot export tree for {commit[:10]}: {proc.stderr.decode()[:200]}")
-    dest = Path(tempfile.mkdtemp(prefix="goe-tree-"))
-    with tarfile.open(fileobj=io.BytesIO(proc.stdout)) as tar:
-        tar.extractall(dest, filter="data")
+        raise ReleaseError(
+            f"cannot materialise tree for {commit[:10]}: {proc.stderr.strip()[:200]}"
+        )
+    try:
+        entries = _git("-C", str(root), "ls-tree", "-r", commit).splitlines()
+        expected: dict[str, str] = {}
+        for line in entries:
+            meta, path = line.split("\t", 1)
+            mode, kind, sha = meta.split()[:3]
+            if kind != "blob":
+                raise ReleaseError(f"unsupported tree entry {kind}: {path}")
+            expected[path] = sha
+        present = sorted(
+            p.relative_to(dest).as_posix()
+            for p in dest.rglob("*")
+            if p.is_file() and not p.is_symlink() and ".git" not in p.parts
+        )
+        missing = sorted(set(expected) - set(present))
+        extra = sorted(set(present) - set(expected))
+        if missing or extra:
+            raise ReleaseError(
+                f"materialised tree differs from commit {commit[:10]}: "
+                f"missing={missing[:3]} extra={extra[:3]}"
+            )
+        for path, sha in expected.items():
+            data = (dest / path).read_bytes()
+            if _blob_hash(data) != sha:
+                raise ReleaseError(f"tree content differs from commit blob: {path}")
+    except Exception:
+        subprocess.run(
+            ["git", "-C", str(root), "worktree", "remove", "--force", str(dest)],
+            capture_output=True,
+            env=_git_env(),
+        )
+        raise
     return dest
+
+
+def _dispose_tree(root: Path, tree: Path) -> None:
+    subprocess.run(
+        ["git", "-C", str(root), "worktree", "remove", "--force", str(tree)],
+        capture_output=True,
+        env=_git_env(),
+    )
 
 
 def _collect_in(tree: Path, category: str = DEFAULT_CATEGORY) -> list[str]:
@@ -232,7 +286,8 @@ def _collect_in(tree: Path, category: str = DEFAULT_CATEGORY) -> list[str]:
         if ln.strip().startswith("tests/") and "::" in ln
     ]
     if proc.returncode != 0:
-        raise ReleaseError(f"test collection failed: rc={proc.returncode}")
+        tail = (proc.stderr or proc.stdout or "").strip().splitlines()[-3:]
+        raise ReleaseError(f"test collection failed: rc={proc.returncode} :: {' | '.join(tail)}")
     if not ids:
         raise ReleaseError("test collection produced no node ids")
     return sorted(set(ids))
@@ -339,33 +394,35 @@ def run_test_proof(
     if _dirty_code(cwd=root):
         raise ReleaseError("test proof requires a clean worktree")
     tree = _export_tree(root, commit)
+    try:
+        expected = _collect_in(tree, category)
+        if len(expected) < MIN_REQUIRED[category]:
+            raise ReleaseError(
+                f"{category} suite collected {len(expected)} tests, "
+                f"below the required floor of {MIN_REQUIRED[category]}"
+            )
 
-    tree = _export_tree(root, _git("rev-parse", "HEAD", cwd=root))
-    expected = _collect_in(tree, category)
-    if len(expected) < MIN_REQUIRED[category]:
-        raise ReleaseError(
-            f"{category} suite collected {len(expected)} tests, "
-            f"below the required floor of {MIN_REQUIRED[category]}"
-        )
+        tmpdir = Path(tempfile.mkdtemp(prefix="goe-junit-"))
+        junit_tmp = tmpdir / "junit.xml"
+        started = datetime.now(timezone.utc)
+        proc, output = _run_suite(tree, category, junit_tmp, timeout)
+        ended = datetime.now(timezone.utc)
 
-    tmpdir = Path(tempfile.mkdtemp(prefix="goe-junit-"))
-    junit_tmp = tmpdir / "junit.xml"
-    started = datetime.now(timezone.utc)
-    proc, output = _run_suite(tree, category, junit_tmp, timeout)
-    ended = datetime.now(timezone.utc)
+        summary = _junit_summary(junit_tmp)
+        if proc.returncode != 0 or summary["failures"] or summary["errors"] or summary["skipped"]:
+            raise ReleaseError(f"test run not clean: rc={proc.returncode} junit={summary}")
+        if summary["tests"] != len(expected):
+            raise ReleaseError(
+                f"junit recorded {summary['tests']} tests but {len(expected)} were collected"
+            )
 
-    summary = _junit_summary(junit_tmp)
-    if proc.returncode != 0 or summary["failures"] or summary["errors"] or summary["skipped"]:
-        raise ReleaseError(f"test run not clean: rc={proc.returncode} junit={summary}")
-    if summary["tests"] != len(expected):
-        raise ReleaseError(
-            f"junit recorded {summary['tests']} tests but {len(expected)} were collected"
-        )
-
-    executed = executed_node_ids(junit_tmp, expected)
-    if set(executed) != set(expected) or len(executed) != len(expected):
-        missing = sorted(set(expected) - set(executed))[:5]
-        raise ReleaseError(f"executed set differs from collected set (missing={missing})")
+        executed = executed_node_ids(junit_tmp, expected)
+        if set(executed) != set(expected) or len(executed) != len(expected):
+            missing = sorted(set(expected) - set(executed))[:5]
+            raise ReleaseError(f"executed set differs from collected set (missing={missing})")
+        junit_bytes = junit_tmp.read_bytes()
+    finally:
+        _dispose_tree(root, tree)
 
     evidence_dir = Path(root) / log_dir
     evidence_dir.mkdir(parents=True, exist_ok=True)
@@ -374,7 +431,7 @@ def run_test_proof(
     log_path = evidence_dir / f"{base}.log"
     junit_path = evidence_dir / f"{base}.junit.xml"
     log_path.write_text(output, encoding="utf-8")
-    junit_path.write_bytes(junit_tmp.read_bytes())
+    junit_path.write_bytes(junit_bytes)
 
     proof: dict[str, Any] = {
         "schema": PROOF_SCHEMA,
@@ -404,6 +461,14 @@ def run_test_proof(
     proof_path.write_text(json.dumps(proof, ensure_ascii=False, indent=2), encoding="utf-8")
     proof["proof_path"] = str(proof_path)
     return proof
+
+
+def _as_int(proof: dict[str, Any], key: str) -> int:
+    value = proof.get(key)
+    try:
+        return int(value)
+    except (TypeError, ValueError) as exc:
+        raise ReleaseError(f"proof field {key!r} is not an integer: {value!r}") from exc
 
 
 def _load_proof(proof_path: str | Path) -> dict[str, Any]:
@@ -484,9 +549,9 @@ def verify_test_proof(
 
     if proof.get("git_dirty"):
         raise ReleaseError("test proof was created on a dirty worktree")
-    if proof.get("exit_code") != 0 or int(proof.get("failed", 0)) or int(proof.get("errors", 0)):
+    if proof.get("exit_code") != 0 or _as_int(proof, "failed") or _as_int(proof, "errors"):
         raise ReleaseError("test proof records failed tests")
-    if int(proof.get("skipped", 0)):
+    if _as_int(proof, "skipped"):
         raise ReleaseError("test proof records skipped tests; a release requires a clean run")
 
     recorded_py = str(proof.get("python_version", ""))
@@ -495,6 +560,15 @@ def verify_test_proof(
         raise ReleaseError(f"proof python {recorded_py} does not match current interpreter {current_py}")
 
     tree = _export_tree(root, _git("rev-parse", "HEAD", cwd=root))
+    try:
+        return _verify_in_tree(proof, root, tree, category, rerun)
+    finally:
+        _dispose_tree(root, tree)
+
+
+def _verify_in_tree(
+    proof: dict[str, Any], root: Path, tree: Path, category: str, rerun: bool
+) -> dict[str, Any]:
     expected = _collect_in(tree, category)
     if len(expected) < MIN_REQUIRED[category]:
         raise ReleaseError(
@@ -505,11 +579,15 @@ def verify_test_proof(
     recorded = proof.get("required")
     if not isinstance(recorded, dict):
         raise ReleaseError("proof has no required test set")
-    if int(recorded.get("count", -1)) != replay_required["count"]:
+    try:
+        recorded_count = int(recorded.get("count", -1))
+    except (TypeError, ValueError) as exc:
+        raise ReleaseError("required test count is not an integer") from exc
+    if recorded_count != replay_required["count"]:
         raise ReleaseError("required test count disagrees with current collection")
     if recorded.get("sha256") != replay_required["sha256"]:
         raise ReleaseError("required test set hash disagrees with current collection")
-    if int(proof.get("passed", -1)) != replay_required["count"]:
+    if _as_int(proof, "passed") != replay_required["count"]:
         raise ReleaseError("passed count does not equal the required test count")
 
     junit_path = _relative_evidence(proof, root, "junit_path")
@@ -523,7 +601,7 @@ def verify_test_proof(
     executed = executed_node_ids(junit_path, expected)
     if len(executed) != len(expected) or set(executed) != set(expected):
         raise ReleaseError("recorded executed set is not identical to the collected set")
-    if int(proof.get("executed", {}).get("count", -1)) != len(executed):
+    if _as_int(proof.get("executed") or {}, "count") != len(executed):
         raise ReleaseError("executed count disagrees with junit evidence")
     if proof.get("executed", {}).get("sha256") != _sha256_json(executed):
         raise ReleaseError("executed set hash disagrees with junit evidence")
