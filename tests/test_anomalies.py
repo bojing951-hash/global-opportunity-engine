@@ -167,3 +167,22 @@ def test_flood_control_cross_day_dedupe_keeps_highest_score():
     out = _apply_flood_control(rows, _flood_ctx(max_family=60, max_entity=4))
     assert len(out) == 1
     assert out.iloc[0]["score"] == pytest.approx(0.90)
+
+
+def test_detection_window_keeps_genuine_flips_at_window_start():
+    """P1 QA: filtering the long frame before detection lost/misplaced trend flips."""
+    dates = pd.bdate_range("2024-01-01", periods=80)
+    rows = []
+    for i, d in enumerate(dates):
+        ds = d.strftime("%Y-%m-%d")
+        rows.append(("instrument", "US_EQ_SPY", "equity_etf", "US",
+                     "ma_cross_50_200", "", ds, -1.0 if i < 40 else 1.0))
+        rows.append(("instrument", "US_EQ_SPY", "equity_etf", "US",
+                     "ma_gap_200d", "", ds, 0.05))
+    fs = make_feature_set(as_of=dates[-1].strftime("%Y-%m-%d"), rows=rows)
+    since = dates[30].strftime("%Y-%m-%d")       # 10 rows before the genuine flip
+    out = detect_anomalies(fs, since=since)
+    tb = out[out.detector == "trend_break"] if not out.empty else out
+    assert not tb.empty, "full history must still detect the flip after the window start"
+    assert tb["date"].min() == dates[40].strftime("%Y-%m-%d")
+    assert len(tb) == 1, "no fabricated crosses at the start of the requested window"

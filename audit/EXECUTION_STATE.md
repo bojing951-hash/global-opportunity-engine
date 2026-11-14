@@ -17,7 +17,7 @@
 8. Handoff semantic parser verified: downstream partial/gap is recorded as not_completed, not success.
 
 ## Pending
-1. ~~Historical case rerun~~ done (7/7).
+1. ~~Historical case rerun~~ done (7/7); descriptive forward-return study added (`audit/FORWARD_RETURNS.md`).
 2. Research-quality evaluation vs simple rankings + blind review (input being built) → audit/RESEARCH_QUALITY.md.
 3. Independent QA re-audit of fixes (subagent) → final verdict.
 4. Docs update (README/SCORING/LIMITATIONS/DATA_SOURCES), commit series, push branch, PR link.

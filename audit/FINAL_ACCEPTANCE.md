@@ -43,8 +43,15 @@ newly-found P0/P1s fixed; residual limitations explicit, no fabricated validatio
   evidence/invalidations.
 - Blind benchmark (4 dates, 36 objects): engine mean 1.29 vs anomaly-score 1.27 vs price-move
   1.17; Precision@3 0.50 vs 0.25 vs 0.00; **counterexample 2025-06-30 engine 0.67 vs 1.50**.
-- **Residual**: no forward-return or human-expert validation; 0 deep_research today is the honest
-  result of the stricter gates, not a claim that nothing is investable.
+- Descriptive forward-return study (same PIT selections, subsequent prices; not a portfolio):
+  engine mean 3m **+4.1%**, excess vs SPY **−2.5%**, beat-SPY rate **25%**, material-move rate 33%;
+  anomaly-score baseline +4.75% / −1.8% / 33%; price-move baseline +0.0% / −6.5% / 25%.
+  **The engine did not beat a simple anomaly ranking on forward returns**, despite a better blind
+  research-value score. This is the strongest remaining counter-evidence and is kept.
+- **Verdict for this gate: PARTIAL** — opportunity discovery is demonstrated (7/7 historical
+  phenomena, evidence-based top-3), but no return edge and no human/forward validation of research
+  quality. 0 deep_research today is the honest result of stricter gates, not a claim that nothing
+  is investable.
 
 ## 5. Research handoff
 - Real run: downstream `run_ok=true`, 17 evidence rows, but `S8_grounded_qa` semantically failed →
