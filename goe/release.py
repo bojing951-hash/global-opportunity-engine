@@ -43,8 +43,9 @@ JUNIT_PLACEHOLDER = "{junit}"
 
 #: trusted launcher: drop cwd from sys.path before importing pytest, then run it
 PYTEST_LAUNCHER = (
-    "import sys;"
+    "import os,sys;"
     "sys.path=[p for p in sys.path if p not in ('', '.')];"
+    "sys.path.append(os.getcwd());"  # repo package import, after site-packages
     "import pytest;"
     "raise SystemExit(pytest.main(sys.argv[1:]))"
 )
@@ -94,6 +95,9 @@ class ReleaseError(RuntimeError):
 def _clean_env() -> dict[str, str]:
     env = {k: v for k, v in os.environ.items() if k not in _HARDENED_ENV}
     env.pop("PYTHONPATH", None)
+    # keep the launch directory off sys.path at interpreter startup, so a repo-root
+    # sitecustomize.py / pytest.py cannot execute before the trusted launcher
+    env["PYTHONSAFEPATH"] = "1"
     return env
 
 
