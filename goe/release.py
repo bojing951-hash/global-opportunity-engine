@@ -54,7 +54,7 @@ RELEASE_CATEGORY = "offline"
 
 #: anti-shrink floors. Raise these when tests are legitimately added; never lower
 #: them without a reviewed contract change.
-MIN_REQUIRED: dict[str, int] = {"offline": 186, "network": 9, "realdata": 1}
+MIN_REQUIRED: dict[str, int] = {"offline": 188, "network": 9, "realdata": 1}
 
 #: pytest environment variables that can change collection/selection/plugins
 _HARDENED_ENV = (

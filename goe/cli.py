@@ -343,6 +343,27 @@ def cmd_release(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_verify_release(args: argparse.Namespace) -> int:
+    """Standalone, portable proof verification (safe on a fresh clone)."""
+    from .release import ReleaseError, verify_test_proof
+
+    try:
+        proof = verify_test_proof(args.proof, cwd=".", rerun=not args.no_rerun)
+    except ReleaseError as exc:
+        print(f"RELEASE PROOF REJECTED: {exc}")
+        return 1
+    print(json.dumps({
+        "status": "accepted",
+        "commit": proof.get("git_commit"),
+        "category": proof.get("category"),
+        "passed": proof.get("passed"),
+        "required": proof.get("required"),
+        "executed": proof.get("executed"),
+        "rerun": proof.get("rerun"),
+    }, ensure_ascii=False, indent=2))
+    return 0
+
+
 # ---------------------------------------------------------------------- export
 def cmd_export(args: argparse.Namespace) -> int:
     from .integration.exporter import export_all
@@ -500,6 +521,11 @@ def build_parser() -> argparse.ArgumentParser:
     rel.add_argument("--out", default="audit/releases")
     rel.add_argument("--notes", default="")
     rel.set_defaults(func=cmd_release)
+
+    rv = sub.add_parser("verify-release", help="校验测试证明能否在当前机器/提交上重放")
+    rv.add_argument("--proof", required=True)
+    rv.add_argument("--no-rerun", action="store_true", help="只做结构校验，不重新执行测试")
+    rv.set_defaults(func=cmd_verify_release)
 
     e = sub.add_parser("export", help="重新导出最近机会管线的交接文件")
     e.add_argument("--db")

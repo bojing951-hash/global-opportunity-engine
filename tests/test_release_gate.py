@@ -128,3 +128,14 @@ def test_release_manifest_rejects_network_category(monkeypatch, small_repo, tmp_
     monkeypatch.setattr(rel, "_dirty_code", lambda **k: False)
     with pytest.raises(rel.ReleaseError, match="release requires"):
         rel.build_manifest(store=object(), proof_path=proof["proof_path"])
+
+
+def test_verify_release_cli_rejects_bad_proof(tmp_path):
+    """The portable verifier must fail closed on a missing/forged proof."""
+    from goe import cli as goe_cli
+
+    class Args:
+        proof = str(tmp_path / "missing.proof.json")
+        no_rerun = True
+
+    assert goe_cli.cmd_verify_release(Args()) == 1
