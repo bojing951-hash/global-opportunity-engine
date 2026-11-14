@@ -19,3 +19,19 @@
 | Failed scan could leave DB half-written | per-method commits; no outer transaction | systemic DB contract | SAVEPOINT-aware `Store.transaction` + one scan transaction | report-failure/detector-failure rollback tests |
 | Dead market hidden by global coverage; macro freshness false alarm | global-only coverage; latest un-published print treated stale; future-dated rows counted | systemic data health | per-region configured/tracked/fresh; latest AVAILABLE obs; critical curve; wall-clock fixed | readiness adversarial tests |
 | Futures roll gaps can look like anomalies | continuous front-month series without contract metadata | data limitation | flag every futures candidate, dq penalty, disclose; no false precision | roll-risk field/evidence; documented |
+
+---
+
+# Round 3 root causes
+
+| Symptom | Root cause | Fix | Verification |
+|---|---|---|---|
+| Historical bar changed with as_of (CSI300 3703 vs 4017) | completeness compared clock hour of fetch to bar-date close even when fetch was a later backfill; only last bar checked | same-session-only check, DST-aware local close, all bars, pre-action basis for splits | real t/T exact; CSI300 4017.855; DST/split tests |
+| A→B failed process recorded completed | parser reused stale artifacts; persist/CLI used semantic only; ok_valid ignored empty evidence | clear out_dir, mtime check, S8 answered + evidence required, status gates | fake IA matrix + real refused task |
+| 1/125 provider rows still success | status only looked at rows>0/errors, not target coverage; report meta omitted ingest | coverage-based ingest status, blocked_data, meta/ingest disclosure | 1/125 → failed/blocked |
+| Readiness refreshed by intraday bar | readiness used raw first row instead of completed-bar rule | readiness computes last complete bar via `bar_is_complete` | 10-day dead market + partial bar blocked |
+| Crypto bad print bypassed cleaning | native calendar captured before cleaning | clean native series independently, dedupe issues, same-day bar partial | bad crypto test; weekend test |
+| Macro PIT slice lost stale series | `_load_macro` dropped series based on T staleness | keep history, flag stale | 5.77M rows exact |
+| Excluded never recovered | excluded treated terminal | auto re-arm allowed and tested | excluded→watch test |
+| Policy narrative top-1 | BIS availability date treated as event catalyst | no catalyst, age disclosure, >10d low_priority | top now DXY/N225; policy low 0.603 |
+| DAX fake watch | local driver used SPY, not SX5E/EUR | local index/FX drivers | DAX 0.529→0.514 low |

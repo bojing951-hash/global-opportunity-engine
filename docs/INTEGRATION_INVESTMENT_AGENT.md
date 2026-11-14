@@ -95,7 +95,7 @@ opportunities (SQLite)
 .venv/bin/python -m goe.cli handoff --ia-path ~/investment-agent-dev --limit 2 --dry-run
 ```
 
-### 4.3 实际执行深度研究（已验证）
+### 4.3 实际执行深度研究（语义失败路径已验证）
 
 ```bash
 .venv/bin/python -m goe.cli handoff --ia-path ~/investment-agent-dev --limit 1
@@ -105,7 +105,8 @@ opportunities (SQLite)
 
 ```
 investment-agent: ~/investment-agent-dev exists=True cli=True python=/usr/bin/python3
-OPP-0001: ok rc=0 elapsed=7.32 out=.../exports/ia_runs/OPP-0001
+OPP-0002: not_ok rc=0 semantic=refused elapsed≈4s out=.../exports/ia_runs/OPP-0002
+# 下游 S8 返回 out_of_scope/unmapped；任务 not_completed:refused，CLI exit 2
 ```
 
 生成文件：

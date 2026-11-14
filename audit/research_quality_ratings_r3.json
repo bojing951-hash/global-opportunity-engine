@@ -1,0 +1,371 @@
+{
+  "rater": "independent-llm-r3",
+  "criteria": [
+    "real_market_change",
+    "beyond_price",
+    "falsifiable",
+    "data_sufficiency"
+  ],
+  "ratings": [
+    {
+      "object_id": "X01",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 2,
+        "data_sufficiency": 0
+      },
+      "note": "暴跌六成，仅价格"
+    },
+    {
+      "object_id": "X02",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "双冲击，幅度有限"
+    },
+    {
+      "object_id": "X03",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "美元强，波动扩张"
+    },
+    {
+      "object_id": "X04",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "铂金急涨，波动扩张"
+    },
+    {
+      "object_id": "X05",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "铂金急涨，波动扩张"
+    },
+    {
+      "object_id": "X06",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "券商涨四成，纯价格"
+    },
+    {
+      "object_id": "X07",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "港股年内涨三成半"
+    },
+    {
+      "object_id": "X08",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "沪深300单月涨22%"
+    },
+    {
+      "object_id": "X09",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "沪深300单月涨22%"
+    },
+    {
+      "object_id": "X10",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 1,
+        "falsifiable": 1,
+        "data_sufficiency": 2
+      },
+      "note": "新兴市场近高位缓涨"
+    },
+    {
+      "object_id": "X11",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 2,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "欧元五年高位，多头拥挤"
+    },
+    {
+      "object_id": "X12",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "比特币三月涨七成"
+    },
+    {
+      "object_id": "X13",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 1,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "白银跳涨后回吐"
+    },
+    {
+      "object_id": "X14",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "铀矿涨七成，纯价格"
+    },
+    {
+      "object_id": "X15",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 1,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "纳指深度回撤"
+    },
+    {
+      "object_id": "X16",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "恒科涨38%，机制弱"
+    },
+    {
+      "object_id": "X17",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 2,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "日元低位，空头拥挤"
+    },
+    {
+      "object_id": "X18",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 1,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "美元走弱，回撤加深"
+    },
+    {
+      "object_id": "X19",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "中概深跌，机制待验"
+    },
+    {
+      "object_id": "X20",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 2,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "白银持仓99分位"
+    },
+    {
+      "object_id": "X21",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "波动率回落，信号弱"
+    },
+    {
+      "object_id": "X22",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "欧股近高位缓涨"
+    },
+    {
+      "object_id": "X23",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "短端波动率新高"
+    },
+    {
+      "object_id": "X24",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "创业板涨49%，机制缺"
+    },
+    {
+      "object_id": "X25",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "取暖油涨68%，纯价格"
+    },
+    {
+      "object_id": "X26",
+      "scores": {
+        "real_market_change": 0,
+        "beyond_price": 0,
+        "falsifiable": 0,
+        "data_sufficiency": 0
+      },
+      "note": "日经无异常"
+    },
+    {
+      "object_id": "X27",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "韩股单月涨15%"
+    },
+    {
+      "object_id": "X28",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "科创50涨35%，机制缺"
+    },
+    {
+      "object_id": "X29",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "人民币贬值，波动极端"
+    },
+    {
+      "object_id": "X30",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "中证500涨28%，纯价格"
+    },
+    {
+      "object_id": "X31",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "国企指数五年最大回撤"
+    },
+    {
+      "object_id": "X32",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 2,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "日元深度回撤"
+    },
+    {
+      "object_id": "X33",
+      "scores": {
+        "real_market_change": 0,
+        "beyond_price": 1,
+        "falsifiable": 0,
+        "data_sufficiency": 1
+      },
+      "note": "标普无异常"
+    },
+    {
+      "object_id": "X34",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "欧股近高位"
+    },
+    {
+      "object_id": "X35",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "能源涨25%，机制弱"
+    },
+    {
+      "object_id": "X36",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 2,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "标普回撤，仓位极低"
+    }
+  ]
+}

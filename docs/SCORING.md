@@ -74,22 +74,22 @@
 
 ## 6. 评分示例（真实运行，2026-11-14 审计后）
 
-`OPP-0001`（SPDR S&P 500 ETF，观测到的政策操作后的重定价；评分 0.606，状态 `watch`）：
+`OPP-0002`（ICE US Dollar Index，临近 US Employment Situation；评分 0.593，状态 `watch`）：
 
 | 维度 | 值 | 说明 |
 |---|---|---|
-| anomaly_strength | 0.92 | 政策利率变化 + 资产波动异常 |
-| economic_impact | 0.68 | 美国大盘，机制映射广度中等 |
-| expectation_gap | 0.407 | 仓位/残差代理的可靠性加权值（覆盖度 75%） |
-| repricing_potential | 0.257 | 价格距 200 日均线约 3.9% |
-| catalyst | 0.10 | 政策事件在 as-of 前 28 天，不再当作前瞻催化 |
+| anomaly_strength | 0.87 | near-1y-high + 小幅相对强弱异常 |
+| economic_impact | 0.68 | 美元全球重要性高 |
+| expectation_gap | 0.175 | 仓位代理（覆盖度 47%） |
+| repricing_potential | 0.219 | 距 200 日均线约 3.3% |
+| catalyst | 0.60 | 21 天后的已核验事件 |
 | timing_window | 1.00 | 事件窗口与 horizon 一致 |
 | risk_liquidity | 1.00 | 高流动性 |
-| evidence_quality | 0.639 | 官方政策源 + 聚合价格 + 反证据惩罚 |
-| **总分** | **0.606** | → `watch`（未达到 0.68 门槛） |
+| evidence_quality | 0.639 | 聚合价格 + 官方事件 + 反证据惩罚 |
+| **总分** | **0.593** | → `watch`（未达到 0.68 门槛） |
 
-说明：没有候选在当前扫描中达到 `deep_research` 门槛。这是预期差可测性与机制证据共同决定的
-结果，不是排序故障；`goe handoff` 仍可把 watch 候选作为研究任务交给 B，并标注证据强度。
+说明：`OPP-0001` 的政策利率候选分数更高（0.603），但政策日期是 BIS 月频可用日且已过去 28 天，
+按事件窗口规则被降为 `low_priority`，不进入研究队列。分数最高的候选不一定是研究队列第一位。
 
 ## 7. 校准与检验
 

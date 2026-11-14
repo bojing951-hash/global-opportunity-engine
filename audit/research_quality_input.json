@@ -12,66 +12,6 @@
       "object_id": "X24",
       "facts": {
         "object_id": "X24",
-        "name": "Henry Hub Natural Gas front month",
-        "market": "WORLD",
-        "asset_class": "commodity",
-        "return_1m": 0.5036,
-        "return_3m": 0.1157,
-        "return_12m": -0.0146,
-        "vol_pctile_5y": 0.4472,
-        "drawdown_pctile_5y": 0.7299,
-        "ma_gap_200d": 0.3014,
-        "positioning_net_pctile_5y": 0.5405,
-        "recent_anomalies": [
-          {
-            "detector": "relative_strength_extreme",
-            "direction": "outperform",
-            "score": 0.07,
-            "available_date": "2024-09-27"
-          }
-        ],
-        "mechanisms": [],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
-      "as_of": "2022-10-31",
-      "object_id": "X21",
-      "facts": {
-        "object_id": "X21",
-        "name": "NY Harbor ULSD Heating Oil",
-        "market": "WORLD",
-        "asset_class": "commodity",
-        "return_1m": 0.3325,
-        "return_3m": 0.3226,
-        "return_12m": 0.808,
-        "vol_pctile_5y": 0.8332,
-        "drawdown_pctile_5y": 0.5512,
-        "ma_gap_200d": 0.2526,
-        "positioning_net_pctile_5y": null,
-        "recent_anomalies": [
-          {
-            "detector": "relative_strength_extreme",
-            "direction": "outperform",
-            "score": 0.03,
-            "available_date": "2022-10-28"
-          }
-        ],
-        "mechanisms": [],
-        "data_gaps": [
-          "no consensus earnings",
-          "no options-implied distribution"
-        ]
-      }
-    },
-    {
-      "as_of": "2024-09-30",
-      "object_id": "X06",
-      "facts": {
-        "object_id": "X06",
         "name": "ChiNext ETF",
         "market": "CN",
         "asset_class": "equity_etf",
@@ -99,6 +39,78 @@
             "detector": "vol_regime_shift",
             "direction": "expansion",
             "score": 1.0,
+            "available_date": "2024-09-30"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2022-10-31",
+      "object_id": "X21",
+      "facts": {
+        "object_id": "X21",
+        "name": "CBOE VVIX (vol of VIX)",
+        "market": "US",
+        "asset_class": "volatility",
+        "return_1m": -0.2574,
+        "return_3m": -0.1086,
+        "return_12m": -0.2502,
+        "vol_pctile_5y": 0.2764,
+        "drawdown_pctile_5y": 0.0675,
+        "ma_gap_200d": -0.2498,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "relative_strength_extreme",
+            "direction": "underperform",
+            "score": 0.11,
+            "available_date": "2022-10-28"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2024-09-30",
+      "object_id": "X06",
+      "facts": {
+        "object_id": "X06",
+        "name": "China Securities Sector ETF",
+        "market": "CN",
+        "asset_class": "sector_equity",
+        "return_1m": 0.403,
+        "return_3m": 0.412,
+        "return_12m": 0.1567,
+        "vol_pctile_5y": 0.8896,
+        "drawdown_pctile_5y": 0.9952,
+        "ma_gap_200d": 0.3049,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "drawdown_extreme",
+            "direction": "near_high",
+            "score": 0.98,
+            "available_date": "2024-09-27"
+          },
+          {
+            "detector": "price_return_shock",
+            "direction": "up",
+            "score": 1.0,
+            "available_date": "2024-09-30"
+          },
+          {
+            "detector": "relative_strength_extreme",
+            "direction": "outperform",
+            "score": 0.75,
             "available_date": "2024-09-30"
           }
         ],
@@ -173,12 +185,6 @@
             "direction": "outperform",
             "score": 0.14,
             "available_date": "2025-06-26"
-          },
-          {
-            "detector": "vol_regime_shift",
-            "direction": "expansion",
-            "score": 0.0,
-            "available_date": "2025-06-30"
           }
         ],
         "mechanisms": [],
@@ -258,12 +264,6 @@
             "direction": "near_high",
             "score": 0.95,
             "available_date": "2025-06-25"
-          },
-          {
-            "detector": "vol_regime_shift",
-            "direction": "expansion",
-            "score": 0.34,
-            "available_date": "2025-06-30"
           }
         ],
         "mechanisms": [],
@@ -302,12 +302,6 @@
             "available_date": "2022-10-24"
           },
           {
-            "detector": "price_return_shock",
-            "direction": "down",
-            "score": 0.16,
-            "available_date": "2022-10-31"
-          },
-          {
             "detector": "relative_strength_extreme",
             "direction": "underperform",
             "score": 0.07,
@@ -342,12 +336,12 @@
         "name": "NYMEX Platinum front month",
         "market": "WORLD",
         "asset_class": "commodity",
-        "return_1m": 0.2525,
-        "return_3m": 0.3638,
-        "return_12m": 0.3137,
+        "return_1m": 0.2413,
+        "return_3m": 0.3644,
+        "return_12m": 0.3452,
         "vol_pctile_5y": 0.9095,
-        "drawdown_pctile_5y": 0.9126,
-        "ma_gap_200d": 0.3403,
+        "drawdown_pctile_5y": 0.8999,
+        "ma_gap_200d": 0.3309,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
@@ -384,12 +378,12 @@
         "name": "SPDR S&P 500 ETF",
         "market": "US",
         "asset_class": "equity_etf",
-        "return_1m": 0.0266,
-        "return_3m": 0.0759,
-        "return_12m": -0.1105,
-        "vol_pctile_5y": 0.5218,
-        "drawdown_pctile_5y": 0.2423,
-        "ma_gap_200d": 0.0369,
+        "return_1m": 0.033,
+        "return_3m": 0.0718,
+        "return_12m": -0.0924,
+        "vol_pctile_5y": 0.5139,
+        "drawdown_pctile_5y": 0.2883,
+        "ma_gap_200d": 0.051,
         "positioning_net_pctile_5y": 0.3938,
         "recent_anomalies": [],
         "mechanisms": [
@@ -414,12 +408,12 @@
         "name": "United States Natural Gas Fund",
         "market": "WORLD",
         "asset_class": "commodity",
-        "return_1m": -0.2817,
-        "return_3m": -0.5561,
-        "return_12m": -0.6409,
-        "vol_pctile_5y": 0.8689,
-        "drawdown_pctile_5y": 0.0,
-        "ma_gap_200d": -0.6516,
+        "return_1m": -0.2432,
+        "return_3m": -0.5227,
+        "return_12m": -0.6419,
+        "vol_pctile_5y": 0.8793,
+        "drawdown_pctile_5y": 0.0024,
+        "ma_gap_200d": -0.6364,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [],
         "mechanisms": [],
@@ -434,15 +428,15 @@
       "object_id": "X23",
       "facts": {
         "object_id": "X23",
-        "name": "iShares MBS ETF",
+        "name": "iShares 1-3 Year Treasury Bond",
         "market": "US",
         "asset_class": "fixed_income",
-        "return_1m": 0.026,
-        "return_3m": 0.0231,
-        "return_12m": -0.046,
-        "vol_pctile_5y": 0.8562,
-        "drawdown_pctile_5y": 0.2065,
-        "ma_gap_200d": 0.0085,
+        "return_1m": 0.018,
+        "return_3m": 0.0149,
+        "return_12m": 0.0018,
+        "vol_pctile_5y": 0.9984,
+        "drawdown_pctile_5y": 0.3733,
+        "ma_gap_200d": 0.0134,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
@@ -450,6 +444,12 @@
             "direction": "down",
             "score": 1.0,
             "available_date": "2023-03-27"
+          },
+          {
+            "detector": "vol_regime_shift",
+            "direction": "expansion",
+            "score": 0.47,
+            "available_date": "2023-03-28"
           }
         ],
         "mechanisms": [],
@@ -464,27 +464,27 @@
       "object_id": "X16",
       "facts": {
         "object_id": "X16",
-        "name": "China Securities Sector ETF",
-        "market": "CN",
-        "asset_class": "sector_equity",
-        "return_1m": 0.403,
-        "return_3m": 0.412,
-        "return_12m": 0.1567,
-        "vol_pctile_5y": 0.8896,
-        "drawdown_pctile_5y": 0.9952,
-        "ma_gap_200d": 0.3049,
+        "name": "CSOP Hang Seng TECH ETF",
+        "market": "HK",
+        "asset_class": "equity_etf",
+        "return_1m": 0.3809,
+        "return_3m": 0.3391,
+        "return_12m": 0.2147,
+        "vol_pctile_5y": 0.4238,
+        "drawdown_pctile_5y": 0.992,
+        "ma_gap_200d": 0.339,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
             "detector": "drawdown_extreme",
             "direction": "near_high",
-            "score": 0.98,
-            "available_date": "2024-09-27"
+            "score": 0.97,
+            "available_date": "2024-09-26"
           },
           {
             "detector": "price_return_shock",
             "direction": "up",
-            "score": 1.0,
+            "score": 0.96,
             "available_date": "2024-09-30"
           },
           {
@@ -492,9 +492,22 @@
             "direction": "outperform",
             "score": 0.75,
             "available_date": "2024-09-30"
+          },
+          {
+            "detector": "vol_regime_shift",
+            "direction": "compression",
+            "score": 0.12,
+            "available_date": "2024-09-23"
           }
         ],
-        "mechanisms": [],
+        "mechanisms": [
+          {
+            "id": "M04_CHINA_POLICY_HK_TECH",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "secondary"
+          }
+        ],
         "data_gaps": [
           "no consensus earnings",
           "no options-implied distribution"
@@ -506,27 +519,21 @@
       "object_id": "X25",
       "facts": {
         "object_id": "X25",
-        "name": "Coffee C front month",
+        "name": "NY Harbor ULSD Heating Oil",
         "market": "WORLD",
         "asset_class": "commodity",
-        "return_1m": -0.2477,
-        "return_3m": -0.2036,
-        "return_12m": -0.1508,
-        "vol_pctile_5y": 0.5957,
-        "drawdown_pctile_5y": 0.0,
-        "ma_gap_200d": -0.2428,
+        "return_1m": 0.244,
+        "return_3m": 0.2398,
+        "return_12m": 0.6788,
+        "vol_pctile_5y": 0.8427,
+        "drawdown_pctile_5y": 0.4186,
+        "ma_gap_200d": 0.1513,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
-            "detector": "drawdown_extreme",
-            "direction": "deep_drawdown",
-            "score": 1.0,
-            "available_date": "2022-10-28"
-          },
-          {
             "detector": "relative_strength_extreme",
-            "direction": "underperform",
-            "score": 0.4,
+            "direction": "outperform",
+            "score": 0.03,
             "available_date": "2022-10-28"
           }
         ],
@@ -605,14 +612,21 @@
         "name": "Euro Stoxx 50",
         "market": "EA",
         "asset_class": "equity_index",
-        "return_1m": 0.0165,
-        "return_3m": 0.1296,
-        "return_12m": 0.0936,
-        "vol_pctile_5y": 0.6251,
-        "drawdown_pctile_5y": 0.8626,
-        "ma_gap_200d": 0.1252,
+        "return_1m": 0.0176,
+        "return_3m": 0.1115,
+        "return_12m": 0.0921,
+        "vol_pctile_5y": 0.6021,
+        "drawdown_pctile_5y": 0.9686,
+        "ma_gap_200d": 0.1317,
         "positioning_net_pctile_5y": null,
-        "recent_anomalies": [],
+        "recent_anomalies": [
+          {
+            "detector": "drawdown_extreme",
+            "direction": "near_high",
+            "score": 0.84,
+            "available_date": "2023-03-31"
+          }
+        ],
         "mechanisms": [],
         "data_gaps": [
           "no consensus earnings",
@@ -683,12 +697,6 @@
             "direction": "outperform",
             "score": 0.17,
             "available_date": "2022-10-31"
-          },
-          {
-            "detector": "vol_regime_shift",
-            "direction": "expansion",
-            "score": 0.3,
-            "available_date": "2022-10-31"
           }
         ],
         "mechanisms": [],
@@ -745,25 +753,25 @@
       "object_id": "X35",
       "facts": {
         "object_id": "X35",
-        "name": "CBOE VVIX (vol of VIX)",
+        "name": "Energy Select Sector SPDR",
         "market": "US",
-        "asset_class": "volatility",
-        "return_1m": -0.2787,
-        "return_3m": -0.0952,
-        "return_12m": -0.265,
-        "vol_pctile_5y": 0.2764,
-        "drawdown_pctile_5y": 0.0532,
-        "ma_gap_200d": -0.2584,
+        "asset_class": "sector_equity",
+        "return_1m": 0.2497,
+        "return_3m": 0.1874,
+        "return_12m": 0.6371,
+        "vol_pctile_5y": 0.7522,
+        "drawdown_pctile_5y": 0.9285,
+        "ma_gap_200d": 0.1952,
         "positioning_net_pctile_5y": null,
-        "recent_anomalies": [
+        "recent_anomalies": [],
+        "mechanisms": [
           {
-            "detector": "relative_strength_extreme",
-            "direction": "underperform",
-            "score": 0.11,
-            "available_date": "2022-10-28"
+            "id": "M05_ENERGY_INFLATION_CHAIN",
+            "status": "mixed",
+            "confidence": 0.17,
+            "role": "primary"
           }
         ],
-        "mechanisms": [],
         "data_gaps": [
           "no consensus earnings",
           "no options-implied distribution"
@@ -778,12 +786,12 @@
         "name": "Invesco QQQ (Nasdaq 100)",
         "market": "US",
         "asset_class": "equity_etf",
-        "return_1m": 0.0344,
-        "return_3m": -0.1064,
-        "return_12m": -0.2635,
-        "vol_pctile_5y": 0.7911,
-        "drawdown_pctile_5y": 0.0238,
-        "ma_gap_200d": -0.1036,
+        "return_1m": 0.04,
+        "return_3m": -0.1141,
+        "return_12m": -0.2756,
+        "vol_pctile_5y": 0.7935,
+        "drawdown_pctile_5y": 0.0183,
+        "ma_gap_200d": -0.1127,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [],
         "mechanisms": [
@@ -805,15 +813,15 @@
       "object_id": "X02",
       "facts": {
         "object_id": "X02",
-        "name": "iShares 1-3 Year Treasury Bond",
+        "name": "iShares MBS ETF",
         "market": "US",
         "asset_class": "fixed_income",
-        "return_1m": 0.0171,
-        "return_3m": 0.0144,
-        "return_12m": 0.0013,
-        "vol_pctile_5y": 0.9976,
-        "drawdown_pctile_5y": 0.3423,
-        "ma_gap_200d": 0.0123,
+        "return_1m": 0.033,
+        "return_3m": 0.0196,
+        "return_12m": -0.0462,
+        "vol_pctile_5y": 0.8515,
+        "drawdown_pctile_5y": 0.2073,
+        "ma_gap_200d": 0.0113,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
@@ -823,10 +831,10 @@
             "available_date": "2023-03-27"
           },
           {
-            "detector": "vol_regime_shift",
-            "direction": "expansion",
-            "score": 0.47,
-            "available_date": "2023-03-28"
+            "detector": "price_return_shock",
+            "direction": "up",
+            "score": 0.82,
+            "available_date": "2023-03-31"
           }
         ],
         "mechanisms": [],
@@ -893,12 +901,12 @@
         "name": "COMEX Silver front month",
         "market": "WORLD",
         "asset_class": "commodity",
-        "return_1m": 0.0803,
-        "return_3m": 0.0781,
-        "return_12m": 0.4023,
-        "vol_pctile_5y": 0.6608,
-        "drawdown_pctile_5y": 0.9531,
-        "ma_gap_200d": 0.1673,
+        "return_1m": 0.0544,
+        "return_3m": 0.0636,
+        "return_12m": 0.3841,
+        "vol_pctile_5y": 0.6616,
+        "drawdown_pctile_5y": 0.9349,
+        "ma_gap_200d": 0.1524,
         "positioning_net_pctile_5y": 0.9923,
         "recent_anomalies": [
           {
@@ -927,22 +935,22 @@
       "object_id": "X27",
       "facts": {
         "object_id": "X27",
-        "name": "Global X Uranium ETF",
-        "market": "WORLD",
-        "asset_class": "sector_equity",
-        "return_1m": 0.1571,
-        "return_3m": 0.6104,
-        "return_12m": 0.356,
-        "vol_pctile_5y": 0.7021,
-        "drawdown_pctile_5y": 0.8745,
-        "ma_gap_200d": 0.3458,
+        "name": "KOSPI",
+        "market": "KR",
+        "asset_class": "equity_index",
+        "return_1m": 0.1504,
+        "return_3m": 0.1618,
+        "return_12m": 0.115,
+        "vol_pctile_5y": 0.9237,
+        "drawdown_pctile_5y": 0.8523,
+        "ma_gap_200d": 0.1891,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
-            "detector": "drawdown_extreme",
-            "direction": "near_high",
-            "score": 0.84,
-            "available_date": "2025-06-24"
+            "detector": "price_return_shock",
+            "direction": "up",
+            "score": 0.64,
+            "available_date": "2025-06-25"
           }
         ],
         "mechanisms": [],
@@ -960,14 +968,21 @@
         "name": "Bitcoin / USD",
         "market": "WORLD",
         "asset_class": "crypto",
-        "return_1m": 0.2131,
-        "return_3m": 0.7074,
-        "return_12m": -0.3082,
-        "vol_pctile_5y": 0.4726,
-        "drawdown_pctile_5y": 0.6044,
-        "ma_gap_200d": 0.3734,
+        "return_1m": 0.2043,
+        "return_3m": 0.7153,
+        "return_12m": -0.3746,
+        "vol_pctile_5y": 0.2385,
+        "drawdown_pctile_5y": 0.9775,
+        "ma_gap_200d": 0.399,
         "positioning_net_pctile_5y": null,
-        "recent_anomalies": [],
+        "recent_anomalies": [
+          {
+            "detector": "drawdown_extreme",
+            "direction": "near_high",
+            "score": 0.89,
+            "available_date": "2023-03-29"
+          }
+        ],
         "mechanisms": [
           {
             "id": "M14_JAPAN_CARRY_UNWIND",
@@ -1003,12 +1018,6 @@
             "direction": "deep_drawdown",
             "score": 1.0,
             "available_date": "2022-10-31"
-          },
-          {
-            "detector": "price_return_shock",
-            "direction": "down",
-            "score": 0.18,
-            "available_date": "2022-10-31"
           }
         ],
         "mechanisms": [],
@@ -1023,16 +1032,16 @@
       "object_id": "X13",
       "facts": {
         "object_id": "X13",
-        "name": "ICE BofA MOVE Index (rates vol)",
-        "market": "US",
-        "asset_class": "volatility",
-        "return_1m": 0.1665,
-        "return_3m": 0.1763,
-        "return_12m": 0.1275,
-        "vol_pctile_5y": 0.7998,
-        "drawdown_pctile_5y": 0.5703,
-        "ma_gap_200d": 0.0844,
-        "positioning_net_pctile_5y": null,
+        "name": "COMEX Silver front month",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "return_1m": 0.1594,
+        "return_3m": -0.0001,
+        "return_12m": -0.0409,
+        "vol_pctile_5y": 0.5568,
+        "drawdown_pctile_5y": 0.8245,
+        "ma_gap_200d": 0.1488,
+        "positioning_net_pctile_5y": 0.2317,
         "recent_anomalies": [],
         "mechanisms": [],
         "data_gaps": [
@@ -1086,12 +1095,12 @@
         "name": "NYMEX Platinum front month",
         "market": "WORLD",
         "asset_class": "commodity",
-        "return_1m": 0.2525,
-        "return_3m": 0.3638,
-        "return_12m": 0.3137,
+        "return_1m": 0.2413,
+        "return_3m": 0.3644,
+        "return_12m": 0.3452,
         "vol_pctile_5y": 0.9095,
-        "drawdown_pctile_5y": 0.9126,
-        "ma_gap_200d": 0.3403,
+        "drawdown_pctile_5y": 0.8999,
+        "ma_gap_200d": 0.3309,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
@@ -1128,12 +1137,12 @@
         "name": "SPDR S&P 500 ETF",
         "market": "US",
         "asset_class": "equity_etf",
-        "return_1m": 0.0723,
-        "return_3m": -0.0491,
-        "return_12m": -0.1384,
+        "return_1m": 0.0813,
+        "return_3m": -0.0497,
+        "return_12m": -0.1463,
         "vol_pctile_5y": 0.8642,
-        "drawdown_pctile_5y": 0.0667,
-        "ma_gap_200d": -0.0457,
+        "drawdown_pctile_5y": 0.0588,
+        "ma_gap_200d": -0.0517,
         "positioning_net_pctile_5y": 0.0541,
         "recent_anomalies": [],
         "mechanisms": [
@@ -1167,17 +1176,30 @@
       "object_id": "X14",
       "facts": {
         "object_id": "X14",
-        "name": "Henry Hub Natural Gas front month",
+        "name": "Global X Uranium ETF",
         "market": "WORLD",
-        "asset_class": "commodity",
-        "return_1m": 0.167,
-        "return_3m": -0.0534,
-        "return_12m": 0.4228,
-        "vol_pctile_5y": 0.5099,
-        "drawdown_pctile_5y": 0.6831,
-        "ma_gap_200d": 0.107,
-        "positioning_net_pctile_5y": 0.2857,
-        "recent_anomalies": [],
+        "asset_class": "sector_equity",
+        "return_1m": 0.203,
+        "return_3m": 0.6801,
+        "return_12m": 0.371,
+        "vol_pctile_5y": 0.6982,
+        "drawdown_pctile_5y": 0.9662,
+        "ma_gap_200d": 0.3682,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "drawdown_extreme",
+            "direction": "near_high",
+            "score": 0.84,
+            "available_date": "2025-06-24"
+          },
+          {
+            "detector": "relative_strength_extreme",
+            "direction": "outperform",
+            "score": 0.8,
+            "available_date": "2025-06-30"
+          }
+        ],
         "mechanisms": [],
         "data_gaps": [
           "no consensus earnings",
@@ -1193,12 +1215,12 @@
         "name": "iShares MSCI Emerging Markets",
         "market": "WORLD",
         "asset_class": "equity_etf",
-        "return_1m": 0.0774,
-        "return_3m": 0.0944,
-        "return_12m": 0.2644,
-        "vol_pctile_5y": 0.6513,
-        "drawdown_pctile_5y": 0.938,
-        "ma_gap_200d": 0.1283,
+        "return_1m": 0.0596,
+        "return_3m": 0.0743,
+        "return_12m": 0.2408,
+        "vol_pctile_5y": 0.664,
+        "drawdown_pctile_5y": 0.8539,
+        "ma_gap_200d": 0.1091,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {
@@ -1291,12 +1313,12 @@
         "name": "Vanguard FTSE Europe",
         "market": "EA",
         "asset_class": "equity_etf",
-        "return_1m": 0.0281,
-        "return_3m": 0.1005,
-        "return_12m": 0.1826,
-        "vol_pctile_5y": 0.8054,
-        "drawdown_pctile_5y": 0.9551,
-        "ma_gap_200d": 0.131,
+        "return_1m": 0.0253,
+        "return_3m": 0.1079,
+        "return_12m": 0.196,
+        "vol_pctile_5y": 0.8038,
+        "drawdown_pctile_5y": 0.9547,
+        "ma_gap_200d": 0.1327,
         "positioning_net_pctile_5y": null,
         "recent_anomalies": [
           {

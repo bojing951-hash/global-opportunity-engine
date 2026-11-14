@@ -1,21 +1,32 @@
 # EXECUTION STATE
 
-- Updated: 2026-11-14 15:05 HKT
-- Final commit: 28ec3a2 (pushed to origin/fix/autonomous-audit-remediation)
+- Updated: 2026-11-14 17:15 HKT
+- Round-3 worktree based on 6755d34; commit pending after final QA
 - Branch: `fix/autonomous-audit-remediation`
 - Base (main/remote): `e5da620cafce5b6214252de35538c70f7112aa3a`
-- Working commit: audit baseline `bb02363` + final remediation changes (see FIX_LOG); commits pending
-- Worktree: clean; all changes committed and pushed to `origin/fix/autonomous-audit-remediation`
+- Working commit: round-3 code committed as `ff94a78`; docs/audit commit pending
+- Worktree: contains the final docs/audit commit in progress; code already committed
 
 ## Completed this round
 1. Baseline + independent audits (2 subagents: data/engineering, research method).
 2. Reproduced P1-01..P1-08 with exact numbers.
 3. Fixed CFTC lookahead/normalisation, macro availability + frequency-aware recency, replay slicing, handoff semantics, ingest/readiness gate, status model.
 4. Fixed newly found P0/P1: Monday returns, trend_break artefacts, dead breadth, intraday bar, ERP PIT, 3.213 share conversion, revision lookback, score double counting, mechanism dominance, mechanism statistics/FDR, scan rollback.
-5. Added regression tests (offline suite 121 passing at last run).
-6. Rebuilt scan: 1,511 anomalies; 5 mechanisms (2 mixed/3 unsupported); 11 candidates (3 watch, 2 low, 1 invalidated, 5 excluded, 0 deep under strict gates).
+5. Added regression tests (offline suite 157 passing at last run).
+6. Rebuilt scan: 1,506 anomalies; 5 mechanisms (2 mixed/3 unsupported); 11 candidates (2 watch, 3 low, 2 invalidated, 4 excluded, 0 deep under strict gates).
 7. Historical replay with PIT slices: 7/7; added observed-policy and upside-divergence archetypes.
 8. Handoff semantic parser verified: downstream partial/gap is recorded as not_completed, not success.
+
+## Round-3 status
+- Independent audits: R3_DATA_AUDIT, R3_RESEARCH_AUDIT, R3_RED_TEAM_AUDIT.
+- Fixed P1-A (historical bars), P1-B (critical data contract), P1-1 (handoff false success),
+  P1-2 (provider partial outage), P1-3 (readiness partial bar), P2 crypto cleaning/PIT macro/
+  fingerprints/file cleanup.
+- Tests 157 offline; scan 1,506 anomalies / 11 candidates (2 watch, 3 low, 2 invalidated, 4 excluded);
+  research queue 2; strict replay 7/7 archived at 2026-11-14T09:28:12Z.
+- Handoff real: refused, task not_completed:refused, exit 2.
+- Blind round 3: engine 1.188 < anomaly 1.521 < price 1.312; forward ex-top +2.45% vs anomaly +5.09%.
+- Engineering QA round-3 PASS with no P0/P1; final acceptance QA running.
 
 ## Round-2 final status
 Engineering PASS (137 tests; transactional scan; detector faults block); data PASS with residuals
@@ -23,8 +34,8 @@ Engineering PASS (137 tests; transactional scan; detector faults block); data PA
 PARTIAL (strict case-entity PIT replay 7/7; blind 1.250 vs 1.229; forward +7.12% but lower hit rate);
 handoff PASS for semantic correctness (real run refused, exit 2; no ok_valid sample).
 
-Final scan: 1,511 anomalies, 5 mechanisms (2 mixed/3 unsupported), 11 candidates
-(3 watch, 2 low_priority, 1 invalidated, 5 excluded), zero duplicate primaries, 0 deep_research.
+Final scan: 1,506 anomalies, 5 mechanisms (2 mixed/3 unsupported), 11 candidates
+(2 watch, 3 low_priority, 2 invalidated, 4 excluded), zero duplicate primaries, 0 deep_research.
 
 ## Pending
 0. **No P0/P1 work remains.** The only open items are documented P2/P3 limitations

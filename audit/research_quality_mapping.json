@@ -11,8 +11,8 @@
       "as_of": "2023-03-31",
       "method": "B_anomaly_score",
       "rank": 1,
-      "entity_id": "US_FI_SHY",
-      "theme": "us_rates_short"
+      "entity_id": "US_FI_MBB",
+      "theme": "us_mbs"
     },
     "X03": {
       "as_of": "2022-10-31",
@@ -39,8 +39,8 @@
       "as_of": "2024-09-30",
       "method": "A_price_move",
       "rank": 2,
-      "entity_id": "CN_EQ_CHINEXT",
-      "theme": "china_growth"
+      "entity_id": "CN_SEC_SEC",
+      "theme": "china_brokers"
     },
     "X07": {
       "as_of": "2025-06-30",
@@ -88,15 +88,15 @@
       "as_of": "2023-03-31",
       "method": "A_price_move",
       "rank": 3,
-      "entity_id": "US_VOL_MOVE",
-      "theme": "volatility"
+      "entity_id": "CM_MET_SI",
+      "theme": "silver"
     },
     "X14": {
       "as_of": "2025-06-30",
       "method": "A_price_move",
       "rank": 2,
-      "entity_id": "CM_ENE_NG",
-      "theme": "natural_gas"
+      "entity_id": "CM_ETF_URA",
+      "theme": "uranium"
     },
     "X15": {
       "as_of": "2022-10-31",
@@ -109,8 +109,8 @@
       "as_of": "2024-09-30",
       "method": "A_price_move",
       "rank": 3,
-      "entity_id": "CN_SEC_SEC",
-      "theme": "china_brokers"
+      "entity_id": "HK_EQ_3033",
+      "theme": "hk_tech"
     },
     "X17": {
       "as_of": "2023-03-31",
@@ -144,8 +144,8 @@
       "as_of": "2022-10-31",
       "method": "A_price_move",
       "rank": 1,
-      "entity_id": "CM_ENE_HO",
-      "theme": "refined_products"
+      "entity_id": "US_VOL_VVIX",
+      "theme": "volatility"
     },
     "X22": {
       "as_of": "2025-06-30",
@@ -158,22 +158,22 @@
       "as_of": "2023-03-31",
       "method": "B_anomaly_score",
       "rank": 2,
-      "entity_id": "US_FI_MBB",
-      "theme": "us_mbs"
+      "entity_id": "US_FI_SHY",
+      "theme": "us_rates_short"
     },
     "X24": {
       "as_of": "2024-09-30",
       "method": "A_price_move",
       "rank": 1,
-      "entity_id": "CM_ENE_NG",
-      "theme": "natural_gas"
+      "entity_id": "CN_EQ_CHINEXT",
+      "theme": "china_growth"
     },
     "X25": {
       "as_of": "2022-10-31",
       "method": "A_price_move",
       "rank": 3,
-      "entity_id": "CM_AGR_KC",
-      "theme": "softs"
+      "entity_id": "CM_ENE_HO",
+      "theme": "refined_products"
     },
     "X26": {
       "as_of": "2025-06-30",
@@ -186,8 +186,8 @@
       "as_of": "2025-06-30",
       "method": "A_price_move",
       "rank": 3,
-      "entity_id": "CM_ETF_URA",
-      "theme": "uranium"
+      "entity_id": "KR_EQ_KOSPI",
+      "theme": "korea_equity"
     },
     "X28": {
       "as_of": "2024-09-30",
@@ -242,8 +242,8 @@
       "as_of": "2022-10-31",
       "method": "A_price_move",
       "rank": 2,
-      "entity_id": "US_VOL_VVIX",
-      "theme": "volatility"
+      "entity_id": "US_SEC_XLE",
+      "theme": "us_sector_energy"
     },
     "X36": {
       "as_of": "2022-10-31",
@@ -256,52 +256,51 @@
   "diagnostics": {
     "2022-10-31": {
       "as_of": "2022-10-31",
-      "n_anomalies": 1343,
-      "n_recent": 102,
+      "n_anomalies": 1347,
+      "n_recent": 101,
       "n_mechanisms": 10,
-      "engine_candidates": 20,
+      "engine_candidates": 15,
       "engine_statuses": {
-        "low_priority": 9,
-        "watch": 8,
-        "excluded": 3
+        "low_priority": 11,
+        "watch": 4
       }
     },
     "2023-03-31": {
       "as_of": "2023-03-31",
-      "n_anomalies": 1276,
-      "n_recent": 69,
+      "n_anomalies": 1284,
+      "n_recent": 73,
       "n_mechanisms": 3,
       "engine_candidates": 13,
       "engine_statuses": {
-        "watch": 5,
-        "low_priority": 5,
-        "excluded": 3
+        "low_priority": 8,
+        "excluded": 3,
+        "watch": 2
       }
     },
     "2024-09-30": {
       "as_of": "2024-09-30",
-      "n_anomalies": 1100,
+      "n_anomalies": 1106,
       "n_recent": 120,
       "n_mechanisms": 9,
-      "engine_candidates": 15,
+      "engine_candidates": 13,
       "engine_statuses": {
-        "low_priority": 10,
-        "watch": 3,
+        "low_priority": 9,
+        "watch": 2,
         "excluded": 2
       }
     },
     "2025-06-30": {
       "as_of": "2025-06-30",
-      "n_anomalies": 1286,
-      "n_recent": 67,
+      "n_anomalies": 1296,
+      "n_recent": 64,
       "n_mechanisms": 6,
-      "engine_candidates": 7,
+      "engine_candidates": 8,
       "engine_statuses": {
-        "watch": 3,
-        "low_priority": 3,
-        "excluded": 1
+        "low_priority": 5,
+        "excluded": 2,
+        "watch": 1
       }
     }
   },
-  "generated_at": "2026-11-14T06:22:10Z"
+  "generated_at": "2026-11-14T09:01:44Z"
 }

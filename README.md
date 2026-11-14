@@ -87,10 +87,10 @@ make web                       # 只读仪表盘 http://127.0.0.1:8765
 见 [`docs/examples/report_2026-11-13.md`](docs/examples/report_2026-11-13.md)（示例输出目录 `docs/examples/`，含机会管线 JSON 与研究任务 JSON）。核心结构：
 
 ```
-OPP-0001  0.67  watch  US  event_revision
-   美国 政策变化后的重定价：Invesco QQQ（Nasdaq 100）（US_POLICY_RATE hike）
-OPP-0002  0.66  watch  US  regime_repricing
-   VIX 期限结构与波动状态：SPDR S&P 500 ETF 可能处于重定价窗口
+OPP-0002  0.593  watch  US  event_revision
+   ICE US Dollar Index：临近 US Employment Situation，已出现异常
+OPP-0003  0.558  watch  JP  event_revision
+   Nikkei 225：临近 BoJ 政策会议，已出现回撤
 ```
 
 每条机会包含 `discovery / mechanism / evidence_for / evidence_against / catalysts /
@@ -150,7 +150,8 @@ open_questions / invalidation / data_quality / score_breakdown`，均为结构�
 实测结果（2026-11-13）：
 
 ```
-OPP-0001: ok rc=0 elapsed=7.32  out=exports/ia_runs/OPP-0001
+OPP-0002: not_ok rc=0 semantic=refused elapsed≈4s out=exports/ia_runs/OPP-0002
+# 下游 S8 返回 out_of_scope/unmapped；任务 not_completed:refused，CLI exit 2
 ```
 
 `ia_cli.py research-run` 读取引擎生成的研究问题，输出四层研究报告
@@ -166,7 +167,7 @@ make cases         # 7 个历史情景的时点回放（无前视）
 make replay        # 3 年逐时点回放
 ```
 
-- 单元/集成测试覆盖：97 项离线测试（DB 幂等、特征、异常、机制、评分、五类原型、去重、生命周期、导出、报告、端到端）+ 9 项联网数据源测试。
+- 单元/集成测试覆盖：157 项离线测试（DB 幂等、特征、异常、机制、评分、五类原型、去重、生命周期、导出、报告、端到端）+ 9 项联网数据源测试。
 - 历史案例检验的是**检测能力**（是否在事件窗口内识别出异常并生成值得研究的线索），
   **不是投资收益**；详见 [`docs/VALIDATION.md`](docs/VALIDATION.md) 与 `reports/validation_cases_*.md`。
 - 无前视：特征构建只使用 `as_of` 之前的数据；宏观序列按发布滞后平移；`goe.validation.no_lookahead_diff`
@@ -211,7 +212,7 @@ exports/        交接 JSON（gitignore，示例见 docs/examples）
 ## 环境
 
 - macOS（Apple Silicon 实测）/ Linux 均可；Python ≥ 3.10（开发环境 3.12）
-- 测试：137 离线 + 9 联网（见 TEST_RESULTS.md）
+- 测试：157 离线 + 9 联网（见 TEST_RESULTS.md）
 - 2026-11-14 独立审计与修复：见 `audit/ISSUE_LEDGER.md`、`audit/FIX_LOG.md`
 - 磁盘占用：SQLite 约 120 MB（10 年全量）；无 GPU、无付费 API、无外部数据库
 - 不连接任何实盘交易账户，不下单，不提供投资建议
