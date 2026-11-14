@@ -103,58 +103,90 @@ def test_research_v2_real_scan_contract():
     assert any(r.priority_tier in ("A", "B", "C") for r in rows)
 
 
+def _v2_proof(**over):
+    import sys
+
+    from goe.release import CATEGORY_MARKERS, command_template
+
+    base = {
+        "schema": "goe-test-proof/v2",
+        "git_commit": "abc123",
+        "git_dirty": False,
+        "category": "offline",
+        "marker_expr": CATEGORY_MARKERS["offline"],
+        "command_template": command_template("offline"),
+        "python_version": f"{sys.version_info.major}.{sys.version_info.minor}",
+        "exit_code": 0,
+        "passed": 179,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "required": {"count": 179, "sha256": "deadbeef"},
+        "executed": {"count": 179, "sha256": "deadbeef"},
+        "log_path": "audit/test_evidence/x.log",
+        "log_sha256": "deadbeef",
+        "junit_path": "audit/test_evidence/x.xml",
+        "junit_sha256": "deadbeef",
+    }
+    base.update(over)
+    return base
+
+
 def test_release_rejects_missing_or_forged_proof(monkeypatch, store, tmp_path):
-    import hashlib, json
+    import json
+
     import goe.release as rel
 
-    monkeypatch.setattr(rel, "_git", lambda *a: "abc123")
+    monkeypatch.setattr(rel, "_git", lambda *a, **k: "abc123")
     with pytest.raises(rel.ReleaseError, match="missing"):
         rel.verify_test_proof(tmp_path / "nope.json")
 
-    log = tmp_path / "run.log"
-    log.write_text("167 passed, 1 skipped in 60s\n", encoding="utf-8")
-    proof = {"schema": "goe-test-proof/v1", "git_commit": "abc123", "git_dirty": False,
-             "command": ["python", "-m", "pytest", "tests", "-q"], "exit_code": 0,
-             "passed": 167, "failed": 0, "errors": 0, "skipped": 1,
-             "log_path": str(log), "log_sha256": hashlib.sha256(log.read_bytes()).hexdigest()}
-    path = tmp_path / "proof.json"
-    path.write_text(json.dumps(proof), encoding="utf-8")
-    assert rel.verify_test_proof(path)["passed"] == 167
-    forged = dict(proof, passed=9999)
-    path.write_text(json.dumps(forged), encoding="utf-8")
-    with pytest.raises(rel.ReleaseError, match="disagrees|hash"):
-        rel.verify_test_proof(path)
+    # legacy v1 evidence is no longer accepted
+    legacy = tmp_path / "legacy.json"
+    legacy.write_text(json.dumps({"schema": "goe-test-proof/v1"}), encoding="utf-8")
+    with pytest.raises(rel.ReleaseError, match="unknown test proof schema"):
+        rel.verify_test_proof(legacy)
+
+    # v2 but with an untrusted selector injected into the command template
+    poisoned = tmp_path / "poisoned.json"
+    cmd = list(rel.command_template("offline")) + ["--ignore=tests/test_research_v2.py"]
+    poisoned.write_text(json.dumps(_v2_proof(command_template=cmd)), encoding="utf-8")
+    with pytest.raises(rel.ReleaseError, match="forbidden selector|canonical"):
+        rel.verify_test_proof(poisoned)
 
 
 def test_release_rejects_shell_spoof_and_rename_dirty(monkeypatch, tmp_path):
-    import hashlib, json
+    import json
+
     import goe.release as rel
 
-    monkeypatch.setattr(rel, "_git", lambda *a: "abc123")
-    log = tmp_path / "run.log"; log.write_text("1 passed in 1s\n")
-    proof = {"schema": "goe-test-proof/v1", "git_commit": "abc123", "git_dirty": False,
-             "command": ["sh", "-c", "printf '176 passed'", "tests", "pytest"],
-             "exit_code": 0, "passed": 1, "failed": 0, "errors": 0, "skipped": 0,
-             "log_path": str(log), "log_sha256": hashlib.sha256(log.read_bytes()).hexdigest()}
-    p = tmp_path / "proof.json"; p.write_text(json.dumps(proof))
-    with pytest.raises(rel.ReleaseError, match="full python"):
+    monkeypatch.setattr(rel, "_git", lambda *a, **kk: "abc123")
+    p = tmp_path / "proof.json"
+    p.write_text(json.dumps(_v2_proof(command_template=["sh", "-c", "printf 179", "tests"])),
+                 encoding="utf-8")
+    with pytest.raises(rel.ReleaseError, match="forbidden selector|canonical"):
         rel.verify_test_proof(p)
-    monkeypatch.setattr(rel, "_git", lambda *a, **k: "R  audit/test_evidence/x -> goe/payload.py")
+    monkeypatch.setattr(rel, "_git", lambda *a, **kk: "R  audit/test_evidence/x -> goe/payload.py")
     assert rel._dirty_code() is True
 
 
 def test_release_rejects_reverse_rename_and_subset(monkeypatch, tmp_path):
-    import hashlib, json
+    import json
+
     import goe.release as rel
 
-    monkeypatch.setattr(rel, "_git", lambda *a, **k: "R  goe/cli.py -> audit/test_evidence/cli.py")
+    monkeypatch.setattr(rel, "_git", lambda *a, **kk: "R  goe/cli.py -> audit/test_evidence/cli.py")
     assert rel._dirty_code() is True
-    monkeypatch.setattr(rel, "_git", lambda *a: "abc123")
-    log = tmp_path / "log"; log.write_text("2 passed in 1s\n")
-    proof = {"schema": "goe-test-proof/v1", "git_commit": "abc123", "git_dirty": False,
-             "command": ["/usr/bin/python3", "-m", "pytest", "tests", "-k", "smoke"],
-             "exit_code": 0, "passed": 2, "failed": 0, "errors": 0, "skipped": 0,
-             "log_path": str(log), "log_sha256": hashlib.sha256(log.read_bytes()).hexdigest()}
-    p = tmp_path / "proof"; p.write_text(json.dumps(proof))
-    with pytest.raises(rel.ReleaseError, match="full python"):
+    monkeypatch.setattr(rel, "_git", lambda *a, **kk: "abc123")
+    # narrowing by marker is rejected even when the marker strings look plausible
+    p = tmp_path / "proof"
+    subset = list(rel.command_template("offline"))
+    subset[subset.index("-m") + 1] = "not network and not realdata and not smoke"
+    p.write_text(json.dumps(_v2_proof(command_template=subset)), encoding="utf-8")
+    with pytest.raises(rel.ReleaseError, match="forbidden selector|canonical"):
+        rel.verify_test_proof(p)
+    # -k subsetting is rejected as well
+    k_subset = ["python", "-m", "pytest", "tests", "-k", "smoke"]
+    p.write_text(json.dumps(_v2_proof(command_template=k_subset)), encoding="utf-8")
+    with pytest.raises(rel.ReleaseError, match="forbidden selector|canonical"):
         rel.verify_test_proof(p)
