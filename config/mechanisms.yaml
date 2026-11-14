@@ -80,6 +80,13 @@ mechanisms:
         expected_direction: down
         horizon: "1-3m"
     evidence_tests:
+      - type: lead_lag
+        leader: UST:10Y
+        follower: US_FX_DXY
+        max_lag: 20
+        expected_sign: 1
+        min_abs: 0.05
+        note: 名义利率上行通常领先或同步美元走强；只检验方向与领先关系，不识别因果。
       - type: corr
         a: "UST:10Y"
         b: "US_EQ_QQQ"
@@ -175,6 +182,13 @@ mechanisms:
         expected_direction: up
         horizon: "1-3m"
     evidence_tests:
+      - type: lead_lag
+        leader: UST:10Y
+        follower: CM_MET_GC
+        max_lag: 20
+        expected_sign: -1
+        min_abs: 0.05
+        note: 名义利率上行通常压制黄金；若方向相反说明机制失效。
       - type: corr
         a: "CM_MET_GC"
         b: "US_FI_TIP"
@@ -460,6 +474,13 @@ mechanisms:
         expected_direction: ambiguous
         horizon: "1-3m"
     evidence_tests:
+      - type: lead_lag
+        leader: CM_ENE_CL
+        follower: US_SEC_XLE
+        max_lag: 10
+        expected_sign: 1
+        min_abs: 0.10
+        note: 油价与能源股应同向，且油价领先或同步。
       - type: corr
         a: "CM_ENE_CL"
         b: "US_SEC_XLE"
@@ -820,6 +841,13 @@ mechanisms:
         expected_direction: down
         horizon: "1-3m"
     evidence_tests:
+      - type: lead_lag
+        leader: US_FX_DXY
+        follower: WORLD_EQ_EEM
+        max_lag: 20
+        expected_sign: -1
+        min_abs: 0.05
+        note: 美元走强领先或同步压制新兴市场权益。
       - type: corr
         a: "US_FX_DXY"
         b: "WORLD_EQ_EEM"
@@ -922,6 +950,13 @@ mechanisms:
         expected_direction: down
         horizon: "1-3m"
     evidence_tests:
+      - type: lead_lag
+        leader: US_CR_HYG
+        follower: US_EQ_SPY
+        max_lag: 10
+        expected_sign: 1
+        min_abs: 0.10
+        note: 信用资产与股票同向；信用走弱领先或同步于股票下跌。
       - type: corr
         a: "US_CR_HYG"
         b: "US_EQ_SPY"
@@ -1110,6 +1145,13 @@ mechanisms:
         expected_direction: up
         horizon: "1w"
     evidence_tests:
+      - type: lead_lag
+        leader: US_VOL_VIX
+        follower: US_EQ_SPY
+        max_lag: 10
+        expected_sign: -1
+        min_abs: 0.10
+        note: 波动率上升与股票下跌同步/领先，方向应为负。
       - type: corr
         a: "US_VOL_VIX"
         b: "US_EQ_SPY"
@@ -1294,6 +1336,13 @@ mechanisms:
         expected_direction: down
         horizon: "1w"
     evidence_tests:
+      - type: lead_lag
+        leader: GX_FX_USDJPY
+        follower: JP_EQ_N225
+        max_lag: 20
+        expected_sign: 1
+        min_abs: 0.08
+        note: 日元套息交易中美元/日元与日股同向；平仓时两者同时下跌。
       - type: corr
         a: "GX_FX_USDJPY"
         b: "US_EQ_SPY"

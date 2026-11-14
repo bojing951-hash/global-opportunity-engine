@@ -23,8 +23,9 @@ def _high_score_draft():
             "why_now": "异常已触发",
             "hypothesis": "悲观情形可能已被过度定价",
             "anomalies": [{"score": 1.0}],
-            "cape_pctile": 0.95,
-            "positioning_percentile": 0.95,
+            "expectation_gap": {"value": 0.62, "confidence": 0.75,
+                                 "available": ["positioning", "residual_divergence"]},
+            "mechanism_assets": 4,
         },
         evidence_for=[
             {"claim": "传导机制 M01 被激活", "evidence": "机制触发变量异常"},
@@ -100,6 +101,19 @@ def test_high_score_draft_maps_to_deep_research():
     scoring = load_yaml_config("scoring.yaml")
     assert draft.score >= scoring["status_thresholds"]["deep_research"]
     assert draft.status == "deep_research"
+
+
+def test_missing_expectation_gap_caps_at_watch():
+    """Unknown expectation must never be rewarded with deep_research (P1-01)."""
+    engine = _engine(rows=[
+        ("instrument", "US_EQ_SPY", "equity_etf", "US", "ma_gap_200d", "", END_DATE, 0.20),
+        ("instrument", "US_EQ_SPY", "equity_etf", "US", "drawdown_252d", "", END_DATE, -0.25),
+    ])
+    draft = _high_score_draft()
+    draft.discovery.pop("expectation_gap", None)
+    engine._score(draft)
+    assert draft.status == "watch"
+    assert "预期差" in draft.status_reason
 
 
 def test_low_score_draft_is_excluded_or_low_priority():

@@ -38,6 +38,8 @@ from .config import (
 )
 from .db import Store
 from .events import EventCalendar, Event
+from .expectations import ExpectationGap, compute_expectation_gap
+from .timesemantics import filter_recent
 from .features import FeatureSet
 from .transmission.evaluator import MechanismResult
 
@@ -167,7 +169,7 @@ class OpportunityEngine:
                  transmissions: list[MechanismResult] | None = None,
                  events: EventCalendar | None = None,
                  scoring: dict[str, Any] | None = None,
-                 max_candidates: int = 25):
+                 max_candidates: int = 25, store: Store | None = None):
         self.fs = fs
         self.anoms = anomalies
         self.as_of = fs.as_of
@@ -178,15 +180,17 @@ class OpportunityEngine:
         if anomalies is None or anomalies.empty:
             self.current = pd.DataFrame() if anomalies is None else anomalies
         else:
-            _dates = pd.to_datetime(anomalies["date"])
-            _cut = _dates.max() - pd.Timedelta(days=7)
-            _recent = anomalies[_dates >= _cut].copy()
+            _avail = (pd.to_datetime(anomalies["available_date"])
+                      if "available_date" in anomalies.columns else pd.to_datetime(anomalies["date"]))
+            _as_of_dt = pd.Timestamp(self.as_of)
+            _recent = filter_recent(anomalies, _as_of_dt).copy()
             _recent["_d"] = pd.to_datetime(_recent["date"])
             _recent = _recent.sort_values("_d").groupby(["entity_id", "detector"], as_index=False).tail(1)
             self.current = _recent.drop(columns=["_d"]).reset_index(drop=True)
         self.transmissions = transmissions or []
         self.events = events or EventCalendar.load()
         self.scoring = scoring or load_yaml_config("scoring.yaml")
+        self.store = store
         self.universe = load_universe()
         self.themes = load_themes()
         self.positioning = load_positioning()
@@ -207,8 +211,10 @@ class OpportunityEngine:
         if self.anoms is None or self.anoms.empty:
             return pd.DataFrame()
         cutoff = pd.Timestamp(self.as_of) - pd.Timedelta(days=days)
-        m = (self.anoms.entity_id == entity_id) & (pd.to_datetime(self.anoms.date) >= cutoff) \
-            & (pd.to_datetime(self.anoms.date) <= pd.Timestamp(self.as_of))
+        _avail = (pd.to_datetime(self.anoms["available_date"])
+                  if "available_date" in self.anoms.columns else pd.to_datetime(self.anoms["date"]))
+        m = (self.anoms.entity_id == entity_id) & (_avail >= cutoff) \
+            & (_avail <= pd.Timestamp(self.as_of))
         return self.anoms[m]
 
     def fv(self, entity_id: str, feature: str, window: str = "", kind: str | None = None) -> float:
@@ -230,19 +236,42 @@ class OpportunityEngine:
         return self.events.to_dicts(evs)
 
     def _tier_score(self, anomalies: pd.DataFrame) -> float:
-        tiers = []
-        for row in anomalies.itertuples(index=False):
-            ev = row.evidence if isinstance(row.evidence, dict) else json.loads(row.evidence or "{}")
-            tier = (ev.get("source") or {}).get("tier", "derived")
-            tiers.append(TIER_SCORE.get(tier, 0.6))
-        return float(np.mean(tiers)) if tiers else 0.5
+        """Mean source-quality of the contributing anomalies (evidence-based)."""
+        scores = []
+        if anomalies is not None:
+            for row in anomalies.itertuples(index=False):
+                ev = row.evidence if isinstance(row.evidence, dict) else json.loads(row.evidence or "{}")
+                scores.append(float(ev.get("data_quality",
+                                           TIER_SCORE.get((ev.get("source") or {}).get("tier", "derived"), 0.6))))
+        return float(np.mean(scores)) if scores else 0.6
+
+    def _dq(self, anomalies: pd.DataFrame | None, *entity_ids: str) -> float:
+        base = self._tier_score(anomalies) if anomalies is not None and len(anomalies) else 0.65
+        penalty = 0
+        srcs: set[str] = set()
+        if anomalies is not None and len(anomalies):
+            for row in anomalies.itertuples(index=False):
+                ev = row.evidence if isinstance(row.evidence, dict) else {}
+                sid = (ev.get("source") or {}).get("source")
+                if sid:
+                    srcs.add(str(sid))
+        if self.store is not None:
+            targets = [e for e in entity_ids if e] + sorted(srcs)
+            if targets:
+                q = ",".join("?" for _ in targets)
+                penalty = int(self.store.conn.execute(
+                    f"SELECT COUNT(*) FROM quality_issues WHERE target IN ({q}) "
+                    f"AND created_at >= datetime('now','-120 day')", tuple(targets)).fetchone()[0])
+        return float(_clip(base * (1.0 - 0.05 * min(penalty, 4)), 0.2, 1.0))
 
     # ------------------------------------------------------------------ rules
     def generate(self) -> list[Draft]:
         drafts: list[Draft] = []
         drafts.extend(self._price_fundamental_divergence())
+        drafts.extend(self._upside_divergence())
         drafts.extend(self._expectation_overshoot())
         drafts.extend(self._regime_repricing())
+        drafts.extend(self._policy_event_repricing())
         drafts.extend(self._event_revision())
         drafts.extend(self._relative_value())
         for d in drafts:
@@ -274,14 +303,19 @@ class OpportunityEngine:
         kept: list[Draft] = []
         by_arch: dict[str, int] = {}
         by_region: dict[tuple[str, str], int] = {}
+        by_mechanism: dict[str, int] = {}
         for d in sorted(theme_best.values(), key=lambda x: x.score, reverse=True):
             if by_arch.get(d.archetype, 0) >= caps.get(d.archetype, 5):
                 continue
+            if d.mechanism_id and by_mechanism.get(d.mechanism_id, 0) >= 3:
+                continue  # one mechanism must not dominate the pipeline
             rkey = (d.archetype, d.market)
             if by_region.get(rkey, 0) >= region_caps.get(d.archetype, 99):
                 continue
             by_arch[d.archetype] = by_arch.get(d.archetype, 0) + 1
             by_region[rkey] = by_region.get(rkey, 0) + 1
+            if d.mechanism_id:
+                by_mechanism[d.mechanism_id] = by_mechanism.get(d.mechanism_id, 0) + 1
             kept.append(d)
         kept.sort(key=lambda x: x.score, reverse=True)
         return kept[: self.max_candidates]
@@ -289,12 +323,34 @@ class OpportunityEngine:
     def theme_of(self, entity_id: str) -> str:
         return self.themes.get(entity_id, entity_id)
 
+    def gap_for(self, instrument_id: str) -> ExpectationGap:
+        """Cached expectation-gap measurement for one instrument."""
+        if not hasattr(self, "_gap_cache"):
+            self._gap_cache: dict[str, ExpectationGap] = {}
+        if instrument_id not in self._gap_cache:
+            try:
+                self._gap_cache[instrument_id] = compute_expectation_gap(self.fs, instrument_id)
+            except Exception:
+                self._gap_cache[instrument_id] = ExpectationGap(value=None, confidence=0.0, components={})
+        return self._gap_cache[instrument_id]
+
+    @staticmethod
+    def _residual_value(gap: ExpectationGap) -> float | None:
+        comp = gap.components.get("residual_divergence")
+        return comp.value if comp is not None else None
+
     # ------------------------------------------------------- A. divergence
     def _price_fundamental_divergence(self) -> list[Draft]:
+        """Price fell without the standard drivers confirming a fundamental break.
+
+        Candidate discovery combines recent anomalies with the CURRENT feature
+        state (a large 1-month move or 5-year drawdown percentile), so a material
+        move cannot be missed merely because its anomaly fired outside the short
+        recency window. A candidate still requires a measurable residual
+        divergence: the part of the move not explained by market/dollar/rates.
+        """
         out: list[Draft] = []
         price_anoms = self.current[self.current.family == "price"] if not self.current.empty else pd.DataFrame()
-        if price_anoms.empty:
-            return out
         credit_underperf = False
         macro_soft = False
         has_macro = not self.fs.macro.empty
@@ -304,37 +360,44 @@ class OpportunityEngine:
             macro = self.current[self.current.detector == "macro_shift"]
             macro_soft = bool((macro.direction == "below_norm").any())
         has_credit = bool((self.fs.long.entity_id == "CREDIT_RISK").any()) if not self.fs.long.empty else False
-        for entity, group in price_anoms.groupby("entity_id"):
+
+        screen: set[str] = set()
+        for iid, spec in self.universe.instruments.items():
+            theme = self.theme_of(iid)
+            anchored = spec.is_equity or (spec.asset_class == "commodity" and theme in ("gold", "silver", "platinum"))
+            if not anchored:
+                continue
+            ret1m = self.fv(iid, "return", "1m")
+            retz = self.fv(iid, "return_z_3y", "1m")
+            ddpct = self.fv(iid, "drawdown_pctile_5y")
+            if (np.isfinite(retz) and abs(retz) >= 2.0) or (np.isfinite(ddpct) and ddpct <= 0.05) \
+                    or (np.isfinite(ret1m) and ret1m <= -0.08):
+                screen.add(iid)
+
+        entities = set(price_anoms.entity_id) | screen if not price_anoms.empty else set(screen)
+        for entity in sorted(entities):
             spec = self.universe.instruments.get(entity)
             if spec is None:
                 continue
             theme = self.theme_of(entity)
-            # FX is a relative price without a fundamental anchor in this data set;
-            # agricultural commodities lack inventory/supply data. Both are handled
-            # by other archetypes or explicitly left to deeper research.
-            # A divergence claim needs a fundamental anchor in the data set:
-            # equities (credit/rates/breadth) and precious metals (USD/real rates).
-            # Energy, industrial metals, agriculture and FX lack inventory/supply
-            # or rate-differential data, so they are handled by mechanisms instead.
             anchored = spec.is_equity or (spec.asset_class == "commodity" and theme in ("gold", "silver", "platinum"))
             if not anchored:
                 continue
-            has_drawdown = (group.detector == "drawdown_extreme").any() and \
-                           (group[group.detector == "drawdown_extreme"].direction == "deep_drawdown").any()
-            down_shock = bool(((group.detector == "price_return_shock") & (group.direction == "down")).any())
-            if not (has_drawdown or down_shock):
-                continue
-            if spec.is_equity and credit_underperf and macro_soft:
-                continue
-            cape_pct = self.fv("US_CAPE", "cape_pctile_10y") if spec.region == "US" else float("nan")
-            erp_pct = self.fv("equity_risk_premium", "level")
+            group = price_anoms[price_anoms.entity_id == entity] if not price_anoms.empty else pd.DataFrame()
             dd = self.fv(entity, "drawdown_252d")
             ret1m = self.fv(entity, "return", "1m")
-            vol_pct = self.fv(entity, "vol_pctile_5y", "3m")
+            retz = self.fv(entity, "return_z_3y", "1m")
+            ddpct = self.fv(entity, "drawdown_pctile_5y")
+            has_drawdown = (not group.empty and bool(((group.detector == "drawdown_extreme")
+                                                      & (group.direction == "deep_drawdown")).any())) \
+                or (np.isfinite(ddpct) and ddpct <= 0.05)
+            down_shock = (not group.empty and bool(((group.detector == "price_return_shock")
+                                                    & (group.direction == "down")).any())) \
+                or (np.isfinite(ret1m) and ret1m <= -0.05) or (np.isfinite(retz) and retz <= -2.0)
+            if not (has_drawdown or down_shock):
+                continue
             if not (np.isfinite(dd) and dd <= -0.08) and not (np.isfinite(ret1m) and ret1m <= -0.05):
                 continue
-            # Is the decline already explained by the standard macro drivers?
-            # If yes, this is not a divergence case and must not enter the pool.
             verdict, verdict_note = self._context_verdict(
                 spec,
                 dxy=self.fv("US_FX_DXY", "return", "1m"),
@@ -345,7 +408,11 @@ class OpportunityEngine:
             )
             if verdict == "explained":
                 continue
-            anoms = list(group.itertuples(index=False))
+            gap = self.gap_for(entity)
+            residual = self._residual_value(gap)
+            if residual is None or residual <= 0:
+                continue  # no measurable unexplained move -> not a divergence case
+            anoms = list(group.itertuples(index=False)) if not group.empty else []
             chain, context_ev = self._divergence_context(spec)
             ev_for = []
             for a in anoms:
@@ -358,30 +425,43 @@ class OpportunityEngine:
                     "tier": (ev.get("source") or {}).get("tier", ""),
                     "as_of": a.date, "strength": "strong" if a.score >= 0.7 else "moderate",
                 })
-            if np.isfinite(dd):
-                ev_for.append({"claim": "价格已显著回撤", "evidence": f"距 1 年高点回撤 {dd:.1%}",
-                               "source": "yahoo", "tier": "aggregator", "as_of": self.as_of,
-                               "strength": "moderate"})
+            feature_evidence = {
+                "claim": "当期价格特征处于极端",
+                "evidence": f"1 个月收益 {ret1m:+.1%}（z={retz:+.2f}），"
+                            f"回撤 {dd:+.1%}（5 年分位 {ddpct:.0%}）",
+                "source": "yahoo", "tier": "aggregator", "as_of": self.as_of, "strength": "moderate",
+            }
+            if not ev_for or ev_for[0]["claim"].startswith("price_return_shock") is False:
+                ev_for.insert(0, feature_evidence)
+            elif np.isfinite(ddpct) and ddpct <= 0.05:
+                ev_for.append(feature_evidence)
+            ev_for.append({
+                "claim": "价格走势无法由标准驱动解释（残差背离）",
+                "evidence": (f"残差 z={gap.components['residual_divergence'].evidence.get('residual_z')}，"
+                             f"R²={gap.components['residual_divergence'].evidence.get('r2')}，"
+                             f"驱动={gap.components['residual_divergence'].evidence.get('drivers')}"),
+                "source": "derived", "tier": "derived", "as_of": self.as_of, "strength": "moderate",
+            })
             ev_for.extend(context_ev)
             ev_against = [{
                 "claim": "价格下跌可能反映基本面恶化而非错误定价",
                 "evidence": "本系统未接入盈利一致预期与修正数据；若 EPS 预期同步下修，'超跌'假设不成立。",
                 "source": "data_gap", "tier": "derived", "as_of": self.as_of, "strength": "strong",
             }]
-            if credit_underperf:
-                ev_against.append({"claim": "信用市场同步走弱",
-                                   "evidence": "HY/国债相对表现处于 3 年负向极值，风险偏好恶化可能解释价格下跌。",
-                                   "source": "yahoo_proxy", "tier": "proxy", "as_of": self.as_of,
-                                   "strength": "moderate"})
             if verdict == "ambiguous":
                 ev_against.append({"claim": "下跌可能与宏观驱动一致",
                                    "evidence": f"{verdict_note}；因此'超跌'判断证据不足，需先验证驱动因素。",
                                    "source": "methodology", "tier": "derived", "as_of": self.as_of,
                                    "strength": "strong"})
-            if np.isfinite(vol_pct) and vol_pct > 0.9:
-                ev_against.append({"claim": "波动率处于高位",
-                                   "evidence": f"波动率 5 年分位 {vol_pct:.0%}，高波动期价格信号噪声更大。",
-                                   "source": "yahoo", "tier": "aggregator", "as_of": self.as_of,
+            if credit_underperf:
+                ev_against.append({"claim": "信用市场同步走弱",
+                                   "evidence": "HY/国债相对表现处于 3 年负向极值，风险偏好恶化可能解释价格下跌。",
+                                   "source": "yahoo_proxy", "tier": "proxy", "as_of": self.as_of,
+                                   "strength": "moderate"})
+            if np.isfinite(ddpct) and ddpct <= 0.05 and np.isfinite(retz) and retz < -2:
+                ev_against.append({"claim": "下跌在统计上极端，可能包含流动性冲击",
+                                   "evidence": "单月收益 z 值低于 -2，极端行情中的超跌可能继续。",
+                                   "source": "derived", "tier": "derived", "as_of": self.as_of,
                                    "strength": "moderate"})
             region = spec.region
             if spec.asset_class == "commodity":
@@ -398,12 +478,15 @@ class OpportunityEngine:
             gaps = ["分析师盈利预期与修正数据未接入", "信用利差使用 HYG/IEF 代理，非 OAS 直接数据"]
             if not has_macro:
                 gaps.append("宏观序列在当前数据快照中不可用")
+            critical = [g for g in gaps if "盈利预期" in g]
+            dq = _clip(self._dq(group if not group.empty else None, entity, "CREDIT_RISK")
+                       * (1.0 - 0.08 * len(gaps)) * (1.0 if has_credit else 0.9))
             out.append(Draft(
                 archetype="price_fundamental_divergence", title=title, market=region,
                 asset_class=spec.asset_class, instruments=[self.instrument_meta(entity)],
                 horizon=ARCHETYPE_HORIZON["price_fundamental_divergence"],
                 discovery={
-                    "what": f"{spec.name} 出现价格异常下跌（1 个月收益 {ret1m:.1%}，回撤 {dd:.1%}）；"
+                    "what": f"{spec.name} 出现价格异常下跌（1 个月收益 {ret1m:+.1%}，回撤 {dd:+.1%}）；"
                             + ("信用代理与宏观序列未显示同等程度的恶化。" if (has_macro and has_credit)
                                else ("信用代理（HYG/IEF）未显示同等恶化，但宏观序列当前"
                                      + ("不可用" if not has_macro else "部分可用")
@@ -411,17 +494,19 @@ class OpportunityEngine:
                                      else "宏观与信用数据当前不完整，'基本面未恶化'只能视为待验证假设。")),
                     "why_now": (lambda: (
                         f"1 个月收益 {ret1m:+.1%}、距 1 年高点 {dd:+.1%}"
-                        + (f"（5 年分位 {self.fv(entity, 'drawdown_pctile_5y'):.0%}）"
-                           if np.isfinite(self.fv(entity, 'drawdown_pctile_5y')) else "")
+                        + (f"（5 年分位 {ddpct:.0%}）" if np.isfinite(ddpct) else "")
                         + (f"；信用代理 z={self.fv('CREDIT_RISK', 'hy_minus_treasury_z_3y'):+.2f}"
                            if np.isfinite(self.fv('CREDIT_RISK', 'hy_minus_treasury_z_3y')) else "")
                         + f"；宏观解释判定：{verdict_note}。"))(),
-                    "hypothesis": "价格已计入悲观情形，而基本面与信用条件尚未验证该悲观程度；若后续数据不恶化，存在重新定价空间。",
+                    "hypothesis": "若市场已计入比基本面更悲观的情形，价格存在重新定价空间；若盈利预期同步下修，该假设不成立。",
                     "anomalies": [{"id": a.anomaly_id, "detector": a.detector, "direction": a.direction,
                                    "score": float(a.score)} for a in anoms],
-                    "cape_pctile": cape_pct, "erp_level": erp_pct,
+                    "cape_pctile": self.fv("US_CAPE", "cape_pctile_10y") if spec.region == "US" else float("nan"),
+                    "erp_level": self.fv("equity_risk_premium", "level"),
                     "context_verdict": verdict, "context_note": verdict_note,
                     "theme": self.theme_of(entity),
+                    "expectation_gap": gap.to_dict(),
+                    "data_quality_gaps": critical,
                 },
                 mechanism={"id": None, "chain": chain, "confidence": round(0.3 + 0.03 * len(context_ev), 2),
                            "causal_status": "hypothesis",
@@ -438,7 +523,7 @@ class OpportunityEngine:
                     {"entity": "CREDIT_RISK", "feature": "hy_minus_treasury_z_3y", "op": "<", "value": -2.0,
                      "note": "信用利差代理恶化"},
                 ],
-                data_quality={"score": self._tier_score(group) * (1.0 if has_credit else 0.8), "gaps": gaps},
+                data_quality={"score": dq, "gaps": gaps},
                 anomaly_ids=[a.anomaly_id for a in anoms],
             ))
         return out
@@ -483,6 +568,106 @@ class OpportunityEngine:
         if spec.asset_class in ("fixed_income", "credit"):
             return "ambiguous", "利率/信用资产需结合久期与利差分解"
         return "ambiguous", "缺少该资产类别的宏观解释框架"
+
+    def _upside_divergence(self) -> list[Draft]:
+        """Symmetric case: price rose more than its drivers justify.
+
+        The original engine only looked for oversold conditions, so a policy-driven
+        rally (e.g. China Sep-2024) could not enter the pipeline. A candidate here
+        means "the market may be ahead of fundamentals", not a short signal.
+        """
+        out: list[Draft] = []
+        for iid, spec in self.universe.instruments.items():
+            theme = self.theme_of(iid)
+            anchored = spec.is_equity or (spec.asset_class == "commodity" and theme in ("gold", "silver", "platinum"))
+            if not anchored:
+                continue
+            ret1m = self.fv(iid, "return", "1m")
+            ret3m = self.fv(iid, "return", "3m")
+            retz = self.fv(iid, "return_z_3y", "1m")
+            ddpct = self.fv(iid, "drawdown_pctile_5y")
+            if not ((np.isfinite(ret1m) and ret1m >= 0.08) or (np.isfinite(ret3m) and ret3m >= 0.15)
+                    or (np.isfinite(retz) and retz >= 2.0) or (np.isfinite(ddpct) and ddpct >= 0.95)):
+                continue
+            gap = self.gap_for(iid)
+            residual = self._residual_value(gap)
+            if residual is None or residual <= 0:
+                continue
+            dxy = self.fv("US_FX_DXY", "return", "1m")
+            y10 = self.fv("UST:10Y", "change_21d", "10Y")
+            credit_z = self.fv("CREDIT_RISK", "hy_minus_treasury_z_3y")
+            cny = self.fv("CN_FX_USDCNY", "return", "1m")
+            if spec.asset_class == "commodity":
+                if (np.isfinite(dxy) and dxy < -0.02) or (np.isfinite(y10) and y10 < -0.25):
+                    continue  # move explained by a weaker dollar / lower rates
+                note = "美元与利率走弱可以部分解释上涨" if (np.isfinite(dxy) and dxy < -0.008) else "美元与利率未提供上涨解释"
+            elif spec.is_equity:
+                if spec.region in ("CN", "HK") and np.isfinite(cny) and cny < -0.02:
+                    continue  # renminbi appreciation explains the rally
+                if np.isfinite(credit_z) and credit_z > 1.5:
+                    continue  # broad risk-on explains the rally
+                note = "信用/风险偏好未确认这轮上涨" if not (np.isfinite(credit_z) and credit_z > 0.5) else "信用环境支持部分上涨"
+            else:
+                continue
+            ret3m_txt = f"{ret3m:+.1%}" if np.isfinite(ret3m) else "n/a"
+            ddpct_txt = f"{ddpct:.0%}" if np.isfinite(ddpct) else "n/a"
+            ev_for = [{
+                "claim": "价格上行超出标准驱动可解释范围",
+                "evidence": f"1 个月 {ret1m:+.1%}，3 个月 {ret3m_txt}，1 月 z={retz:+.2f}；"
+                            f"残差 z={gap.components['residual_divergence'].evidence.get('residual_z')}，"
+                            f"R²={gap.components['residual_divergence'].evidence.get('r2')}",
+                "source": "derived", "tier": "derived", "as_of": self.as_of, "strength": "moderate",
+            }, {
+                "claim": "预期差代理（仓位/估值/残差）",
+                "evidence": f"gap={gap.value:.2f}，覆盖度={gap.confidence:.0%}，组件={gap.available_components()}",
+                "source": "derived", "tier": "derived", "as_of": self.as_of, "strength": "moderate",
+            }]
+            ev_against = [{
+                "claim": "上涨可能由基本面改善或资金流驱动",
+                "evidence": "本系统未接入盈利一致预期、ETF 资金流与期权隐含分布；若盈利/政策持续改善，'过度乐观'假设不成立。",
+                "source": "data_gap", "tier": "derived", "as_of": self.as_of, "strength": "strong",
+            }, {
+                "claim": "动量与趋势可能延续",
+                "evidence": f"回撤分位 {ddpct_txt}（越高越接近历史高位）；强趋势中的偏离可能长期持续。",
+                "source": "derived", "tier": "derived", "as_of": self.as_of, "strength": "moderate",
+            }]
+            gaps = ["分析师盈利预期与修正数据未接入", "无期权隐含分布/资金流数据"]
+            critical = [g for g in gaps if "盈利预期" in g]
+            dq = _clip(self._dq(None, iid))
+            out.append(Draft(
+                archetype="price_fundamental_divergence",
+                title=f"{REGION_CN.get(spec.region, spec.region)} {spec.name}：价格上行与驱动/预期代理不一致（待检验的过度乐观假设）",
+                market=spec.region, asset_class=spec.asset_class,
+                instruments=[self.instrument_meta(iid)],
+                horizon=ARCHETYPE_HORIZON["price_fundamental_divergence"],
+                discovery={
+                    "what": f"{spec.name} 近 1 个月上涨 {ret1m:+.1%}（3 个月 {ret3m_txt}），"
+                            f"但标准驱动与预期差代理未能确认该幅度。",
+                    "why_now": f"{note}；1 月收益 z={retz:+.2f}，回撤分位 {ddpct_txt}。",
+                    "hypothesis": "若这轮上涨主要由预期而非基本面/流动性驱动，存在预期回摆与估值重定价风险；若基本面同步改善，该假设不成立。",
+                    "anomalies": [],
+                    "expectation_gap": gap.to_dict(),
+                    "mechanism_assets": 1,
+                    "data_quality_gaps": critical,
+                    "direction": "up",
+                },
+                mechanism={"id": None, "chain": ["预期/资金驱动上涨", "基本面未同步验证", "预期回摆风险"],
+                           "confidence": 0.3, "causal_status": "hypothesis",
+                           "conditions": ["盈利/政策未同步改善", "仓位未进一步扩张"],
+                           "identification": "该链条是待检验假设；上涨与基本面之间的相关性不等于因果。"},
+                evidence_for=ev_for, evidence_against=ev_against,
+                catalysts=self._events_for([iid], within=45),
+                open_questions=list(OPEN_QUESTIONS["price_fundamental_divergence"]),
+                invalidation=f"若 {spec.name} 3 个月相对基准继续跑赢 10% 以上且信用/盈利同步改善，"
+                             f"或价格回落至 200 日均线附近，则'过度乐观'假设失效。",
+                invalidation_checks=[
+                    {"entity": iid, "feature": "rel_strength_vs_benchmark", "window": "3m", "op": ">",
+                     "value": 0.10, "note": "相对强势继续扩大"},
+                ],
+                data_quality={"score": dq, "gaps": gaps},
+                anomaly_ids=[],
+            ))
+        return out
 
     def _divergence_context(self, spec) -> tuple[list[str], list[dict[str, Any]]]:
         """Asset-class specific transmission chain and current regime evidence."""
@@ -620,6 +805,8 @@ class OpportunityEngine:
                     "anomalies": [{"id": a.anomaly_id, "detector": a.detector, "direction": a.direction,
                                    "score": float(a.score)} for a in price_anoms.itertuples(index=False)],
                     "positioning_percentile": pct, "case": case, "theme": self.theme_of(iid),
+                    "expectation_gap": self.gap_for(iid).to_dict(), "mechanism_assets": 1,
+                    "data_quality_gaps": [],
                 },
                 mechanism={"id": None, "chain": chains[case], "confidence": 0.4,
                            "causal_status": "hypothesis",
@@ -633,7 +820,8 @@ class OpportunityEngine:
                     {"entity": pid, "feature": "net_pctile_5y", "op": "between", "value": [0.4, 0.6],
                      "note": "拥挤度回归中性"},
                 ],
-                data_quality={"score": 0.85, "gaps": ["ETF/期权资金流未接入", "COT 为周度且滞后"]},
+                data_quality={"score": self._dq(price_anoms, iid, pid),
+                              "gaps": ["ETF/期权资金流未接入", "COT 为周度且滞后"]},
                 anomaly_ids=[row.anomaly_id],
             ))
         return out
@@ -666,10 +854,12 @@ class OpportunityEngine:
                     "source": "mechanism", "tier": "derived", "as_of": tx.as_of,
                     "strength": "strong" if tx.confidence >= 0.6 else "moderate",
                 }]
-                for e in tx.evidence_for[:3]:
+                for e in tx.evidence_for:
                     ev_for.append({"claim": f"{e.get('test_type')} 检验通过",
                                    "evidence": e.get("statement", ""), "source": "mechanism_stats",
                                    "tier": "derived", "as_of": tx.as_of,
+                                   "p_adjusted": (e.get("stats") or {}).get("p_adjusted"),
+                                   "n_effective": (e.get("stats") or {}).get("n_effective"),
                                    "strength": "moderate" if tx.confidence < 0.65 else "strong"})
                 ev_against = [{
                     "claim": f"机制 {tx.mechanism_id} 的检验存在失败/不稳定项",
@@ -693,6 +883,9 @@ class OpportunityEngine:
                                 f"{spec.name} 是被机制映射的受影响资产。",
                         "why_now": f"机制置信度 {tx.confidence:.2f}，状态 {tx.status}；资产 1 个月收益 {ret1m:.1%}。",
                         "hypothesis": f"{tx.title} 若继续演进，{spec.name} 的定价假设需要重新检验。",
+                        "expectation_gap": self.gap_for(aid).to_dict(),
+                        "mechanism_assets": len(tx.assets),
+                        "data_quality_gaps": [],
                         "anomalies": (
                             [{"id": a.anomaly_id, "detector": a.detector, "direction": a.direction,
                               "score": float(a.score), "role": "asset"}
@@ -713,7 +906,7 @@ class OpportunityEngine:
                     invalidation=f"若机制触发变量回到常态（|z|<1），或 {spec.name} 对触发变量的滚动敏感度符号翻转，"
                                  f"则重定价假设失效。反证条件：{'; '.join(tx.falsifiers[:2])}",
                     invalidation_checks=self._trigger_invalidation_checks(tx),
-                    data_quality={"score": 0.8 if tx.confidence >= 0.6 else 0.65,
+                    data_quality={"score": self._dq(asset_anoms, aid, *(t.get("entity_id") for t in tx.triggers)),
                                   "gaps": ["机制统计基于历史共动，无法识别因果", "月度宏观数据存在发布滞后"]},
                     anomaly_ids=[a.anomaly_id for a in asset_anoms.itertuples(index=False)],
                     mechanism_id=tx.mechanism_id,
@@ -749,6 +942,109 @@ class OpportunityEngine:
             return []
 
     # ----------------------------------------------------- D. event revision
+    def _policy_event_repricing(self) -> list[Draft]:
+        """Observed central-bank/regulator actions as catalysts.
+
+        The scheduled-event archetype only knows a calendar. A *policy action*
+        itself (e.g. an LPR/policy-rate cut) is an observable event and can force
+        repricing even when no calendar entry exists. Candidates use the policy
+        change as the catalyst, require a recent move in the region's equity
+        assets, and inherit the measured expectation gap (None possible).
+        """
+        out: list[Draft] = []
+        if self.anoms is None or self.anoms.empty:
+            return out
+        from .config import load_macro
+
+        macro_defs = load_macro()
+        policy = self.anoms[self.anoms.detector == "policy_rate_change"]
+        if policy.empty:
+            return out
+        for a in policy.itertuples(index=False):
+            sid = a.entity_id
+            spec_meta = macro_defs.get(sid)
+            if spec_meta is None:
+                continue
+            av = pd.Timestamp(getattr(a, "available_date", a.date))
+            if av > pd.Timestamp(self.as_of):
+                continue
+            if (pd.Timestamp(self.as_of) - av).days > 150:
+                continue
+            region = spec_meta.region
+            candidates = []
+            for iid, inst in self.universe.instruments.items():
+                if inst.region != region or not inst.is_equity:
+                    continue
+                rel = self.anoms[self.anoms.entity_id == iid]
+                if rel.empty:
+                    continue
+                rel_avail = pd.to_datetime(rel.get("available_date", rel["date"]))
+                window = rel[(rel_avail >= av - pd.Timedelta(days=45)) & (rel_avail <= pd.Timestamp(self.as_of))]
+                if window.empty:
+                    continue
+                candidates.append((inst.importance, iid, window))
+            candidates.sort(reverse=True)
+            for importance, iid, window in candidates[:2]:
+                inst = self.universe.instruments[iid]
+                gap = self.gap_for(iid)
+                change = None
+                try:
+                    change = float(a.magnitude)
+                except Exception:
+                    pass
+                ev_for = [{
+                    "claim": f"观测到政策利率/操作变化：{spec_meta.name}",
+                    "evidence": f"{sid} 变动 {change:+.2f}（方向 {a.direction}），可用日 {av.date()}；"
+                                f"来源 BIS 政策利率序列",
+                    "source": "bis", "tier": "official", "as_of": str(av.date()), "strength": "strong",
+                }]
+                for w in window.tail(2).itertuples(index=False):
+                    ev_for.append({
+                        "claim": f"政策变化窗口内资产异常：{w.detector}",
+                        "evidence": f"{w.direction}，强度 {float(w.score):.2f}，可用日 {w.available_date}",
+                        "source": "engine", "tier": "derived", "as_of": w.available_date, "strength": "moderate",
+                    })
+                ret1m = self.fv(iid, "return", "1m")
+                ev_against = [{
+                    "claim": "政策变化可能已被提前定价",
+                    "evidence": "缺少期权隐含分布与一致预期；若市场已提前计入，事件本身不构成新信息。",
+                    "source": "data_gap", "tier": "derived", "as_of": self.as_of, "strength": "strong",
+                }]
+                dq = self._dq(window, iid, sid)
+                out.append(Draft(
+                    archetype="event_revision",
+                    title=f"{REGION_CN.get(region, region)} 政策变化后的重定价：{inst.name}（{sid} {a.direction}）",
+                    market=region, asset_class=inst.asset_class,
+                    instruments=[self.instrument_meta(iid)],
+                    horizon=ARCHETYPE_HORIZON["event_revision"],
+                    discovery={
+                        "what": f"{spec_meta.name} 出现 {a.direction}（{change:+.2f}），"
+                                f"同期 {inst.name} 近 1 个月收益 {ret1m:+.1%} 并出现异常。",
+                        "why_now": f"政策操作可用日 {av.date()}；区域内股权资产在随后窗口出现异常。",
+                        "hypothesis": "若政策变化未被充分定价，相关资产存在重新定价空间；若已被提前定价或基本面未响应，该假设不成立。",
+                        "anomalies": [{"id": w.anomaly_id, "detector": w.detector, "direction": w.direction,
+                                       "score": float(w.score)} for w in window.tail(3).itertuples(index=False)],
+                        "expectation_gap": gap.to_dict(), "mechanism_assets": 1,
+                        "data_quality_gaps": ["缺少政策事件的一致预期与期权隐含分布"],
+                        "policy_series": sid, "policy_change": change,
+                    },
+                    mechanism={"id": None,
+                               "chain": ["政策利率/操作变化", "流动性/贴现率变化", "风险溢价与估值重估", "资产价格"],
+                               "confidence": 0.3, "causal_status": "hypothesis",
+                               "conditions": ["政策传导未被提前定价", "信用/流动性渠道畅通"],
+                               "identification": "事件研究法无法排除同期其他冲击；相关性不等于因果。"},
+                    evidence_for=ev_for, evidence_against=ev_against,
+                    catalysts=[{"id": f"POLICY_{sid}_{av.date()}", "date": str(av.date()),
+                                "title": f"{spec_meta.name} {a.direction}", "type": "central_bank",
+                                "verified": True, "source": "bis"}],
+                    open_questions=list(OPEN_QUESTIONS["event_revision"]),
+                    invalidation="若事件后 20 个交易日内资产未出现显著重定价，或政策被撤回/逆转，则线索失效。",
+                    invalidation_checks=[],
+                    data_quality={"score": dq, "gaps": ["缺少事件一致预期与期权隐含分布"]},
+                    anomaly_ids=[w.anomaly_id for w in window.tail(3).itertuples(index=False)],
+                ))
+        return out
+
     def _event_revision(self) -> list[Draft]:
         out: list[Draft] = []
         if not self.events.events or self.current.empty:
@@ -788,6 +1084,8 @@ class OpportunityEngine:
                         "what": f"{spec.name} 在事件「{ev.title}」（{ev.date}）前出现 {len(group)} 项异常。",
                         "why_now": "事件可能迫使市场重新评估政策路径或数据结果，从而修正预期。",
                         "hypothesis": "若事件结果与当前定价隐含预期不一致，可能出现快速重定价；事件前异常是关注线索而非方向判断。",
+                        "expectation_gap": self.gap_for(iid).to_dict(), "mechanism_assets": 1,
+                        "data_quality_gaps": [],
                         "anomalies": [{"id": a.anomaly_id, "detector": a.detector, "direction": a.direction,
                                        "score": float(a.score)} for a in group.itertuples(index=False)],
                     },
@@ -802,7 +1100,7 @@ class OpportunityEngine:
                     open_questions=list(OPEN_QUESTIONS["event_revision"]),
                     invalidation=f"若事件日期已过且无显著价格/波动反应，或事件被取消/推迟，则线索失效。",
                     invalidation_checks=[],
-                    data_quality={"score": 0.6, "gaps": ["缺少期权隐含分布与事件一致预期"]},
+                    data_quality={"score": self._dq(group, iid), "gaps": ["缺少期权隐含分布与事件一致预期"]},
                     anomaly_ids=[a.anomaly_id for a in group.itertuples(index=False)],
                 ))
         return out
@@ -838,6 +1136,8 @@ class OpportunityEngine:
                             f"{self.universe.instruments[b.entity_id].name} z={_f(b.magnitude):.2f}，方向相反且均超过 2σ。",
                     "why_now": "横截面分化达到极值，若驱动因素（盈利、政策、资金）不具有持续性，可能出现收敛。",
                     "hypothesis": "两条相对强弱曲线可能均值回归；但分化也可能反映基本面差异，需先验证驱动。",
+                    "expectation_gap": self.gap_for(a.entity_id).to_dict(), "mechanism_assets": 1,
+                    "data_quality_gaps": [],
                     "anomalies": [{"id": a.anomaly_id, "detector": a.detector, "direction": a.direction, "score": float(a.score)},
                                   {"id": b.anomaly_id, "detector": b.detector, "direction": b.direction, "score": float(b.score)}],
                 },
@@ -859,7 +1159,9 @@ class OpportunityEngine:
                     {"entity": a.entity_id, "feature": "rel_strength_z_3y", "window": "3m",
                      "op": "<", "value": 1.5, "note": "相对强弱已收敛至 1.5σ 以内"},
                 ],
-                data_quality={"score": 0.6, "gaps": ["缺少套利可行性与借券成本数据"]},
+                data_quality={"score": self._dq(pd.concat([a.to_frame().T, b.to_frame().T]),
+                                                a.entity_id, b.entity_id),
+                              "gaps": ["缺少套利可行性与借券成本数据"]},
                 anomaly_ids=[a.anomaly_id, b.anomaly_id],
             ))
             if len(out) >= 5:
@@ -873,30 +1175,23 @@ class OpportunityEngine:
         strength = max([_f(a.get("score")) for a in anoms if _f(a.get("score")) == _f(a.get("score"))] or [0.0])
         prim = d.instruments[0] if d.instruments else {}
         imp = _f(prim.get("importance")) if np.isfinite(_f(prim.get("importance"))) else 0.4
-        n_links = len([e for e in d.evidence_for if e.get("claim", "").startswith("传导机制")]) or 1
-        economic_impact = _clip(0.6 * imp + 0.4 * min(1.0, n_links / 3))
+        # transmission breadth = number of assets the mechanism maps to (not the
+        # count of evidence strings, which was always 1 and made the component constant)
+        mech_assets = int(d.discovery.get("mechanism_assets") or 1)
+        breadth = min(1.0, max(1, mech_assets) / 5.0)
+        economic_impact = _clip(0.6 * imp + 0.4 * breadth)
 
-        valuation_dev = 0.0
-        cape_pct = _f(d.discovery.get("cape_pctile"))
-        if np.isfinite(cape_pct):
-            valuation_dev = _clip(abs(cape_pct - 0.5) * 2)
-        pos_pct = _f(d.discovery.get("positioning_percentile"))
-        positioning_dev = _clip(abs(pos_pct - 0.5) * 2) if np.isfinite(pos_pct) else 0.0
-        if d.archetype == "price_fundamental_divergence":
-            divergence = 0.7
-        elif d.archetype == "regime_repricing":
-            # A supported macro mechanism is itself evidence that the market may
-            # not have priced the regime shift yet; the confidence of that
-            # mechanism is used as a partial expectation-gap signal (0-0.6).
-            divergence = 0.6 * _clip(_f(d.mechanism.get("confidence", 0.0)))
-        else:
-            divergence = 0.0
-        expectation_gap = _clip(max(valuation_dev, positioning_dev, divergence))
+        gap_meta = d.discovery.get("expectation_gap") or {}
+        gap_value = gap_meta.get("value")
+        gap_conf = _f(gap_meta.get("confidence"))
+        expectation_gap = _clip(_f(gap_value)) if gap_value is not None and np.isfinite(_f(gap_value)) else 0.0
+        gap_available = gap_value is not None and np.isfinite(_f(gap_value))
 
+        # repricing room uses the distance from the 200d mean only; the drawdown is
+        # already the anomaly and must not be counted a second time.
         prim_id = prim.get("id", "")
         ma_gap = abs(_f(self.fv(prim_id, "ma_gap_200d")))
-        dd = abs(_f(self.fv(prim_id, "drawdown_252d")))
-        repricing = _clip(0.6 * _clip(ma_gap / 0.15) + 0.4 * _clip(dd / 0.20))
+        repricing = _clip(ma_gap / 0.15)
 
         cat = 0.1
         if d.catalysts:
@@ -906,10 +1201,9 @@ class OpportunityEngine:
         timing = 1.0 if ARCHETYPE_HORIZON.get(d.archetype) == d.horizon else 0.5
         liq_rank = LIQUIDITY_RANK.get(prim.get("liquidity", "medium"), 2) if prim else 2
         risk_liquidity = 0.1 + 0.9 * (liq_rank / 4)
-        tier = self.scoring.get("weights", {}) and _clip(d.data_quality.get("score", 0.6))
-        independent = min(1.0, len(d.evidence_for) / 3)
-        mech_support = _clip(d.mechanism.get("confidence", 0.3) / 0.85) if d.mechanism else 0.0
-        evidence_quality = _clip(0.5 * tier + 0.3 * independent + 0.2 * mech_support)
+        tier = _clip(d.data_quality.get("score", 0.6))
+        independent = min(1.0, len({e.get("source", "") for e in d.evidence_for if e.get("source")}) / 3)
+        evidence_quality = _clip(0.6 * tier + 0.4 * independent)
 
         comp = {
             "anomaly_strength": strength,
@@ -924,14 +1218,18 @@ class OpportunityEngine:
         d.score_components = {k: round(v, 4) for k, v in comp.items()}
         d.score = round(sum(float(w.get(k, 0.0)) * v for k, v in comp.items()), 4)
 
-        # gates
+        # ---------------- gates and status caps ----------------
         thresholds = self.scoring.get("status_thresholds", {})
         gates = self.scoring.get("gates", {})
+        critical_gaps = d.discovery.get("data_quality_gaps") or []
+        dq = _f(d.data_quality.get("score", 0.0))
         if len(d.evidence_for) < int(gates.get("min_evidence_items", 2)):
             d.status, d.status_reason = "excluded", "证据项不足（gates.min_evidence_items）"
-        elif d.data_quality.get("score", 0) < float(gates.get("min_data_quality", 0.3)):
+            return
+        if dq < float(gates.get("min_data_quality", 0.3)):
             d.status, d.status_reason = "excluded", "数据质量不满足最低要求"
-        elif d.score >= float(thresholds.get("deep_research", 0.68)):
+            return
+        if d.score >= float(thresholds.get("deep_research", 0.68)):
             d.status = "deep_research"
         elif d.score >= float(thresholds.get("watch", 0.52)):
             d.status = "watch"
@@ -940,6 +1238,35 @@ class OpportunityEngine:
         else:
             d.status = "excluded"
             d.status_reason = "综合研究价值低于门槛"
+
+        # Expectation data insufficiency must not be rewarded: a candidate without a
+        # measurable expectation proxy can never be promoted to deep research.
+        min_gap = float(gates.get("min_expectation_gap", 0.15))
+        min_conf = float(gates.get("min_expectation_confidence", 0.5))
+        if d.status == "deep_research":
+            if not gap_available:
+                d.status, d.status_reason = "watch", "预期差无法测量（无可用估值/仓位/残差背离代理）"
+            elif gap_conf < min_conf:
+                d.status, d.status_reason = "watch", f"预期差代理覆盖不足（confidence {gap_conf:.2f}）"
+            elif expectation_gap < min_gap:
+                d.status, d.status_reason = "watch", f"预期差代理偏弱（{expectation_gap:.2f} < {min_gap}）"
+            elif dq < float(gates.get("min_deep_research_data_quality", 0.5)):
+                d.status, d.status_reason = "watch", "数据质量不足以支撑重点研究"
+            elif critical_gaps:
+                d.status, d.status_reason = "watch", "存在关键数据缺口：" + "；".join(critical_gaps[:2])
+            elif d.archetype == "regime_repricing":
+                sig = [e for e in d.evidence_for
+                       if e.get("p_adjusted") is not None and _f(e.get("p_adjusted")) <= 0.10]
+                conf = _f(d.mechanism.get("confidence", 0.0))
+                if conf < 0.40 or len(sig) < 2:
+                    d.status, d.status_reason = "watch", (
+                        f"机制证据不足（confidence {conf:.2f}，FDR 显著检验 {len(sig)} 项），"
+                        f"不足以支持重点研究")
+        d.discovery["expectation_gap_used"] = {
+            "value": None if not gap_available else round(expectation_gap, 4),
+            "confidence": round(gap_conf, 4) if np.isfinite(gap_conf) else 0.0,
+            "available": gap_available,
+        }
 
     # --------------------------------------------------------------- to record
     def to_record(self, d: Draft) -> dict[str, Any]:
@@ -973,23 +1300,34 @@ class OpportunityEngine:
 def persist_drafts(store: Store, engine: OpportunityEngine, drafts: list[Draft],
                    run_id: str | None = None) -> dict[str, Any]:
     created, refreshed = 0, 0
+    created_ids: list[str] = []
     by_fp: dict[str, Draft] = {}
     for d in drafts:
         rec = engine.to_record(d)
         by_fp[rec["fingerprint"]] = d
         existing = store.find_opportunity(rec["fingerprint"])
-        store.upsert_opportunity(rec, run_id=run_id)
+        oid = store.upsert_opportunity(rec, run_id=run_id)
         if existing is None:
             created += 1
+            created_ids.append(oid)
         else:
             refreshed += 1
-            # status follows the score unless a human set a terminal status
-            if existing["status"] not in ("deep_research", "excluded", "expired", "invalidated"):
-                if existing["status"] != rec["status"]:
-                    store.set_opportunity_status(existing["opportunity_id"], rec["status"],
-                                                 f"评分更新至 {rec['score']:.2f}", run_id)
+            # Auto scoring may promote AND demote. Only an explicit human decision
+            # (status_source='manual') or a terminal lifecycle state is protected.
+            source = existing.get("status_source") or "auto"
+            terminal = existing["status"] in ("expired", "invalidated", "excluded")
+            if source != "manual" and not terminal and existing["status"] != rec["status"]:
+                store.set_opportunity_status(
+                    existing["opportunity_id"], rec["status"],
+                    f"自动评分更新至 {rec['score']:.2f}（原 {existing.get('score') or float('nan'):.2f}）",
+                    run_id, source="auto")
+            elif source == "manual" and existing["status"] != rec["status"]:
+                store.add_opportunity_event(
+                    existing["opportunity_id"], "auto_status_held", existing["status"],
+                    existing["status"],
+                    f"人工状态受保护；自动评分为 {rec['score']:.2f}（{rec['status']}）", run_id)
     lifecycle = apply_lifecycle(store, engine, by_fp, run_id)
-    return {"created": created, "refreshed": refreshed, **lifecycle}
+    return {"created": created, "refreshed": refreshed, "created_ids": created_ids, **lifecycle}
 
 
 def apply_lifecycle(store: Store, engine: OpportunityEngine, current: dict[str, Draft],
@@ -1010,12 +1348,14 @@ def apply_lifecycle(store: Store, engine: OpportunityEngine, current: dict[str, 
         # evaluate invalidation checks stored with the discovery payload
         if _checks_breached(store, engine, row.opportunity_id):
             store.set_opportunity_status(row.opportunity_id, "invalidated",
-                                         "自动失效条件被触发（invalidation_checks）", run_id)
+                                         "自动失效条件被触发（invalidation_checks）", run_id,
+                                         source="lifecycle")
             invalidated += 1
             continue
         if age > expire_days:
             store.set_opportunity_status(row.opportunity_id, "expired",
-                                         f"超过 {expire_days} 天未被重新检测（最后出现 {row.last_seen}）", run_id)
+                                         f"超过 {expire_days} 天未被重新检测（最后出现 {row.last_seen}）",
+                                         run_id, source="lifecycle")
             expired += 1
     return {"expired": expired, "invalidated": invalidated}
 

@@ -39,6 +39,7 @@ import pandas as pd
 
 from ..config import load_yaml_config
 from ..features import FeatureSet
+from ..timesemantics import filter_recent
 
 # direction wording -> sign  (used to align anomalies with trigger directions)
 _NEG = ("down", "underperform", "below_norm", "flattening", "compression", "deep_drawdown",
@@ -47,6 +48,40 @@ _NEG = ("down", "underperform", "below_norm", "flattening", "compression", "deep
 _POS = ("up", "outperform", "above_norm", "steepening", "expansion", "near_high",
         "golden_cross", "crowded_long", "yields_up", "hy_outperform", "corr_break_up",
         "risk_on", "high_dispersion")
+
+
+def _normal_two_sided_p(t: float) -> float:
+    """Two-sided p-value from a normal approximation (no scipy dependency)."""
+    import math
+
+    if not np.isfinite(t):
+        return 1.0
+    return float(max(0.0, min(1.0, math.erfc(abs(t) / math.sqrt(2.0)))))
+
+
+def _fisher_p(corr: float, n_eff: float) -> float:
+    if not np.isfinite(corr) or n_eff <= 3:
+        return 1.0
+    if abs(corr) >= 0.9999:
+        return 0.0
+    z = np.arctanh(corr) * np.sqrt(max(1.0, n_eff - 3))
+    return _normal_two_sided_p(float(z))
+
+
+def bh_fdr(pvalues: list[float], q: float = 0.10) -> list[float]:
+    """Benjamini-Hochberg adjusted p-values (monotone)."""
+    m = len(pvalues)
+    if m == 0:
+        return []
+    order = sorted(range(m), key=lambda i: pvalues[i])
+    adj = [1.0] * m
+    prev = 1.0
+    for rank in range(m, 0, -1):
+        idx = order[rank - 1]
+        val = min(prev, pvalues[idx] * m / rank)
+        adj[idx] = val
+        prev = val
+    return adj
 
 
 def direction_sign(direction: str) -> int:
@@ -131,12 +166,13 @@ class MechanismEvaluator:
             else:
                 kind = ""
         elif sid in fs.macro.columns:
-            # transformed macro value from the feature layer (yoy / diff per config)
-            sub = fs.long[(fs.long.entity_kind == "macro") & (fs.long.entity_id == sid)
-                          & (fs.long.feature == "value")]
-            if not sub.empty:
-                s = sub.set_index(pd.to_datetime(sub["date"]))["value"].dropna()
-            else:
+            # transformed macro value from the indexed feature layer (fast; the
+            # long-frame filter was O(rows) per test and dominated replay runtime)
+            from ..config import load_macro
+
+            spec = load_macro().get(sid)
+            s = fs.series(sid, "value", spec.frequency if spec else "monthly")
+            if s.empty:
                 s = fs.macro[sid].dropna()
             kind = "macro"
         elif sid in fs.positioning.columns:
@@ -209,11 +245,19 @@ class MechanismEvaluator:
         latest = float(rolling.iloc[-1])
         recent = rolling.iloc[-min(len(rolling), max(60, 3 * eff_window)):]
         stable_share = float((np.sign(recent) == expected).mean())
-        passed = bool(np.sign(latest) == expected and abs(latest) >= min_abs and stable_share >= 0.55)
+        # Overlapping windows are not independent observations: effective n is the
+        # number of non-overlapping windows in the sample.
+        n_eff = max(10.0, len(df) / max(1, eff_window))
+        p_value = _fisher_p(latest, n_eff)
+        alpha = float(spec.get("alpha", 0.10))
+        passed = bool(np.sign(latest) == expected and abs(latest) >= min_abs
+                      and stable_share >= 0.55 and p_value <= alpha)
         stats = {
             "a": a_id, "b": b_id, "corr": round(latest, 4), "expected_sign": expected,
             "min_abs": min_abs, "stable_share": round(stable_share, 3),
             "window": eff_window, "n_obs": int(len(df)),
+            "n_effective": round(float(n_eff), 2), "p_value": round(float(p_value), 6),
+            "alpha": alpha,
             "transform": spec.get("transform") or ("pct" if self.kind_of(a_id) == "instrument" else "diff"),
         }
         statement = (
@@ -221,7 +265,8 @@ class MechanismEvaluator:
             f"近端窗口符号一致率 {stable_share:.0%}，样本 {len(df)}。"
         )
         reason = "" if passed else ("符号不符" if np.sign(latest) != expected else
-                                    ("相关性过弱" if abs(latest) < min_abs else "符号不稳定"))
+                                    ("相关性过弱" if abs(latest) < min_abs else
+                                     ("符号不稳定" if stable_share < 0.55 else "不显著")))
         return TestResult("corr", passed, stats, statement, reason)
 
     def lead_lag_test(self, spec: dict[str, Any]) -> TestResult:
@@ -245,14 +290,20 @@ class MechanismEvaluator:
             c = df["a"].shift(lag).corr(df["b"])
             if pd.notna(c) and abs(c) > abs(best_corr):
                 best_lag, best_corr = lag, float(c)
+        n_eff = max(10.0, len(df) / max(1, 2 * max_lag + 1))
+        p_value = _fisher_p(best_corr, n_eff)
+        alpha = float(spec.get("alpha", 0.10))
         passed = bool(np.sign(best_corr) == expected and abs(best_corr) >= float(spec.get("min_abs", 0.10))
-                      and best_lag >= 0)
+                      and best_lag >= 0 and p_value <= alpha)
         stats = {"leader": leader, "follower": follower, "best_lag": best_lag,
                  "best_corr": round(best_corr, 4), "expected_sign": expected, "n_obs": int(len(df)),
-                 "window": window}
-        statement = (f"最大互相关出现在滞后 {best_lag} 期（{best_corr:+.2f}），"
-                     f"领先关系" + ("与假设一致" if passed else "不明显或方向相反") + "。")
-        return TestResult("lead_lag", passed, stats, statement, "" if passed else "lead_lag_weak")
+                 "window": window, "n_effective": round(float(n_eff), 2),
+                 "p_value": round(float(p_value), 6), "alpha": alpha}
+        statement = (f"最大互相关出现在滞后 {best_lag} 期（{best_corr:+.2f}，p={p_value:.3f}），"
+                     f"领先关系" + ("与假设一致" if passed else "不明显、不显著或方向相反") + "。")
+        return TestResult("lead_lag", passed, stats, statement,
+                          "" if passed else ("lead_lag_weak" if best_lag < 0 or np.sign(best_corr) != expected
+                                             else "不显著"))
 
     def conditional_return_test(self, spec: dict[str, Any]) -> TestResult:
         cond_id = spec.get("condition_series", "")
@@ -282,10 +333,13 @@ class MechanismEvaluator:
             cond_lag = 0
         target_index = target_px.index
         events = []
+        min_gap_days = max(1, int(horizon * 1.45))
         for ts, value in cond.items():
             if not _cmp(value, operator, threshold):
                 continue
             entry_ts = ts + pd.Timedelta(days=cond_lag)
+            if events and (entry_ts - pd.Timestamp(events[-1]["date"])).days < min_gap_days:
+                continue  # non-overlapping forward windows only
             pos = target_index.searchsorted(entry_ts, side="left")
             if pos == 0 or pos >= len(target_index):
                 continue
@@ -306,18 +360,26 @@ class MechanismEvaluator:
         rets = pd.Series([e["ret"] for e in events])
         hit = float((np.sign(rets) == expected).mean())
         mean_ret = float(rets.mean())
-        passed = bool(hit >= 0.55 and np.sign(mean_ret) == expected)
+        sd = float(rets.std(ddof=1)) if len(rets) > 1 else float("nan")
+        t_stat = mean_ret / (sd / np.sqrt(len(rets))) if np.isfinite(sd) and sd > 0 else float("nan")
+        p_value = _normal_two_sided_p(t_stat) if np.isfinite(t_stat) else 1.0
+        alpha = float(spec.get("alpha", 0.10))
+        passed = bool(hit >= 0.55 and np.sign(mean_ret) == expected and p_value <= alpha)
         stats = {"condition": cond_id, "operator": operator, "threshold": threshold,
                  "target": target_id, "horizon_days": horizon, "n": int(len(events)),
                  "publication_lag_days": cond_lag,
                  "first_entry": events[0]["date"] if events else None,
                  "mean_return": round(mean_ret, 4), "median_return": round(float(rets.median()), 4),
                  "hit_rate": round(hit, 3), "expected_sign": expected,
-                 "note": "描述性历史统计，不是预测或收益承诺；样本重叠，t 统计量不可直接解读。"}
+                 "t_stat": None if not np.isfinite(t_stat) else round(float(t_stat), 3),
+                 "p_value": round(float(p_value), 6), "alpha": alpha,
+                 "n_effective": int(len(rets)), "non_overlapping": True,
+                 "note": "描述性历史统计，不是预测或收益承诺；样本已去除重叠，p 值为正态近似。"}
         statement = (f"历史上 {cond_id} {operator} {threshold} 的 {len(events)} 个样本中，"
                      f"{target_id} 其后约 {horizon} 个交易日平均收益 {mean_ret:+.1%}，"
                      f"符号命中率 {hit:.0%}。")
-        return TestResult("conditional_return", passed, stats, statement, "" if passed else "conditional_weak")
+        reason = "" if passed else ("conditional_weak" if hit < 0.55 or np.sign(mean_ret) != expected else "不显著")
+        return TestResult("conditional_return", passed, stats, statement, reason)
 
     def run_tests(self, mechanism: dict[str, Any]) -> list[TestResult]:
         out = []
@@ -358,9 +420,12 @@ class MechanismEvaluator:
     def evaluate(self, anomalies: pd.DataFrame, min_triggers: int = 1) -> list[MechanismResult]:
         if anomalies.empty:
             return []
-        as_of = anomalies["date"].max()
-        _dates = pd.to_datetime(anomalies["date"])
-        current = anomalies[_dates >= pd.to_datetime(as_of) - pd.Timedelta(days=7)].copy()
+        _dates = pd.to_datetime(anomalies["available_date"]) \
+            if "available_date" in anomalies.columns else pd.to_datetime(anomalies["date"])
+        # anchor the activation window on the newest AVAILABLE observation in the
+        # supplied frame (the caller already restricts it to the research as-of)
+        as_of = _dates.max()
+        current = filter_recent(anomalies, pd.Timestamp(as_of)).copy()
         current["_d"] = pd.to_datetime(current["date"])
         current = current.sort_values("_d").groupby(["entity_id", "detector"], as_index=False).tail(1)
         results: list[MechanismResult] = []
@@ -372,24 +437,38 @@ class MechanismEvaluator:
             if len(matched) < min_triggers:
                 continue
             tests = self.run_tests(mech)
+            # Benjamini-Hochberg across the tests of THIS mechanism: with 4-5
+            # tests per mechanism, an uncorrected p<0.10 is not evidence.
+            pvals = [t.stats.get("p_value") for t in tests if t.stats.get("p_value") is not None]
+            adj = bh_fdr([float(p) for p in pvals], q=float(mech.get("fdr_q", 0.10)))
+            adj_iter = iter(adj)
+            for t in tests:
+                if t.stats.get("p_value") is not None:
+                    t.stats["p_adjusted"] = round(float(next(adj_iter)), 6)
+                    if t.passed and t.stats["p_adjusted"] > float(mech.get("fdr_q", 0.10)):
+                        t.passed = False
+                        t.reason = t.reason or "不显著"
             supported = [t for t in tests if t.passed]
             failed = [t for t in tests if not t.passed]
             insufficient = [t for t in failed if t.reason == "insufficient_data"]
-            contradicting = [t for t in failed if t.reason in ("符号不符", "符号不稳定", "lead_lag_weak",
-                                                             "conditional_weak")]
+            # every failed test with data lowers confidence; previously "correlation
+            # too weak" was free, so a failing gold test did not reduce support.
+            contradicting = [t for t in failed if t.reason != "insufficient_data"]
             n_passed = len(supported)
             # Collinear tests on the same left-hand series are one piece of
             # evidence, not three: count distinct `a` series (+1 for a passing
             # conditional test) so a mechanism cannot inflate confidence by
             # repeating the same pair with different right-hand assets.
             corr_leads = {t.stats.get("a") for t in supported if t.test_type == "corr"}
-            n_distinct = len(corr_leads) + (1 if any(t.test_type == "conditional_return" for t in supported) else 0)
+            n_distinct = (len(corr_leads)
+                          + (1 if any(t.test_type == "conditional_return" for t in supported) else 0)
+                          + (1 if any(t.test_type == "lead_lag" for t in supported) else 0))
             confidence = 0.25 + 0.18 * min(n_distinct, 3)
             if any(t.test_type == "corr" and t.passed for t in tests):
                 confidence += 0.10
             if any(t.test_type == "conditional_return" and t.passed for t in tests):
                 confidence += 0.08
-            confidence -= 0.15 * min(len(contradicting), 2)
+            confidence -= 0.08 * min(len(contradicting), 3)
             confidence -= 0.05 * len(insufficient)
             confidence = float(max(0.05, min(0.85, confidence)))
             if n_passed == 0:
@@ -414,7 +493,7 @@ class MechanismEvaluator:
             notes = mech.get("limitations", "")
             results.append(MechanismResult(
                 mechanism_id=mid, title=mech.get("title", mid), family=mech.get("family", ""),
-                as_of=as_of, transmission_id=tid, triggers=matched, assets=assets,
+                as_of=pd.Timestamp(as_of).strftime("%Y-%m-%d"), transmission_id=tid, triggers=matched, assets=assets,
                 evidence_for=[t.to_dict() for t in supported],
                 evidence_against=[t.to_dict() for t in failed],
                 conditions=list(mech.get("conditions", []) or []),
