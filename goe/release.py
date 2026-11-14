@@ -49,6 +49,9 @@ CATEGORY_MARKERS: dict[str, str] = {
 }
 DEFAULT_CATEGORY = "offline"
 
+#: only the offline suite may back a release manifest
+RELEASE_CATEGORY = "offline"
+
 #: anti-shrink floors. Raise these when tests are legitimately added; never lower
 #: them without a reviewed contract change.
 MIN_REQUIRED: dict[str, int] = {"offline": 186, "network": 9, "realdata": 1}
@@ -513,6 +516,10 @@ def build_manifest(
     if require_clean and dirty:
         raise ReleaseError("refusing to freeze a dirty worktree")
     proof = verify_test_proof(proof_path, cwd=root, rerun=True)
+    if proof.get("category") != RELEASE_CATEGORY:
+        raise ReleaseError(
+            f"release requires the {RELEASE_CATEGORY!r} suite, got {proof.get('category')!r}"
+        )
 
     scan = store.conn.execute(
         "SELECT scan_id,as_of,status,config_hash,data_hash,started_at FROM scan_runs "

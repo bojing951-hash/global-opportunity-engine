@@ -117,3 +117,14 @@ def test_floor_blocks_a_shrunken_suite(small_repo, monkeypatch):
     _git(small_repo, "commit", "-qm", "shrink")
     with pytest.raises(rel.ReleaseError, match="below the required floor"):
         rel.run_test_proof(cwd=small_repo)
+
+
+def test_release_manifest_rejects_network_category(monkeypatch, small_repo, tmp_path):
+    """A 9-test network proof must never back a release."""
+    proof = rel.run_test_proof(cwd=small_repo)
+    forged = dict(proof, category="network", marker_expr=rel.CATEGORY_MARKERS["network"],
+                  command_template=rel.command_template("network"))
+    monkeypatch.setattr(rel, "verify_test_proof", lambda *a, **k: forged)
+    monkeypatch.setattr(rel, "_dirty_code", lambda **k: False)
+    with pytest.raises(rel.ReleaseError, match="release requires"):
+        rel.build_manifest(store=object(), proof_path=proof["proof_path"])
