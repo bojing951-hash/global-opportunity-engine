@@ -1,6 +1,29 @@
 # PROJECT_STATE — 项目状态（唯一权威进度记录）
 
-> 最后更新：2026-11-14 11:20 HKT
+> 最后更新：2026-11-15 02:05 HKT
+
+## 0. 最新一轮（2026-11-15）：Release gate v3
+
+| 项 | 状态 / 证据 |
+|---|---|
+| 分支 | `architecture/research-v2`（远程 HEAD `047918f`） |
+| 修复提交 | `c0392de` → `3c3d03f` → `63e4afb` → `fe3867d` → `fccfa9f` |
+| 测试 | **193 offline passed / 0 skipped / 10 deselected**（network 9 + realdata 1） |
+| 测试证明 | `audit/test_evidence/20261114T180115Z_fccfa9fc20.proof.json`（schema v3） |
+| 独立验证 | `python -m goe.cli verify-release --proof <proof>` → accepted，重放 193/193 |
+| 移植性 | 全新 clone（6.9 MB，无 .venv）用外部解释器重放 → accepted |
+| 红队轮 1 | 4 个攻击成功（P0×2：根目录伪 pytest、skip 计数），已全部修复；见 `audit/QA_REDTEAM_RELEASE.md` |
+| 红队轮 2 | v3 复审（进行中） |
+| 剩余风险 | 测试质量不可证、`.git/info/exclude` 隐藏本地文件、宿主级篡改、network/realdata 尚未纳入发布 |
+
+**P1-01 / P1-02 状态：FIXED（工程层）。** 门禁不再接受调用方提供的 pytest 命令；已执行集合必须等于收集集合；
+证明只含 `{python}`/`{junit}` 模板与仓库相对路径；发布清单必须重放整套测试后才生成。
+
+**下一步**：红队轮 2 结论 → 若有 P0/P1 继续修复；之后处理 data/research 侧遗留项（见 `audit/FINAL_ACCEPTANCE.md`）。
+
+---
+
+> 历史更新：2026-11-14 11:20 HKT
 > 更新规则：每次会话结束或关键阶段完成后更新；状态必须对应真实文件、测试结果与 git 提交。
 > 恢复流程：读 `PROJECT_SPEC.md` → 本文件 → 检查 `git log` / `pytest` / `goe doctor` → 继续未完成项。
 

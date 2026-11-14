@@ -61,3 +61,25 @@ cd global-opportunity-engine
 - Contracts + ResearchCandidate + V2 triage + four-method evaluation implemented.
 - 179 offline tests; V2 blind result NOT VALIDATED (no independent test split); A→B fact-only handoff is recorded as not_completed:refused; no success.
 - See `audit/V2_FINAL_ACCEPTANCE.md`, `audit/V2_ISSUES.md`, `evaluation/V2_EVALUATION_RESULTS.md`.
+
+---
+
+# Round 4 — release gate hardening (2026-11-15)
+
+- Branch `architecture/research-v2`; remote tip `047918f`; base `26d50dc`.
+- **P1-01 (partial suites accepted) / P1-02 (non-portable proof): FIXED at the root.**
+- Commits: `c0392de` (v2 gate), `3c3d03f` (offline-only releases + contract doc),
+  `63e4afb` (portable `verify-release` CLI), `fe3867d` (red-team P0/P1 fixes, v3),
+  `fccfa9f` (trusted launcher + `PYTHONSAFEPATH`), evidence commits after each.
+- Evidence: `audit/test_evidence/20261114T180115Z_fccfa9fc20.proof.json`
+  — 193 collected = 193 executed, 0 skipped, 10 deselected (network 9 + realdata 1).
+- Independent replay: `python -m goe.cli verify-release --proof <path>` → accepted;
+  re-run 193/193. Fresh clone (6.9 MB, no venv, external interpreter) → accepted.
+- Red team round 1 (independent subagent): 4 successful attacks (2 × P0) →
+  fixed and regression-tested; write-up in `audit/QA_REDTEAM_RELEASE.md`.
+- Red team round 2 (v3 adversarial): running.
+- Residual risks: test *quality* is not provable by the gate; local files hidden by
+  `.git/info/exclude` stay invisible to `git status`; host-level tampering
+  (`sitecustomize` in site-packages, installed plugins) is outside the threat model;
+  `network`/`realdata` categories carry placeholder floors and are not release-eligible.
+- Next action: red-team round 2 verdict → fix P0/P1 if any → then data/research residuals.
