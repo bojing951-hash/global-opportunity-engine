@@ -58,3 +58,14 @@ Any improvement on development/validation only is reported as exploratory.
 ## Known limits
 No human labels, single rater, small n, 4 selected/method/date, fact-card asymmetry (D selects
 mechanism-rich assets), no cost/portfolio implication. These limits must appear with results.
+
+
+## Known design limitations (after independent review)
+- The common fact card measures **selection worthiness of an asset**, not the full V2 research
+  question; V2's hypotheses/falsifiers are hidden for method-blindness. A future protocol should use
+  a common research-brief template for all methods.
+- D applies materiality/evidence gates before ranking; A/B/C do not. This can confound "selection
+  filter" with "ranking"; the test split is therefore not proof of an isolated ranking effect.
+- Test split (2021-12-31) yielded D n=1, below the pre-registered n>=3; result must be NOT VALIDATED.
+- The 2026 LLM rater may know historical outcomes; no human/expert labels. These limits are not
+  fixable by more tuning.

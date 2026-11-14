@@ -27,3 +27,32 @@ Hard gates first:
 Within gates, ranking is lexicographic by (materiality, explanatory gap, distinguishability,
 decision impact, inverse cost), not a hidden weighted sum. Equal items preserve stable tie-break by
 research_id. V2 never claims mispricing; that is B's job.
+
+## Pre-registered ordinal gates (V2 implementation)
+Materiality (M):
+- M3: importance>=0.5 and (anomaly score>=0.90 or |1m|>=12% or drawdown percentile<=0.02)
+- M2: importance>=0.5 and (score>=0.70 or |1m|>=5% or drawdown percentile<=0.05 or |vol z|>=2)
+- M1: a real change (not near-high alone) or score>=0.70
+- M0: near-high/trend alone, or importance<0.5 with no material change
+
+Explanatory gap (G):
+- G2: residual divergence component value>=0.30
+- G1: residual>0 or a mechanism is mixed/unsupported/weak
+- G0: no measurable gap and no conflicting mechanism
+
+Distinguishability (D):
+- D2: >=2 independent observable test families (residual, positioning, mechanism)
+- D1: 1 family; D0: none
+
+Decision impact (I):
+- I2: importance>=0.8 and G>0
+- I1: importance>=0.5; I0 otherwise
+
+Tier:
+- A: M3, G2, D2, I2
+- B: M2, G>=1, D>=1
+- C: M>=1, D>=1
+- intelligence: otherwise (recorded, not ranked; never presented as an opportunity)
+
+These are transparent rules, not weights. They are frozen before the assessment; changing them after
+seeing evaluation results invalidates the claim.

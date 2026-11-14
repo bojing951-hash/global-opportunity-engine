@@ -235,12 +235,30 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
             unknowns.append("预期差代理不可测量（仓位/估值/残差均不可用）")
         if not mechs:
             unknowns.append("该资产没有可检验的宏观传导机制")
-        falsification = [
-            {"test": "信用利差代理 z 转负且持续", "threshold": "< -2", "data": "CREDIT_RISK"},
-            {"test": "相对基准继续同向跑输/跑赢", "threshold": "< -8% (1m)", "data": "prices"},
-            {"test": "CFTC 仓位回落至中性", "threshold": "40%-60%", "data": "CFTC"},
-            {"test": "机制滚动相关恢复原符号", "threshold": "sign stable 60d", "data": "mechanism"},
-        ]
+        falsification = []
+        credit_z = fs.value("CREDIT_RISK", "hy_minus_treasury_z_3y")
+        if np.isfinite(credit_z):
+            falsification.append({"test": "信用利差代理回升（风险溢价解释被削弱）",
+                                  "threshold": f"z > -1 (current {credit_z:.2f})", "data": "CREDIT_RISK"})
+        rel_z = fs.value(iid, "rel_strength_z_3y", "1m")
+        if np.isfinite(rel_z):
+            falsification.append({"test": "相对强弱 z 回归 0（本地冲击论点被削弱）",
+                                  "threshold": f"z crosses 0 (current {rel_z:.2f})", "data": "prices"})
+        pos_comp = gap.components.get("positioning")
+        if pos_comp is not None and pos_comp.value is not None:
+            falsification.append({"test": "CFTC 净头寸分位回到中性",
+                                  "threshold": "40%-60%", "data": "CFTC"})
+        if mechs:
+            falsification.append({"test": f"机制 {mechs[0].mechanism_id} 的滚动相关恢复原符号",
+                                  "threshold": "sign stable 60d", "data": "mechanism"})
+        if spec.asset_class in ("commodity", "crypto"):
+            falsification.append({"test": "核对原始合约/交易日，排除换月或坏价",
+                                  "threshold": "raw contract data", "data": "exchange/provider"})
+        if not falsification:
+            falsification = [{"test": "后续价格/仓位/宏观证据与当前解释相反",
+                              "threshold": "documented review", "data": "open"}]
+        # observed/testable facts belong in the candidate provenance
+
         cost_hours = 4 + 2 * len([g for g in unknowns if g != "分析师一致预期/修正"]) + (
             2 if spec.asset_class == "commodity" else 0)
         cost = {"hours": int(min(20, cost_hours)),

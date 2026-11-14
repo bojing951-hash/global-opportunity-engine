@@ -317,9 +317,13 @@ def check_data_readiness(store: Store, as_of: str | None = None, *,
                 res.critical.append(f"核心收益率曲线缺失：{cid}（研究依赖，拒绝发布）")
                 continue
             for tenor in REQUIRED_CURVE_TENORS.get(cid, set()):
-                if not store.conn.execute("SELECT 1 FROM indicators WHERE series_id=? LIMIT 1",
-                                          (f"{cid}:{tenor}",)).fetchone():
+                last_t = store.conn.execute(
+                    "SELECT MAX(date) FROM indicators WHERE series_id=? AND date <= ?",
+                    (f"{cid}:{tenor}", target)).fetchone()[0]
+                if not last_t:
                     res.critical.append(f"核心收益率曲线缺少关键期限：{cid}:{tenor}（研究依赖，拒绝发布）")
+                elif (pd.Timestamp(target) - pd.Timestamp(last_t)).days > 15:
+                    res.critical.append(f"核心收益率曲线关键期限过期：{cid}:{tenor} 最后 {last_t}")
 
     pos_ids = list(load_positioning())
     present_pos = store.conn.execute(

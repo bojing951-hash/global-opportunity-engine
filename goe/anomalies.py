@@ -242,6 +242,8 @@ def emit_rows(
                 pct_val = _safe_float(percentile.at[date, entity_id])
         avail = ctx.availability(entity_kind, entity_id, pd.Timestamp(date))
         evidence = evidence_fn(entity_id, date, _safe_float(val))
+        if entity_kind in ("macro", "valuation"):
+            evidence["observation_date"] = ctx.observation_date(entity_kind, entity_id, pd.Timestamp(date))
         _tier = (src or {}).get("tier", "derived")
         _dq = {"official": 1.0, "exchange": 0.9, "aggregator": 0.7, "proxy": 0.5}.get(_tier, 0.6)
         evidence.update({
