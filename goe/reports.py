@@ -199,6 +199,13 @@ def build_markdown(store: Store, fs: FeatureSet, anomalies: pd.DataFrame,
         (f"> 数据就绪：覆盖率 {scan_meta.get('data_readiness',{}).get('coverage',0):.0%}，"
          f"最后价格 {scan_meta.get('data_readiness',{}).get('last_price_date','')}，"
          f"降级={scan_meta.get('data_readiness',{}).get('degraded')}。" if scan_meta.get('data_readiness') else ""),
+        ("> 数据告警：" + "；".join((scan_meta.get('data_readiness') or {}).get('warnings') or [])
+         + (f"（过期序列 {len((scan_meta.get('data_readiness') or {}).get('stale_indicators') or [])} 条）"
+            if (scan_meta.get('data_readiness') or {}).get('stale_indicators') else "")
+         if (scan_meta.get('data_readiness') or {}).get('warnings') else ""),
+        (f"> 采集状态：{scan_meta.get('ingest',{}).get('status')}；"
+         f"错误源：{', '.join(k for k,v in (scan_meta.get('ingest') or {}).items() if k.endswith('_error')) or '无'}。"
+         if (scan_meta.get('ingest') or {}).get('status') == 'partial' else ""),
         "",
         "## 1. 市场状态快照",
         "",

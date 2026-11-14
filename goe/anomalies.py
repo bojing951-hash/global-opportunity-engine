@@ -187,7 +187,8 @@ class DetectorContext:
         spec = universe.instruments.get(entity_id)
         if spec:
             return {"asset_class": spec.asset_class, "region": spec.region, "importance": spec.importance,
-                    "liquidity": spec.liquidity}
+                    "liquidity": spec.liquidity,
+                    "is_futures": bool(getattr(spec, "symbol", "").endswith("=F"))}
         for cid, cdef in load_curves().items():
             if entity_id.startswith(cid + ":"):
                 return {"asset_class": "fixed_income", "region": cdef.region, "importance": 0.7,
@@ -253,6 +254,9 @@ def emit_rows(
             "region": meta.get("region"),
             "source": src,
             "data_quality": _dq,
+            "is_continuous_futures": bool(meta.get("is_futures")),
+            "near_month_end": bool(meta.get("is_futures")) and (pd.Timestamp(date).day >= 27
+                                                                or pd.Timestamp(date).day <= 2),
         })
         records.append({
             "date": pd.Timestamp(date).strftime("%Y-%m-%d"),

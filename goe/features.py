@@ -856,7 +856,10 @@ class FeatureBuilder:
             if len(s) < 30:
                 continue
             oi_series = pos.get(f"{pid}:oi")
-            norm = s / oi_series.replace(0, np.nan) if oi_series is not None else s
+            # Never fall back to raw contracts under the name "net_to_oi": that was
+            # P1-04. If open interest is missing, the ratio is UNKNOWN, not the net.
+            norm = (s / oi_series.replace(0, np.nan)) if oi_series is not None \
+                else pd.Series(np.nan, index=s.index)
             for feat, series in (
                 ("net_position", s),
                 ("net_to_oi", norm),

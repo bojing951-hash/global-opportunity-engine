@@ -73,7 +73,7 @@ def run_scan(store: Store, as_of: str | None = None, *, ingest: bool = False,
     if as_of is None:
         as_of = store.scalar("SELECT MAX(date) FROM prices")
     _hist_start = (pd.Timestamp(as_of) - pd.DateOffset(years=6, months=6)).strftime("%Y-%m-%d") if as_of else None
-    readiness = check_data_readiness(store, as_of=as_of_arg or as_of,
+    readiness = check_data_readiness(store, as_of=as_of_arg,
                                      min_coverage=readiness_min_coverage)
     if not readiness.ok:
         blocked_id = store.start_scan(str(as_of or ""), "blocked", store.config_fingerprint(),
@@ -90,74 +90,84 @@ def run_scan(store: Store, as_of: str | None = None, *, ingest: bool = False,
                              "ingest": ingest_stats, **fs.meta}
 
     try:
-        _since = (pd.Timestamp(fs.as_of) - pd.Timedelta(days=200)).strftime("%Y-%m-%d")
-        anomalies = detect_anomalies(fs, since=_since)
-        stats["anomalies"] = summarize_anomalies(anomalies)
-        if not anomalies.empty:
-            records_a = []
-            for r in anomalies.to_dict("records"):
-                records_a.append({
-                    "anomaly_id": r["anomaly_id"],
-                    "as_of": pd.Timestamp(r["date"]).strftime("%Y-%m-%d"),
-                    "available_date": pd.Timestamp(r.get("available_date", r["date"])).strftime("%Y-%m-%d"),
-                    "detector": r["detector"],
-                    "family": r["family"], "instrument_id": r["entity_id"],
-                    "direction": r["direction"], "magnitude": r["magnitude"], "score": r["score"],
-                    "percentile": r.get("percentile"), "window": r.get("window", ""),
-                    "evidence": r.get("evidence", {}),
-                    "fingerprint": "|".join([r["detector"], r["entity_id"], str(r["direction"]),
-                                             str(r.get("window", ""))]),
-                })
-            store.insert_anomalies(records_a, run_id=scan_id)
+        # one atomic unit: a failure must not leave anomalies/transmissions/
+        # opportunities/status events half-written (QA residual).
+        with store.transaction():
+            _since = (pd.Timestamp(fs.as_of) - pd.Timedelta(days=200)).strftime("%Y-%m-%d")
+            anomalies = detect_anomalies(fs, since=_since)
+            det_errors = anomalies.attrs.get("errors") or []
+            stats["detector_errors"] = det_errors
+            if det_errors:
+                # A swallowed detector exception means the scan silently misses a
+                # whole signal family. Never publish a "successful" scan in that case.
+                raise RuntimeError("异常检测器失败，拒绝发布不完整扫描: " + "; ".join(det_errors))
+            stats["anomalies"] = summarize_anomalies(anomalies)
+            if not anomalies.empty:
+                records_a = []
+                for r in anomalies.to_dict("records"):
+                    records_a.append({
+                        "anomaly_id": r["anomaly_id"],
+                        "as_of": pd.Timestamp(r["date"]).strftime("%Y-%m-%d"),
+                        "available_date": pd.Timestamp(r.get("available_date", r["date"])).strftime("%Y-%m-%d"),
+                        "detector": r["detector"],
+                        "family": r["family"], "instrument_id": r["entity_id"],
+                        "direction": r["direction"], "magnitude": r["magnitude"], "score": r["score"],
+                        "percentile": r.get("percentile"), "window": r.get("window", ""),
+                        "evidence": r.get("evidence", {}),
+                        "fingerprint": "|".join([r["detector"], r["entity_id"], str(r["direction"]),
+                                                 str(r.get("window", ""))]),
+                    })
+                store.insert_anomalies(records_a, run_id=scan_id)
 
-        tx_df, mechanisms = evaluate_transmissions(fs, anomalies, mechanisms_cfg)
-        stats["transmissions"] = activation_summary(mechanisms)
-        if not tx_df.empty:
-            store.insert_transmissions(tx_df.to_dict("records"), run_id=scan_id)
+            tx_df, mechanisms = evaluate_transmissions(fs, anomalies, mechanisms_cfg)
+            stats["transmissions"] = activation_summary(mechanisms)
+            if not tx_df.empty:
+                store.insert_transmissions(tx_df.to_dict("records"), run_id=scan_id)
 
-        events = EventCalendar.load()
-        engine = OpportunityEngine(fs, anomalies, mechanisms, events, load_yaml_config("scoring.yaml"),
-                                   max_candidates=max_candidates, store=store)
-        drafts = engine.generate()
-        persist_stats = persist_drafts(store, engine, drafts, run_id=scan_id)
-        stats["opportunities"] = persist_stats
-        _created_ids = persist_stats.get("created_ids", [])
+            events = EventCalendar.load()
+            engine = OpportunityEngine(fs, anomalies, mechanisms, events, load_yaml_config("scoring.yaml"),
+                                       max_candidates=max_candidates, store=store,
+                                   data_degraded=readiness.critical_degraded)
+            drafts = engine.generate()
+            persist_stats = persist_drafts(store, engine, drafts, run_id=scan_id)
+            stats["opportunities"] = persist_stats
+            _created_ids = persist_stats.get("created_ids", [])
 
-        # read back persisted records (canonical, includes opportunity_id & lifecycle)
-        ids = []
-        for d in drafts:
-            row = store.find_opportunity(d.fingerprint())
-            if row:
-                ids.append(row["opportunity_id"])
-        records = _persisted_rows(store, ids)
-        result = ScanResult(scan_id=scan_id, as_of=fs.as_of, status="success", stats=stats,
-                            opportunities=records)
+            # read back persisted records (canonical, includes opportunity_id & lifecycle)
+            ids = []
+            for d in drafts:
+                row = store.find_opportunity(d.fingerprint())
+                if row:
+                    ids.append(row["opportunity_id"])
+            records = _persisted_rows(store, ids)
+            result = ScanResult(scan_id=scan_id, as_of=fs.as_of, status="success", stats=stats,
+                                opportunities=records)
 
-        out = Path(out_dir) if out_dir else (project_root() / "reports")
-        meta = {
-            "scan_id": scan_id, "as_of": fs.as_of, "engine_version": __version__,
-            "feature_version": FEATURE_VERSION, "config_hash": config_hash, "data_hash": data_hash,
-            "generated_at": utc_now(), "data_readiness": readiness.to_dict(), **fs.meta,
-        }
-        issues = store.recent_issues(limit=30)
-        result.report_paths = write_reports(out, store, fs, anomalies, tx_df, mechanisms, records, meta, issues)
+            out = Path(out_dir) if out_dir else (project_root() / "reports")
+            meta = {
+                "scan_id": scan_id, "as_of": fs.as_of, "engine_version": __version__,
+                "feature_version": FEATURE_VERSION, "config_hash": config_hash, "data_hash": data_hash,
+                "generated_at": utc_now(), "data_readiness": readiness.to_dict(), **fs.meta,
+            }
+            issues = store.recent_issues(limit=30)
+            result.report_paths = write_reports(out, store, fs, anomalies, tx_df, mechanisms, records, meta, issues)
 
-        if export:
-            from .integration.exporter import export_all
+            if export:
+                from .integration.exporter import export_all
 
-            result.export_paths = export_all(store, records, meta,
-                                             base_dir=Path(export_dir) if export_dir else exports_dir())
-            if run_ia:
-                from .integration.ia_adapter import IAAdapter
+                result.export_paths = export_all(store, records, meta,
+                                                 base_dir=Path(export_dir) if export_dir else exports_dir())
+                if run_ia:
+                    from .integration.ia_adapter import IAAdapter
 
-                adapter = IAAdapter(ia_path or os.environ.get("GOE_IA_PATH") or str(Path.home() / "investment-agent-dev"))
-                result.export_paths["ia_runs"] = adapter.run_queue(
-                    store, records, limit=3,
-                    out_dir=(Path(export_dir) if export_dir else exports_dir()) / "ia_runs",
-                )
-        stats["elapsed_s"] = round(time.time() - t0, 2)
-        store.finish_scan(scan_id, "success", stats)
-        return result
+                    adapter = IAAdapter(ia_path or os.environ.get("GOE_IA_PATH") or str(Path.home() / "investment-agent-dev"))
+                    result.export_paths["ia_runs"] = adapter.run_queue(
+                        store, records, limit=3,
+                        out_dir=(Path(export_dir) if export_dir else exports_dir()) / "ia_runs",
+                    )
+            stats["elapsed_s"] = round(time.time() - t0, 2)
+            store.finish_scan(scan_id, "success", stats)
+            return result
     except Exception as exc:
         stats["error"] = f"{type(exc).__name__}: {exc}"
         try:

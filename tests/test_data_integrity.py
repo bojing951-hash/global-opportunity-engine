@@ -71,10 +71,10 @@ def test_conditional_return_entries_respect_publication_lag():
     })
     if res.stats.get("n", 0) == 0:
         pytest.skip("not enough forward windows in fixture")
-    assert res.stats["publication_lag_days"] == 45
-    # the first entry must be at least 45 calendar days after the condition observation
-    first_obs = cond_idx[10]
-    assert pd.Timestamp(res.stats["first_entry"]) >= first_obs + pd.Timedelta(days=45)
+    # Macro feature dates are already availability dates; the evaluator must NOT
+    # add the publication lag a second time (round-2 audit finding).
+    assert res.stats["publication_lag_days"] == 0
+    assert pd.Timestamp(res.stats["first_entry"]) >= cond_idx[10]
 
 
 def test_collinear_tests_do_not_inflate_mechanism_confidence():
@@ -229,3 +229,15 @@ def test_breadth_is_computed_on_business_day_calendar(tmp_path):
         assert fs.series("US", "breadth_z_3y").empty or np.isfinite(fs.series("US", "breadth_z_3y").iloc[-1])
     finally:
         store.close()
+
+
+def test_missing_open_interest_makes_net_to_oi_unknown_not_raw(store):
+    """P1-04 regression guard: no OI -> net_to_oi unknown, never raw contracts."""
+    from goe.features import FeatureBuilder
+
+    store.conn.execute("DELETE FROM indicators WHERE series_id='POS_GOLD_MM:oi'")
+    store.conn.commit()
+    fs = FeatureBuilder(store, as_of=END_DATE, point_in_time=True).build()
+    assert fs.series("POS_GOLD_MM", "net_to_oi").empty or fs.series("POS_GOLD_MM", "net_to_oi").notna().sum() == 0
+    # raw net positions remain available and clearly named
+    assert fs.series("POS_GOLD_MM", "net_position").notna().sum() > 0

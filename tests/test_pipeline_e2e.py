@@ -38,6 +38,9 @@ def test_run_scan_produces_report_scan_json_and_exports(store, tmp_path, monkeyp
     assert result.stats["feature_rows"] > 0
     assert result.stats["anomalies"]["n"] > 0
     assert result.stats["opportunities"]["created"] >= 1
+    primaries = [i["id"] for rec in result.opportunities for i in rec.get("instruments", [])
+                 if i.get("role") == "primary"]
+    assert len(primaries) == len(set(primaries)), f"same primary asset ranked twice: {primaries}"
 
     report_path = Path(result.report_paths["markdown"])
     assert report_path.exists()
@@ -113,6 +116,23 @@ def test_failed_scan_rolls_back_partial_records(store, tmp_path, monkeypatch):
                           export=False, readiness_min_coverage=0.0)
     n_anom = store.scalar("SELECT COUNT(*) FROM anomalies")
     n_opp = store.scalar("SELECT COUNT(*) FROM opportunities")
-    assert n_anom == 0 and n_opp == 0, (n_anom, n_opp)
+    n_events = store.scalar("SELECT COUNT(*) FROM opportunity_events")
+    assert n_anom == 0 and n_opp == 0 and n_events == 0, (n_anom, n_opp, n_events)
+    status = store.scalar("SELECT status FROM scan_runs ORDER BY started_at DESC LIMIT 1")
+    assert status in ("failed", "rolled_back")
+
+
+def test_detector_failure_blocks_scan_and_rolls_back(store, tmp_path, monkeypatch):
+    import goe.anomalies as anomalies_mod
+
+    def boom(self):
+        raise RuntimeError("detector crashed")
+
+    monkeypatch.setattr(anomalies_mod.VolRegimeShift, "detect", boom)
+    with pytest.raises(RuntimeError, match="异常检测器失败"):
+        pipeline.run_scan(store, as_of=END_DATE, ingest=False, out_dir=tmp_path,
+                          export=False, readiness_min_coverage=0.0)
+    assert store.scalar("SELECT COUNT(*) FROM anomalies") == 0
+    assert store.scalar("SELECT COUNT(*) FROM opportunities") == 0
     status = store.scalar("SELECT status FROM scan_runs ORDER BY started_at DESC LIMIT 1")
     assert status in ("failed", "rolled_back")

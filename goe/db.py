@@ -184,12 +184,31 @@ class Store:
 
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
-        try:
-            yield self.conn
-            self.conn.commit()
-        except Exception:
-            self.conn.rollback()
-            raise
+        """Transaction context that nests safely via SAVEPOINT.
+
+        The scan wants one atomic unit around anomalies + transmissions +
+        opportunities + status events. Store methods themselves open transactions,
+        so a nested call must not commit the outer unit early: use a savepoint when
+        a transaction is already active, otherwise BEGIN/COMMIT.
+        """
+        if self.conn.in_transaction:
+            name = f"sp_{uuid.uuid4().hex[:12]}"
+            self.conn.execute(f"SAVEPOINT {name}")
+            try:
+                yield self.conn
+                self.conn.execute(f"RELEASE {name}")
+            except Exception:
+                self.conn.execute(f"ROLLBACK TO {name}")
+                self.conn.execute(f"RELEASE {name}")
+                raise
+        else:
+            self.conn.execute("BEGIN")
+            try:
+                yield self.conn
+                self.conn.commit()
+            except Exception:
+                self.conn.rollback()
+                raise
 
     # ------------------------------------------------------------------ metadata
     def upsert_sources(self, sources: dict[str, dict[str, Any]]) -> None:
