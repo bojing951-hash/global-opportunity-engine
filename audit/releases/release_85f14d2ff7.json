@@ -1,0 +1,30 @@
+{
+  "created_at": "2026-11-14T13:25:19Z",
+  "git_commit": "85f14d2ff78c1f7aa744fba6c88d808c46cd8a16",
+  "git_branch": "architecture/research-v2",
+  "git_dirty": false,
+  "scan": {
+    "scan_id": "scan-20261114T125130Z-574f7b",
+    "as_of": "2026-11-13",
+    "status": "success",
+    "config_hash": "7d4d8ae1a7ca110204f522359f57e8c627c89cdec753eea29b51af4a486fc187",
+    "data_hash": "9ddd93ef2a456ee16e94985b1918a820e8415c72596dba8117662287207b39ef",
+    "started_at": "2026-11-14T12:51:30Z"
+  },
+  "scan_counts": {
+    "anomalies": 1506,
+    "opportunities": 11
+  },
+  "opportunities_by_status": {
+    "excluded": 4,
+    "invalidated": 2,
+    "low_priority": 3,
+    "watch": 2
+  },
+  "test_count": 167,
+  "notes": "V2 final P2 cleanup; no independent test; discovery NOT VALIDATED",
+  "artifacts": {
+    "reports/report_2026-11-13.md": "329b1f77aa57ff327a9d4fb10210480d7cbd54627cfb580a5f9ad61c782f8cf3",
+    "reports/scan_2026-11-13.json": "dc913bb9d974c2a7b1c2a7c6cf1ff8d003a3dc32368a68ec7a523aff58ce603c"
+  }
+}
