@@ -36,15 +36,15 @@
 
 | Item | Result |
 |---|---|
-| Offline suite | **200 passed, 0 skipped, 10 deselected** (network 9 + realdata 1) |
-| Proof | `audit/test_evidence/20261114T190212Z_1983b6845d.proof.json` (schema v4) |
-| Replay on the author machine | `goe verify-release` → accepted, rerun 200/200 |
+| Offline suite | **201 passed, 0 skipped, 10 deselected** (network 9 + realdata 1) |
+| Proof | `audit/test_evidence/20261114T191459Z_314ec188e2.proof.json` (schema v4) |
+| Replay on the author machine | `goe verify-release` → accepted, rerun 201/201 |
 | Replay on a fresh clone (6.9 MB, no venv, external interpreter) | accepted |
 | Red-team round 1 (independent) | 4 attacks succeeded (2 × P0) → fixed, regression-tested |
 | Red-team round 2 (independent, v3) | 4 × P1, 2 × P2 → fixed (pristine-tree execution, strict git, dirty verify, docs replay) |
 | Red-team round 3 (independent, v4) | 1 × P1 (`export-ignore` filtered the tree) → fixed (worktree + blob verification) |
 | Red-team round 4 (independent) | **PASS**, no P0/P1; 1 × P2 (`collect_ignore`) → fixed |
-| Red-team round 5 (independent) | ROUND5_VERDICT |
+| Red-team round 5 (independent) | **PASS**, no P0/P1; 1 × P2 (`*_test.py` and single-item filtering) — the `*_test.py` half is fixed |
 
 Write-ups: `audit/QA_REDTEAM_RELEASE.md` (rounds 1–3), this file (rounds 4–5).
 
@@ -69,6 +69,7 @@ patch by retuning thresholds.
 | 3 | Non-ASCII paths were previously mis-compared; `core.quotePath=false` fixes the known case, exotic filenames remain untested. | P3. |
 | 4 | Two concurrent `run_test_proof` calls in the same second can overwrite the same evidence file. | P3; releases are serial by convention (`release_<commit>.json` already refuses duplicates). |
 | 5 | Temporary `goe-junit-*` directories are not removed on success. | P3 disk hygiene. |
+| 5b | A committed `conftest.py` can still drop a *single* item from a collected file, so a file with two tests can lose one and stay green. | Indistinguishable from committing a test deletion without a per-file baseline manifest; recorded as accepted P2. |
 | 6 | Cross-OS replay (Linux) was not executed here; the proof is path-free and a fresh clone replays on macOS. | Needs a CI runner; no CI exists in this repository yet. |
 | 7 | Stale `goe_clean*` worktrees from earlier sessions still exist in `.git/worktrees`. | Pre-existing; `git worktree prune` is safe but was not run without authorisation. |
 
