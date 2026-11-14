@@ -10,7 +10,7 @@ anomaly/mechanism snapshot, theme-deduped. Fact cards use an identical schema; l
 hypotheses hidden; IDs globally shuffled. Independent LLM rater, four criteria 0–2.
 Development: 2022-10-31, 2024-09-30. Validation: 2023-03-31. Test (held out): 2021-12-31.
 
-## Final rater (48 objects)
+## Final rater (48 objects; exploratory, no independent test)
 | method | n | mean worthiness | P@3 | evidence suff. | falsifiability |
 |---|---:|---:|---:|---:|---:|
 | A max move | 12 | 0.875 | 0.00 | 0.17 | 1.25 |
@@ -18,20 +18,16 @@ Development: 2022-10-31, 2024-09-30. Validation: 2023-03-31. Test (held out): 20
 | C V1 score | 12 | **0.979** | **0.17** | 0.50 | 1.50 |
 | D V2 triage | 12 | 0.833 | 0.00 | 0.25 | 1.50 |
 
-Test split (D n=3, unlike the earlier exploratory run where n=1):
-
-| method | n | mean | P@3 |
-|---|---:|---:|---:|
-| A | 3 | 0.833 | 0.00 |
-| B | 3 | 0.583 | 0.00 |
-| C | 3 | 0.583 | 0.00 |
-| D | 3 | 0.750 | 0.00 |
+The 2021-12-31 date was used in a first V2 run, then V2's gates changed and the same date was
+reused. It is therefore **exploratory/reused**, not an independent test. No independent test split
+remains. Accordingly:
 
 **DISCOVERY VALUE: NOT VALIDATED.**
-D is lower than C and B/A on the full sample and does not beat B/C on both mean and P@3 on the
-test split (P@3 all zero). The earlier exploratory rating (D=1.350) did not replicate under the
-second blind rater (D=0.833); this inter-rater instability is itself a failure of validation.
-No weights were tuned after seeing either result.
+
+Even on the reused date, D (0.750) did not beat A (0.833) and P@3 was zero for every method. On the
+full sample D is below C and B/A. The earlier exploratory rater gave D 1.350; the final rater gave
+0.833 — inter-rater instability is itself a validation failure. No weights were tuned on the reused
+date.
 
 ## Why V2 failed (construct/criterion mismatch; not a code bug)
 - The blind cards measure **asset selection worthiness**, not the V2 research question itself:

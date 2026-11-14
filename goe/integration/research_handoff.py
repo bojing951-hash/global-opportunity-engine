@@ -64,14 +64,17 @@ def persist_v2_result(store, candidate: dict[str, Any], res: dict[str, Any],
     import json
     from datetime import datetime, timezone
 
-    sem = res.get("semantic_status") or "unknown"
+    sem = res.get("semantic_status") or res.get("status") or "unknown"
+    if sem == "unknown" and res.get("status") == "timeout":
+        sem = "timeout"
     run_ok = res.get("status") == "ok" and sem == "ok_valid"
     rid = str(candidate.get("research_id"))
+    task_id = rid if rid.startswith("RC-") else f"RC-{rid}"
     store.add_opportunity_event(rid, "ia_research_run" if run_ok else "ia_research_not_completed",
                                 None, None,
                                 f"V2 handoff: {sem} ({res.get('semantic_reason', '')})")
     store.upsert_research_task({
-        "task_id": f"RC-{rid}", "opportunity_id": rid,
+        "task_id": task_id, "opportunity_id": rid,
         "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "target_system": "investment-agent",
         "payload": {"candidate": candidate, "result": res},

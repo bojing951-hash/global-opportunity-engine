@@ -374,13 +374,11 @@
   "splits": {
     "development": [
       "2022-10-31",
-      "2024-09-30"
-    ],
-    "validation": [
+      "2024-09-30",
       "2023-03-31"
     ],
-    "test": [
-      "2021-12-31"
-    ]
-  }
+    "validation": [],
+    "test": []
+  },
+  "note": "2021-12-31 was reused after a V2 gate change; relabelled exploratory, no independent test."
 }

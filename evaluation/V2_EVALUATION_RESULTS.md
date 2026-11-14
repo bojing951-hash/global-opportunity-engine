@@ -16,10 +16,6 @@
 
 | method | n | mean | P@3 |
 |---|---:|---:|---:|
-| A_price_move | 3 | 0.8333 | 0.0 |
-| B_anomaly_score | 3 | 0.5833 | 0.0 |
-| C_v1_score | 3 | 0.5833 | 0.0 |
-| D_v2_triage | 3 | 0.75 | 0.0 |
 
 **DISCOVERY VALUE: NOT VALIDATED**
 - D beats B and C on test (mean and P@3): [False, False]

@@ -70,7 +70,8 @@ def validate_research_candidate(c: dict[str, Any]) -> None:
     if not isinstance(hyps, list) or len(hyps) < 2:
         raise ContractError("research candidate needs >=2 competing hypotheses")
     for h in hyps:
-        for k in ("id", "label", "type", "status", "implications"):
+        for k in ("id", "label", "type", "status", "implications",
+                  "evidence_for", "evidence_against"):
             if k not in h:
                 raise ContractError(f"hypothesis missing {k}")
         if h["type"] not in HYPOTHESIS_TYPES:
@@ -107,9 +108,14 @@ def validate_research_candidate(c: dict[str, Any]) -> None:
         raise ContractError("research candidate needs critical_unknowns")
     if not c["falsification_conditions"]:
         raise ContractError("research candidate needs falsification conditions")
+    hyp_ids = {h["id"] for h in hyps}
+    if len(c["falsification_conditions"]) < 2:
+        raise ContractError("research candidate needs >=2 falsification conditions")
     for f in c["falsification_conditions"]:
-        if not isinstance(f, dict) or not all(k in f for k in ("test", "threshold", "data")):
-            raise ContractError("falsification condition must have test/threshold/data")
+        if not isinstance(f, dict) or not all(k in f for k in ("test", "threshold", "data", "hypothesis_id")):
+            raise ContractError("falsification condition must have test/threshold/data/hypothesis_id")
+        if f["hypothesis_id"] not in hyp_ids:
+            raise ContractError("falsification points to unknown hypothesis")
     for k in ("hours", "data_access"):
         if k not in c["research_cost"]:
             raise ContractError(f"research_cost missing {k}")

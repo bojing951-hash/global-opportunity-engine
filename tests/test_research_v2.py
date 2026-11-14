@@ -40,8 +40,17 @@ def test_v2_refused_result_is_not_completed(store):
     cand = {"research_id": "RC-TEST", "opportunity_id": "RC-TEST"}
     persist_v2_result(store, cand, {"status": "not_ok", "semantic_status": "ok_valid",
                                     "returncode": 17}, "/tmp/rc-test")
-    task = store.conn.execute("SELECT status FROM research_tasks WHERE task_id='RC-RC-TEST'").fetchone()
+    task = store.conn.execute("SELECT status FROM research_tasks WHERE task_id='RC-TEST'").fetchone()
     assert task["status"] != "completed"
+
+
+def test_v2_timeout_is_not_unknown(store):
+    from goe.integration.research_handoff import persist_v2_result
+
+    cand = {"research_id": "RC-TIMEOUT"}
+    persist_v2_result(store, cand, {"status": "timeout", "semantic_status": None}, "/tmp/rc-timeout")
+    task = store.conn.execute("SELECT status FROM research_tasks WHERE task_id='RC-TIMEOUT'").fetchone()
+    assert task["status"] == "not_completed:timeout"
 
 
 def test_v2_evaluation_decision_rule_is_not_automatic(tmp_path):

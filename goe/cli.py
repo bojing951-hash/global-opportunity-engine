@@ -312,6 +312,15 @@ def cmd_triage(args: argparse.Namespace) -> int:
     for r in rows:
         print(f"  {r.research_id} tier={r.priority_tier} rank={r.priority_rank} "
               f"{','.join(r.instruments)} gap={r.materiality.get('gap_score')} cost={r.research_cost['hours']}h")
+    if getattr(args, "handoff", False) and rows:
+        from .integration.ia_adapter import IAAdapter
+        from .integration.research_handoff import handoff_v2, persist_v2_result
+        target = Path(args.ia_out or "exports/research_v2_ia") / rows[0].research_id
+        adapter = IAAdapter(args.ia_path or str(Path.home() / "investment-agent-dev"))
+        res = handoff_v2(adapter, rows[0].to_dict(), target.parent, timeout=args.ia_timeout)
+        persist_v2_result(store, rows[0].to_dict(), res, target)
+        print(f"handoff {rows[0].research_id}: {res.get('status')} semantic={res.get('semantic_status')}")
+        return 0 if res.get("status") == "ok" else 2
     return 0
 
 
@@ -459,6 +468,10 @@ def build_parser() -> argparse.ArgumentParser:
     t.add_argument("--as-of", default=None)
     t.add_argument("--out", default=None)
     t.add_argument("--limit", type=int, default=5)
+    t.add_argument("--handoff", action="store_true", help="把最高优先级 V2 研究问题交给 investment-agent")
+    t.add_argument("--ia-path", default=None)
+    t.add_argument("--ia-out", default=None)
+    t.add_argument("--ia-timeout", type=int, default=300)
     t.set_defaults(func=cmd_triage)
 
     e = sub.add_parser("export", help="重新导出最近机会管线的交接文件")

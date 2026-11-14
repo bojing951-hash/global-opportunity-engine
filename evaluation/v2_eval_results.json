@@ -33,28 +33,7 @@
       "duplicate_rate": 0
     }
   },
-  "test": {
-    "A_price_move": {
-      "n": 3,
-      "mean": 0.8333,
-      "precision_at_3": 0.0
-    },
-    "B_anomaly_score": {
-      "n": 3,
-      "mean": 0.5833,
-      "precision_at_3": 0.0
-    },
-    "C_v1_score": {
-      "n": 3,
-      "mean": 0.5833,
-      "precision_at_3": 0.0
-    },
-    "D_v2_triage": {
-      "n": 3,
-      "mean": 0.75,
-      "precision_at_3": 0.0
-    }
-  },
+  "test": {},
   "d_beats_b_and_c_on_test": [
     false,
     false

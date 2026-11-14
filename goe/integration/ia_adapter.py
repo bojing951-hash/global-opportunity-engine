@@ -101,10 +101,11 @@ def parse_research_artifact(out_dir: str | Path, stdout: str = "",
         status, reason = "partial", "下游 S8 接地问答语义失败"
     elif n_steps_failed:
         status, reason = "partial", f"下游研究有 {n_steps_failed} 个步骤语义失败"
-    elif s8_ok is True and s8_status == "answered" and run_ok is True and (n_evidence or 0) >= 1:
-        status, reason = "ok_valid", "下游 S8 已接地作答（answered）"
-        if n_l1_rows == 0 and n_l2_views == 0:
-            status, reason = "insufficient_data", "S8 声称作答但没有 L1 事实行或 L2 观点行"
+    elif (s8_ok is True and s8_status == "answered" and run_ok is True
+          and (n_evidence or 0) >= 1 and n_l1_rows > 0):
+        status, reason = "ok_valid", "下游 S8 已接地作答（answered）并有 L1 事实行"
+    elif s8_ok is True and s8_status == "answered" and run_ok is True:
+        status, reason = "insufficient_data", "下游回答缺少 L1 事实行（不能仅凭观点行判成功）"
     elif s8_ok is True and s8_status == "answered" and (n_evidence or 0) == 0:
         status, reason = "insufficient_data", "S8 声称作答但 evidence_index 为空（仅有观点/空结果）"
     elif (n_evidence or 0) == 0:

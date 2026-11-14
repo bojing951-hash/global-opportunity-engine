@@ -157,6 +157,11 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
         ddpct = fs.value(iid, "drawdown_pctile_5y")
         mat_meta = _materiality(fs, iid, score)
         mat_level = int(mat_meta["level"])
+        if (r.detector == "drawdown_extreme" and r.direction == "near_high"
+                and not ((np.isfinite(ret1m) and abs(float(ret1m)) >= 0.05)
+                         or (np.isfinite(ddpct) and float(ddpct) <= 0.05))):
+            mat_level = 0
+            mat_meta["has_change"] = False
         if mat_level < 1:
             # near-high/trend alone is market intelligence, not a research candidate
             continue
@@ -171,21 +176,35 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
         hypotheses = [
             {"id": "H1", "label": "风险溢价/风险厌恶变化", "type": "risk_premium",
              "status": "open" if mech_conflict or gap_open else "untestable",
-             "implications": "信用/波动率与风险资产应同向；不需盈利下修。"},
+             "implications": "信用/波动率与风险资产应同向；不需盈利下修。",
+             "evidence_for": [_ev("机制/预期差代理显示未解释变化", f"gap={gap_score:.2f}", "statistical_association", "derived", as_of)]
+             if (mech_conflict or gap_open) else [],
+             "evidence_against": [] if mech_conflict else [_ev("没有独立的信用/波动证据", "needs CREDIT_RISK", "unknown", "data_gap", as_of)]},
             {"id": "H2", "label": "基本面/盈利预期变化", "type": "fundamental",
-             "status": "untestable" if "分析师一致预期/修正" in MISSING_DATA else "open",
-             "implications": "盈利修正应领先或同步；本系统无一致预期，需外部验证。"},
+             "status": "untestable",
+             "implications": "盈利修正应领先或同步；本系统无一致预期，需外部验证。",
+             "evidence_for": [], "evidence_against": [_ev("一致预期未接入", "cannot test directly", "unknown", "data_gap", as_of)]},
             {"id": "H3", "label": "仓位/资金流驱动的技术性移动", "type": "positioning_flow",
              "status": "open" if (gap.components.get("positioning") is not None
                                   and gap.components["positioning"].value is not None)
              else "untestable",
-             "implications": "CFTC 极端仓位、随后反转；ETF/期权资金流需补充。"},
+             "implications": "CFTC 极端仓位、随后反转；ETF/期权资金流需补充。",
+             "evidence_for": [_ev("CFTC 分位可用", "positioning component present", "observed_fact", "CFTC", as_of)]
+             if (gap.components.get("positioning") is not None and gap.components["positioning"].value is not None) else [],
+             "evidence_against": [_ev("仓位不在极端", "neutral/unknown", "unknown", "CFTC", as_of)]
+             if gap.components.get("positioning") is None or gap.components["positioning"].value is None else []},
             {"id": "H4", "label": "全球共同风险冲击（跨资产同日）", "type": "global_risk",
              "status": "open" if abs(float(ret1m or 0)) >= 0.03 else "untestable",
-             "implications": "同日多资产同向下跌/上涨，beta 解释而非本地故事。"},
+             "implications": "同日多资产同向下跌/上涨，beta 解释而非本地故事。",
+             "evidence_for": [_ev("资产出现较大单月变动", f"1m={ret1m}", "observed_fact", "prices", as_of)]
+             if np.isfinite(ret1m) and abs(float(ret1m)) >= 0.03 else [],
+             "evidence_against": [_ev("没有同日的独立跨资产样本", "not established in this card", "unknown", "cross_asset", as_of)]},
             {"id": "H5", "label": "数据伪影（换月/拆股/盘中/陈旧）", "type": "data_artifact",
              "status": "open" if spec.asset_class in ("commodity", "crypto") else "untestable",
-             "implications": "换月/拆股/数据修订可解释；需核对原始合约与抓取时间。"},
+             "implications": "换月/拆股/数据修订可解释；需核对原始合约与抓取时间。",
+             "evidence_for": [_ev("资产有连续合约/交易日风险", spec.asset_class, "observed_fact", "data_quality", as_of)]
+             if spec.asset_class in ("commodity", "crypto") else [],
+             "evidence_against": [_ev("未记录价格清洗问题", "no price_data_issue", "observed_fact", "data_quality", as_of)]},
         ]
         evidence = [
             _ev("近期异常", f"{r.detector} {r.direction} 分数 {score:.2f}", "observed_fact",
@@ -209,6 +228,9 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
         if spec.asset_class == "commodity":
             evidence_against.append(_ev("连续合约换月/拆股伪影风险", "未调整换月",
                                         "unknown", "data_quality", as_of))
+        if not evidence_against:
+            evidence_against.append(_ev("竞争解释尚未被排除", "缺少独立证据区分风险溢价/基本面/仓位",
+                                        "unknown", "data_gap", as_of))
         # distinguishability: at least two independent observable test families
         test_families = 0
         if gap.components.get("residual_divergence") is not None and gap.components["residual_divergence"].value is not None:
@@ -254,9 +276,14 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
         if spec.asset_class in ("commodity", "crypto"):
             falsification.append({"test": "核对原始合约/交易日，排除换月或坏价",
                                   "threshold": "raw contract data", "data": "exchange/provider"})
-        if not falsification:
-            falsification = [{"test": "后续价格/仓位/宏观证据与当前解释相反",
-                              "threshold": "documented review", "data": "open"}]
+        for f in falsification:
+            f["hypothesis_id"] = "H1"
+        falsification.append({"test": "后续价格/仓位/宏观证据与当前解释相反",
+                              "threshold": "documented review", "data": "open",
+                              "hypothesis_id": "H1"})
+        if len(falsification) < 2:
+            falsification.append({"test": "新数据无法区分竞争性解释", "threshold": "review",
+                                  "data": "open", "hypothesis_id": "H2"})
         # observed/testable facts belong in the candidate provenance
 
         cost_hours = 4 + 2 * len([g for g in unknowns if g != "分析师一致预期/修正"]) + (

@@ -17,5 +17,6 @@
 EXECUTION ARCHITECTURE: PASS after V2-01/02 fixes (pending independent re-QA).
 DATA ARCHITECTURE: PASS with residuals.
 RESEARCH CONTRACT: PASS (executable + tests), but discovery value is **NOT VALIDATED**:
-final rater D 0.833 vs C 0.979/B 0.917/A 0.875; test P@3 all zero; a second rater had D 1.350,
-showing inter-rater instability. The evaluation measures asset cards, not D's research brief.
+final rater D 0.833 vs C 0.979/B 0.917/A 0.875; the 2021 date was reused after a gate change
+(no independent test remains); a second rater had D 1.350, showing inter-rater instability. The
+evaluation measures asset cards, not D's research brief.

@@ -25,9 +25,9 @@ from .timesemantics import filter_recent
 from .transmission.evaluator import MechanismEvaluator
 
 METHODS = ("A_price_move", "B_anomaly_score", "C_v1_score", "D_v2_triage")
-DEV_DATES = ["2022-10-31", "2024-09-30"]
-VALIDATION_DATES = ["2023-03-31"]
-TEST_DATES = ["2021-12-31"]
+DEV_DATES = ["2022-10-31", "2024-09-30", "2023-03-31", "2021-12-31"]
+VALIDATION_DATES = []
+TEST_DATES = []
 
 
 def _v2_fact_sheet(fs, iid, positioning, mech_by_asset, recent) -> dict[str, Any]:

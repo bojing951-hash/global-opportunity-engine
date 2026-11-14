@@ -10,10 +10,11 @@ It does not ask whether any method predicts returns; that is a separate, future 
 |---|---|---|
 | Development | 2022-10-31, 2024-09-30 | V2 design/inspection; not evidence of out-of-sample value |
 | Validation | 2023-03-31 | one comparison, no rule changes after seeing it |
-| Test | 2021-12-31 | held out from V1/V2 design; used once for the final claim |
+| Exploratory (not test) | 2021-12-31 | used in a first V2 evaluation, then V2 rules changed; it is **no longer an independent test**. No independent test remains. |
 
-If any test date was used to change V2 rules, it is relabelled development and the claim becomes
-NOT VALIDATED. No date may move from test to development after seeing results.
+2021-12-31 was used in a first exploratory V2 run, then the V2 gate was changed and the same date
+was reused. It is therefore relabelled **exploratory**, not test. With no independent test split,
+DISCOVERY VALUE is NOT VALIDATED by construction; future data must supply a new test window.
 
 ## Methods (identical universe/data/as-of)
 - A: top-3 by |1m return|, theme-deduplicated.
