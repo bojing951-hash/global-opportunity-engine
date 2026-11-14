@@ -137,7 +137,24 @@ def test_release_rejects_shell_spoof_and_rename_dirty(monkeypatch, tmp_path):
              "exit_code": 0, "passed": 1, "failed": 0, "errors": 0, "skipped": 0,
              "log_path": str(log), "log_sha256": hashlib.sha256(log.read_bytes()).hexdigest()}
     p = tmp_path / "proof.json"; p.write_text(json.dumps(proof))
-    with pytest.raises(rel.ReleaseError, match="direct python"):
+    with pytest.raises(rel.ReleaseError, match="full python"):
         rel.verify_test_proof(p)
     monkeypatch.setattr(rel, "_git", lambda *a, **k: "R  audit/test_evidence/x -> goe/payload.py")
     assert rel._dirty_code() is True
+
+
+def test_release_rejects_reverse_rename_and_subset(monkeypatch, tmp_path):
+    import hashlib, json
+    import goe.release as rel
+
+    monkeypatch.setattr(rel, "_git", lambda *a, **k: "R  goe/cli.py -> audit/test_evidence/cli.py")
+    assert rel._dirty_code() is True
+    monkeypatch.setattr(rel, "_git", lambda *a: "abc123")
+    log = tmp_path / "log"; log.write_text("2 passed in 1s\n")
+    proof = {"schema": "goe-test-proof/v1", "git_commit": "abc123", "git_dirty": False,
+             "command": ["/usr/bin/python3", "-m", "pytest", "tests", "-k", "smoke"],
+             "exit_code": 0, "passed": 2, "failed": 0, "errors": 0, "skipped": 0,
+             "log_path": str(log), "log_sha256": hashlib.sha256(log.read_bytes()).hexdigest()}
+    p = tmp_path / "proof"; p.write_text(json.dumps(proof))
+    with pytest.raises(rel.ReleaseError, match="full python"):
+        rel.verify_test_proof(p)

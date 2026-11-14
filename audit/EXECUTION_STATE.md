@@ -59,5 +59,5 @@ cd global-opportunity-engine
 ## V2 state
 - Branch `architecture/research-v2`; V1 tag `v1-frozen-1f2b341`.
 - Contracts + ResearchCandidate + V2 triage + four-method evaluation implemented.
-- 176 offline tests; V2 blind result NOT VALIDATED (no independent test split); A→B fact-only handoff is recorded as not_completed:refused; no success.
+- 179 offline tests; V2 blind result NOT VALIDATED (no independent test split); A→B fact-only handoff is recorded as not_completed:refused; no success.
 - See `audit/V2_FINAL_ACCEPTANCE.md`, `audit/V2_ISSUES.md`, `evaluation/V2_EVALUATION_RESULTS.md`.

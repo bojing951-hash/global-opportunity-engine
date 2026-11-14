@@ -42,9 +42,8 @@ def _dirty_code(*, cwd: str | Path = ".") -> bool:
         if not line.strip():
             continue
         path = line[3:].strip()
-        if " -> " in path:
-            path = path.split(" -> ", 1)[1].strip()
-        if not path.startswith(allowed):
+        paths = [p.strip() for p in path.split(" -> ")] if " -> " in path else [path]
+        if any(not part.startswith(allowed) for part in paths):
             return True
     return False
 
@@ -130,8 +129,9 @@ def verify_test_proof(proof_path: str | Path, *, cwd: str | Path = ".") -> dict[
     cmd = [str(x) for x in proof.get("command", [])]
     exe = Path(cmd[0]).name.lower() if cmd else ""
     if not (exe.startswith("python") and len(cmd) >= 4 and cmd[1] == "-m" and cmd[2] == "pytest"
-            and "tests" in cmd and "-c" not in cmd):
-        raise ReleaseError("proof command must be a direct python -m pytest tests invocation")
+            and "tests" in cmd and "-c" not in cmd and "-k" not in cmd
+            and not any("::" in part for part in cmd)):
+        raise ReleaseError("proof command must be a direct full python -m pytest tests invocation")
     log = Path(proof.get("log_path", ""))
     if not log.exists():
         raise ReleaseError("test proof log is missing")

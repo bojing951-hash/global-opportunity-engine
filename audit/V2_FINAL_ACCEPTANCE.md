@@ -1,6 +1,6 @@
 # V2 FINAL ACCEPTANCE — contract-driven refactor
 
-- Branch: `architecture/research-v2` (from frozen V1 `1f2b341`, tag `v1-frozen-1f2b341`)
+- Branch: `architecture/research-v2` (from frozen V1 `1f2b341`, tag `v1-frozen-1f2b341`); final code `08dd069`, proof commit `9f98e1c`.
 - V1 preserved: tag + `audit/V1_FREEZE.md`; V1 code/scoring not overwritten.
 - Tests: 166 offline passed (1 slow real-data V2 test skipped by default); 9 network unchanged.
 - Real V2 triage: 5 structured research candidates; top N225 (A), XLV (B), QQQ (B), TAIEX (B), EEM (B); 20-candidate audit has 15 distinct hypothesis signatures.
@@ -12,7 +12,7 @@
 | EXECUTION ARCHITECTURE | **PASS with issues** | `contracts/` seven contracts, `goe/contracts.py`, `docs/AGENT_OPERATING_MODEL.md`, freeze gate `goe/release.py`, V1 tag, branch, contract tests |
 | DATA ARCHITECTURE | **PASS with residuals** | data/time contract; completed-bar DST rule; critical data contract; per-market/curve checks; residual publication/vintage/roll limitations |
 | RESEARCH CONTRACT | **PASS** | `contracts/RESEARCH_CONTRACT.md`; ResearchCandidate schema validator; >=2 hypotheses, evidence classes, unknowns, falsifiers, cost/decision impact; contract tests |
-| ENGINEERING VALIDATION | **PASS** | fresh clone 176 passed/10 deselected; real test-proof release gate; V2 lifecycle/orphan/FK tests; independent red-team found P1s that were fixed |
+| ENGINEERING VALIDATION | **PASS** | fresh clone 179 passed/10 deselected; real test-proof release gate; V2 lifecycle/orphan/FK tests; independent red-team found P1s that were fixed |
 | RESEARCH METHODOLOGY | **PARTIAL** | competing hypotheses/unknowns/falsifiers now explicit; expectation data still proxies; V2 selection not proven better |
 | DISCOVERY VALUE | **NOT VALIDATED** | exploratory 2025-12-31 (already used in V1 cases, not independent): D 1.000 vs C 1.500/B 0.917/A 1.083, P@3 D 0.00; earlier reused 2021 data also D 0.833 < C 0.979. Research-question quality still unmeasured; no tuning. |
 | A→B INTEGRATION | **PARTIAL** | fact-only V2 brief; latest real run B returned `refused` (S8 no_registry_identity), A persisted `not_completed:refused` (never success); no real `ok_valid`; V2 CLI `goe triage --handoff` works. An earlier run failed at process level and is now mapped to `error`, not B rejection. |

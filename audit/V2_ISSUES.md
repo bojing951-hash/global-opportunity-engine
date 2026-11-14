@@ -36,3 +36,6 @@ evaluation measures asset cards, not D's research brief.
 - No genuinely future out-of-sample window; 2025-12-31 was in a V1 validation case.
 - Market data publication vintages/rolls remain unavailable; expectation proxies are not consensus.
 - V2 hypotheses are reasoner-generated from templates + evidence; they are not a substitute for B's deep research.
+
+| P1-G | P1 | release proof accepted a shell command and rename could hide a dirty code file | proof command validation was substring-based; dirty parser ignored rename destination | direct `python -m pytest tests` only, no `-c`; rename destination checked; rerun counts must match proof; tests reproduce both attacks | FIXED |
+| P1-H | P1 | untestable hypotheses leaked supporting evidence; 20 candidates only 7 structural signatures; SLV treated as futures | unconditional evidence + generic IDs | untestable evidence empty; phenomenon namespaces; 18 structural signatures; all 20 candidates pass the research contract; futures-only artifact test; tests cover all asset classes | FIXED |

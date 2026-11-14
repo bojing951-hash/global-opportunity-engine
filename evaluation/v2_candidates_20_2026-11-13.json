@@ -3360,7 +3360,7 @@
         },
         {
           "id": "H-AGRI-ART",
-          "label": "换月/连续合约数据伪影",
+          "label": "拆股/盘中/陈旧数据伪影",
           "type": "data_artifact",
           "status": "untestable",
           "implications": "换月日附近跳变；原始合约与连续合约不一致。",
@@ -3630,7 +3630,7 @@
         },
         {
           "id": "H-AGRI-ART",
-          "label": "换月/连续合约数据伪影",
+          "label": "拆股/盘中/陈旧数据伪影",
           "type": "data_artifact",
           "status": "untestable",
           "implications": "换月日附近跳变；原始合约与连续合约不一致。",
@@ -3900,7 +3900,7 @@
         },
         {
           "id": "H-ENER-ART",
-          "label": "换月/连续合约数据伪影",
+          "label": "拆股/盘中/陈旧数据伪影",
           "type": "data_artifact",
           "status": "untestable",
           "implications": "换月日附近跳变；原始合约与连续合约不一致。",
@@ -3920,7 +3920,7 @@
           "id": "H-ENER-CRACK",
           "label": "能源：炼厂利润/供给",
           "type": "fundamental",
-          "status": "obtainable",
+          "status": "open",
           "implications": "裂解价差与库存应解释；需要炼厂利润/库存。",
           "evidence_for": [
             {
@@ -3989,6 +3989,13 @@
           "threshold": "residual |z|<1.5",
           "data": "DXY/UST",
           "data_status": "available"
+        },
+        {
+          "hypothesis_id": "H-ENER-CRACK",
+          "test": "裂解价差与库存",
+          "threshold": "sign consistent",
+          "data": "crack/inventory",
+          "data_status": "obtainable"
         }
       ],
       "required_data": [
@@ -4011,7 +4018,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L2, impact L0, open_hypotheses=2, cost=12h",
+      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L2, impact L0, open_hypotheses=3, cost=12h",
       "data_quality": {
         "score": 0.5333333333333333,
         "gaps": [
@@ -4195,7 +4202,7 @@
         },
         {
           "id": "H-SILV-ART",
-          "label": "换月/连续合约数据伪影",
+          "label": "拆股/盘中/陈旧数据伪影",
           "type": "data_artifact",
           "status": "untestable",
           "implications": "换月日附近跳变；原始合约与连续合约不一致。",
@@ -4779,7 +4786,7 @@
         "gap_score": 0.0,
         "gap_level": 0,
         "mechanism_conflict": false,
-        "distinguishability_level": 2,
+        "distinguishability_level": 1,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -4903,8 +4910,8 @@
           "hypothesis_id": "H-SECCE-STYLE",
           "test": "相对基准的利率 beta",
           "threshold": "beta significant and sign consistent",
-          "data": "UST",
-          "data_status": "available"
+          "data": "local rates",
+          "data_status": "obtainable"
         },
         {
           "hypothesis_id": "H-SECCE-GLOBAL",
@@ -4934,7 +4941,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L0, distinguishability L2, impact L0, open_hypotheses=2, cost=10h",
+      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L0, distinguishability L1, impact L0, open_hypotheses=2, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [

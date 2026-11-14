@@ -156,7 +156,9 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                    if positioning_value is not None else [],
                    [_ev("行业资金流未接入", "sector flows missing", "unknown", "data_gap", as_of, "H-POS")]),
             ]
-            tests += [_test("H-STYLE", "相对基准的利率 beta", "beta significant and sign consistent", "UST", "available"),
+            tests += [_test("H-STYLE", "相对基准的利率 beta", "beta significant and sign consistent",
+                            "local rates" if region != "US" else "UST",
+                            "available" if region == "US" else "obtainable"),
                       _test("H-GLOBAL", "行业多空对全球因子回归", "residual |z|<1.5", "cross_asset",
                             "available" if cross_ok else "obtainable")]
             if positioning_value is not None:
@@ -273,7 +275,8 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                "美元与实际利率应负向解释黄金/商品；控制后残差下降。",
                [_ev("DXY/UST 可用", "DXY, UST", "observed_fact", "prices", as_of, "H-USD")],
                [_ev("未做实时回归", "regression not run", "unknown", "derived", as_of, "H-USD")]),
-            _h("H-ART", "换月/连续合约数据伪影", "data_artifact",
+            _h("H-ART", "换月/连续合约数据伪影" if getattr(spec, "is_futures", False)
+               else "拆股/盘中/陈旧数据伪影", "data_artifact",
                "open" if (getattr(spec, "is_futures", False) or crypto or has_price_issue) else "untestable",
                "换月日附近跳变；原始合约与连续合约不一致。",
                [_ev("连续合约存在换月风险", "futures", "observed_fact", "data_quality", as_of, "H-ART")]
@@ -367,7 +370,7 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                        [], [_ev("天气/库存数据缺失", "weather/inventory missing", "unknown", "data_gap", as_of, prefix + "-WEATHER")])
             extra_test = None
         else:
-            extra = _h(prefix + "-CRACK", "能源：炼厂利润/供给", "fundamental", "obtainable",
+            extra = _h(prefix + "-CRACK", "能源：炼厂利润/供给", "fundamental", "open",
                        "裂解价差与库存应解释；需要炼厂利润/库存。",
                        [_ev("能源价格可观察", f"1m={chg:.1%}", "observed_fact", "prices", as_of, prefix + "-CRACK")],
                        [_ev("裂解价差/库存缺失", "crack/inventory missing", "unknown", "data_gap", as_of, prefix + "-CRACK")])
