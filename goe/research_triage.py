@@ -184,6 +184,23 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
             positioning_value=pos_value,
             mechanism_statuses=[getattr(m, "status", "") for m in mechs],
             has_price_issue=False, as_of=as_of,
+            available={
+                "cross_asset": any(i in fs.prices.columns for i in
+                                   ("US_EQ_SPY", "US_EQ_QQQ", "US_FX_DXY", "CM_MET_GC")),
+                "fx": any("FX" in str(i) for i in fs.prices.columns),
+                "benchmark": any(
+                    (i in fs.prices.columns and i != iid) for i in {
+                        "US": ["US_EQ_SPY", "US_EQ_QQQ"],
+                        "CN": ["CN_EQ_CSI300", "CN_EQ_CSI1000"],
+                        "JP": ["JP_EQ_TOPIX"],
+                        "HK": ["HK_EQ_HSI"],
+                        "DE": ["DE_EQ_DAX"],
+                        "UK": ["UK_EQ_FTSE"],
+                        "FR": ["FR_EQ_CAC"],
+                    }.get(spec.region, [])
+                ),
+                "policy_calendar": False,
+            },
         )
         hypotheses = bundle["hypotheses"]
         falsification = list(bundle["tests"])
@@ -204,8 +221,11 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
 
         # hard gate: materiality; explanatory gap; distinguishability; decision impact
         gap_level = 2 if gap_score >= 0.3 else (1 if (gap_open or mech_conflict) else 0)
-        test_families = len({t.get("hypothesis_id") for t in bundle["tests"]})
-        dist_level = 2 if test_families >= 2 else (1 if test_families == 1 else 0)
+        avail_ids = {t.get("hypothesis_id") for t in bundle["tests"]
+                     if t.get("data_status") == "available"}
+        any_ids = {t.get("hypothesis_id") for t in bundle["tests"]
+                   if t.get("data_status") in ("available", "obtainable")}
+        dist_level = 2 if len(avail_ids) >= 2 else (1 if (len(avail_ids) >= 1 or len(any_ids) >= 2) else 0)
         impact_level = 2 if (float(spec.importance) >= 0.8 and gap_level > 0) else \
             (1 if float(spec.importance) >= 0.5 else 0)
         if mat_level < 1 or gap_level == 0 or not discriminating:

@@ -31,14 +31,17 @@ def _h(hid: str, label: str, typ: str, status: str, implications: str,
             "evidence_against": against}
 
 
-def _test(hid: str, test: str, threshold: str, data: str) -> dict[str, Any]:
-    return {"hypothesis_id": hid, "test": test, "threshold": threshold, "data": data}
+def _test(hid: str, test: str, threshold: str, data: str,
+          data_status: str = "obtainable") -> dict[str, Any]:
+    return {"hypothesis_id": hid, "test": test, "threshold": threshold, "data": data,
+            "data_status": data_status}
 
 
 def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None,
                      ddpct: float | None, gap_value: float | None,
                      positioning_value: float | None, mechanism_statuses: list[str],
-                     has_price_issue: bool = False, as_of: str = "") -> dict[str, Any]:
+                     has_price_issue: bool = False, as_of: str = "",
+                     available: dict[str, bool] | None = None) -> dict[str, Any]:
     """Return hypotheses/evidence/tests/decision-impact for this phenomenon."""
     ac = spec.asset_class
     region = spec.region
@@ -48,23 +51,30 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
     commodity = ac == "commodity"
     crypto = ac == "crypto"
     chg = abs(float(ret1m)) if ret1m is not None and np.isfinite(ret1m) else 0.0
-    mech_open = bool(mechanism_statuses)
-    mech_bad = any(s in ("mixed", "unsupported", "weak") for s in mechanism_statuses)
+    available = available or {}
+    cross_ok = bool(available.get("cross_asset"))
+    fx_ok = bool(available.get("fx"))
+    benchmark_ok = bool(available.get("benchmark"))
+    policy_calendar_ok = bool(available.get("policy_calendar"))
+    strong_mech = any(s in ("supported", "mixed") for s in mechanism_statuses)
     hyps: list[dict[str, Any]] = []
     tests: list[dict[str, Any]] = []
 
     def add_local():
-        status = "open" if (equity and (mech_open or region not in ("WORLD", "US"))) else "untestable"
-        ev_for = ([_ev("有区域/机制关联证据", f"mechanisms={mechanism_statuses}", "statistical_association",
-                       "mechanism_stats", as_of, "H-LOCAL")] if mech_open else [])
-        ev_against = [_ev("未建立本地基准对照", "needs regional benchmark", "unknown", "prices",
+        status = "open" if (equity and region != "WORLD") else "untestable"
+        ev_for = ([_ev("机制检验支持本地/共同因子", f"mechanisms={mechanism_statuses}",
+                       "statistical_association", "mechanism_stats", as_of, "H-LOCAL")]
+                  if strong_mech else [])
+        ev_against = [_ev("未建立可执行的本地基准对照", "regional benchmark not loaded" if not benchmark_ok
+                          else "benchmark available but regression not run", "unknown", "prices",
                           as_of, "H-LOCAL")]
         hyps.append(_h("H-LOCAL", f"{region} 本地市场/区域风险因子", "global_risk", status,
                        "本地基准与全球因子应能解释大部分变动；剔除后残差应显著缩小。",
                        ev_for, ev_against))
         if status == "open":
             tests.append(_test("H-LOCAL", "对本地基准与全球因子回归后的残差", "|residual z| < 1.5",
-                               "prices/regional benchmark"))
+                               "prices/regional benchmark",
+                               "available" if benchmark_ok else "obtainable"))
 
     def add_global():
         status = "open" if (equity or fx or commodity or crypto or rates) else "untestable"
@@ -77,7 +87,7 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                        ev_for, ev_against))
         if status == "open":
             tests.append(_test("H-GLOBAL", "同日跨资产 beta 与残差", "R² > 0.5 且残差 |z|<1.5",
-                               "cross_asset"))
+                               "cross_asset", "available" if cross_ok else "obtainable"))
 
     def add_fundamental(label: str = "基本面/盈利预期变化"):
         hyps.append(_h("H-FUND", label, "fundamental", "untestable",
@@ -89,12 +99,14 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
         status = "open" if region in POLICY_REGIONS else "untestable"
         hyps.append(_h("H-POLICY", label, "policy", status,
                        "政策路径/事件应改变利率或风险溢价；事件前后应出现可定位的重新定价。",
-                       [_ev("区域属于政策敏感市场", region, "observed_fact", "config", as_of, "H-POLICY")],
+                       [_ev("区域属于政策敏感市场", region, "observed_fact", "config", as_of, "H-POLICY")]
+                       if status == "open" else [],
                        [_ev("没有可核验的决议/公告时点", "event date unknown", "unknown",
                             "calendar", as_of, "H-POLICY")]))
         if status == "open":
             tests.append(_test("H-POLICY", "事件窗口前后的利率/资产反应", "event-window abnormal return > 2σ",
-                               "policy calendar/rates"))
+                               "policy calendar/rates",
+                               "available" if policy_calendar_ok else "obtainable"))
 
     def add_positioning():
         usable = positioning_value is not None and np.isfinite(positioning_value)
@@ -107,10 +119,10 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                             "H-POS")]))
         if usable:
             tests.append(_test("H-POS", "CFTC 净头寸分位与随后 4 周反转", ">90% or <10%, reversal >1σ",
-                               "CFTC"))
+                               "CFTC", "available"))
 
     def add_artifact():
-        status = "open" if (commodity or crypto or has_price_issue or
+        status = "open" if (crypto or has_price_issue or
                             getattr(spec, "is_futures", False)) else "untestable"
         hyps.append(_h("H-ART", "数据伪影（换月/拆股/盘中/陈旧）", "data_artifact", status,
                        "原始合约/拆分调整/抓取时点应能解释跳变；清洗后异常应消失。",
@@ -120,7 +132,7 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                             "data_quality", as_of, "H-ART")]))
         if status == "open":
             tests.append(_test("H-ART", "核对原始合约/复权因子/抓取时点", "raw series reconciles",
-                               "exchange/provider"))
+                               "exchange/provider", "obtainable"))
 
     if equity:
         if ac == "sector_equity":
@@ -144,8 +156,9 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                    if positioning_value is not None else [],
                    [_ev("行业资金流未接入", "sector flows missing", "unknown", "data_gap", as_of, "H-POS")]),
             ]
-            tests += [_test("H-STYLE", "相对基准的利率 beta", "beta significant and sign consistent", "UST"),
-                      _test("H-GLOBAL", "行业多空对全球因子回归", "residual |z|<1.5", "cross_asset")]
+            tests += [_test("H-STYLE", "相对基准的利率 beta", "beta significant and sign consistent", "UST", "available"),
+                      _test("H-GLOBAL", "行业多空对全球因子回归", "residual |z|<1.5", "cross_asset",
+                            "available" if cross_ok else "obtainable")]
             if positioning_value is not None:
                 tests.append(_test("H-POS", "ETF/CFTC 仓位与反转", ">90% or <10%", "CFTC/flows"))
             decision = {"if_true": "若利率/风格解释成立，研究久期与行业相对价值；若全球风险解释成立，研究防御/周期切换。",
@@ -182,7 +195,8 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                                "本币贬值应压制本地股票（外币投资者视角）；汇率与股市同向。",
                                [_ev("本地汇率可观察", "local FX", "observed_fact", "prices", as_of, "H-FX")],
                                [_ev("未做汇率 beta", "not estimated", "unknown", "derived", as_of, "H-FX")]))
-                tests.append(_test("H-FX", "本币汇率 beta", "sign consistent", "local FX"))
+                tests.append(_test("H-FX", "本币汇率 beta", "sign consistent", "local FX",
+                                   "available" if fx_ok else "obtainable"))
             add_positioning()
             add_artifact()
             decision = {"if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
@@ -194,19 +208,20 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
             _h("H-REAL", "实际利率/通胀预期变化", "fundamental", "open",
                "实际利率与盈亏平衡通胀应同向变化；名义利率分解应解释。",
                [_ev("名义利率变动可观察", f"1m={chg:.1%}", "observed_fact", "prices", as_of, "H-REAL")],
-               [_ev("缺少实时盈亏平衡通胀", "breakeven unavailable", "unknown", "data_gap", as_of, "H-REAL")]),
+               [_ev("缺少实时盈亏平衡通胀", "local breakeven unavailable", "unknown", "data_gap", as_of, "H-REAL")]),
             _h("H-TERM", "期限溢价/财政供给冲击", "risk_premium", "open",
                "曲线斜率与拍卖/供给应共同变化；短端稳定而长端移动。",
-               [_ev("曲线水平可观察", "UST 2Y/10Y", "observed_fact", "curve", as_of, "H-TERM")],
+               [_ev("本地曲线水平可观察", f"{region} curve", "observed_fact", "curve", as_of, "H-TERM")],
                [_ev("拍卖/财政供给数据未接入", "auction data missing", "unknown", "data_gap", as_of, "H-TERM")]),
             _h("H-POL", "货币政策路径重新定价", "policy", "open",
                "政策利率预期与短端应领先；事件窗口反应集中。",
-               [_ev("政策利率序列可用", "US_POLICY_RATE", "observed_fact", "macro", as_of, "H-POL")],
+               [_ev("区域政策利率序列可用", f"{region} policy rate", "observed_fact", "macro", as_of, "H-POL")],
                [_ev("市场隐含政策路径缺失", "OIS missing", "unknown", "data_gap", as_of, "H-POL")]),
         ]
-        tests += [_test("H-REAL", "实际利率/通胀分解", "sign consistent 60d", "TIPS/breakeven"),
-                  _test("H-TERM", "曲线斜率与长端拍卖", "2s10s move > 2σ", "curve/auction"),
-                  _test("H-POL", "短端与政策利率预期", "short-end leads", "policy path")]
+        tests += [_test("H-REAL", "实际利率/通胀分解", "sign consistent 60d",
+                        "local TIPS/breakeven" if region == "US" else "local inflation swaps", "obtainable"),
+                  _test("H-TERM", "本地曲线斜率与长端拍卖", "2s10s move > 2σ", "local curve/auction", "available"),
+                  _test("H-POL", "短端与本地政策利率预期", "short-end leads", "local policy path", "available")]
         decision = {"if_true": "若实际利率/期限溢价解释成立，研究久期与曲线交易，而非方向性信用判断。",
                     "if_false": "若政策路径解释成立，交 B 评估利率路径与久期风险。"}
         unknowns = ["实时盈亏平衡通胀", "拍卖/财政供给", "OIS 政策路径"]
@@ -232,9 +247,10 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                if positioning_value is not None else [],
                [_ev("仓位缺失/中性", "unknown", "unknown", "CFTC", as_of, "H-POS")]),
         ]
-        tests += [_test("H-CARRY", "利差变化与汇率", "sign consistent", "policy rates"),
-                  _test("H-RISK", "VIX/信用与美元", "corr > 0.4", "cross_asset"),
-                  _test("H-INT", "关口/储备变化", "official reserves drop", "reserves")]
+        tests += [_test("H-CARRY", "利差变化与汇率", "sign consistent", "policy rates", "obtainable"),
+                  _test("H-RISK", "VIX/信用与美元", "corr > 0.4", "cross_asset",
+                        "available" if cross_ok else "obtainable"),
+                  _test("H-INT", "关口/储备变化", "official reserves drop", "reserves", "obtainable")]
         if positioning_value is not None:
             tests.append(_test("H-POS", "CFTC 分位反转", ">90% or <10%", "CFTC"))
         decision = {"if_true": "若利差/风险解释成立，研究 carry 或避险对冲；若干预解释成立，研究政策防线。",
@@ -260,9 +276,11 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                [_ev("连续合约存在换月风险", "futures", "observed_fact", "data_quality", as_of, "H-ART")],
                [_ev("未记录换月/清洗问题", "no issue recorded", "observed_fact", "data_quality", as_of, "H-ART")]),
         ]
-        tests += [_test("H-DEMAND", "全球增长代理与商品", "corr > 0.3", "cross_asset"),
-                  _test("H-USD", "美元/实际利率回归", "residual |z|<1.5", "DXY/UST"),
-                  _test("H-ART", "原始合约对账", "reconciles", "exchange")]
+        tests += [_test("H-DEMAND", "全球增长代理与商品", "corr > 0.3", "cross_asset",
+                        "available" if cross_ok else "obtainable"),
+                  _test("H-USD", "美元/实际利率回归", "residual |z|<1.5", "DXY/UST",
+                        "available" if cross_ok else "obtainable"),
+                  _test("H-ART", "原始合约对账", "reconciles", "exchange", "obtainable")]
         decision = {"if_true": "若供给解释成立，研究库存/地缘情景；若美元解释成立，研究计价与对冲。",
                     "if_false": "若均不成立，保留为待验证情报，不直接做方向性判断。"}
         unknowns = ["库存/产量", "工业产出/PMI", "换月因子"]
@@ -284,8 +302,9 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                [_ev("24/7 市场存在交易所差异", "crypto", "observed_fact", "data_quality", as_of, "H-ART")],
                [_ev("未记录交易所价差", "no issue recorded", "unknown", "data_quality", as_of, "H-ART")]),
         ]
-        tests += [_test("H-LIQ", "风险代理与加密", "corr > 0.4", "cross_asset"),
-                  _test("H-ART", "交易所价差/稳定币", "reconciles", "exchange")]
+        tests += [_test("H-LIQ", "风险代理与加密", "corr > 0.4", "cross_asset",
+                        "available" if cross_ok else "obtainable"),
+                  _test("H-ART", "交易所价差/稳定币", "reconciles", "exchange", "obtainable")]
         decision = {"if_true": "若流动性解释成立，研究风险 beta；若数据伪影成立，先修数据。",
                     "if_false": "保留为情报，不升级为研究候选。"}
         unknowns = ["链上流动性", "监管时点", "ETF 流量"]
@@ -303,8 +322,13 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
     open_hyps = [h for h in hyps if h["status"] == "open"]
     open_ids = {h["id"] for h in open_hyps}
     tests = [t for t in tests if t["hypothesis_id"] in open_ids]
-    # a test must discriminate between at least two explanations
-    discriminating = bool(len(open_ids) >= 2 and len({t["hypothesis_id"] for t in tests}) >= 2)
+    usable = [t for t in tests if t.get("data_status") in ("available", "obtainable")]
+    available_tests = [t for t in usable if t.get("data_status") == "available"]
+    # a research candidate needs >=2 explanations and >=2 distinguishable tests,
+    # at least one using data available today (not only a future data request)
+    discriminating = bool(len(open_ids) >= 2
+                          and len({t["hypothesis_id"] for t in usable}) >= 2
+                          and len(available_tests) >= 1)
     return {"case": case, "hypotheses": hyps, "tests": tests,
             "open_count": len(open_hyps), "discriminating": discriminating,
             "decision_impact": decision, "unknowns": unknowns,

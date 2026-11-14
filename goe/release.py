@@ -38,7 +38,13 @@ def _dirty_code(*, cwd: str | Path = ".") -> bool:
     """Dirty means code/config/docs changed; generated proof/manifest files are exempt."""
     lines = _git("-C", str(cwd), "status", "--porcelain").splitlines()
     allowed = ("audit/test_evidence/", "audit/releases/")
-    return any(not any(part in line for part in allowed) for line in lines if line.strip())
+    for line in lines:
+        if not line.strip():
+            continue
+        path = line[3:].strip()
+        if not path.startswith(allowed):
+            return True
+    return False
 
 
 def _parse_pytest(output: str) -> dict[str, int]:
@@ -101,8 +107,18 @@ def verify_test_proof(proof_path: str | Path, *, cwd: str | Path = ".") -> dict[
     if proof.get("schema") != "goe-test-proof/v1":
         raise ReleaseError("unknown test proof schema")
     commit = _git("-C", str(cwd), "rev-parse", "HEAD")
-    if proof.get("git_commit") != commit:
-        raise ReleaseError("test proof commit does not match current HEAD")
+    proof_commit = proof.get("git_commit")
+    if proof_commit != commit:
+        ancestor = subprocess.run(["git", "-C", str(cwd), "merge-base", "--is-ancestor",
+                                   proof_commit, commit], capture_output=True).returncode == 0
+        changed = _git("-C", str(cwd), "diff", "--name-only", proof_commit, commit).splitlines()
+        allowed = ("audit/", "evaluation/", "docs/", "README.md", "TEST_RESULTS.md")
+        if not ancestor or any(not p.startswith(allowed) for p in changed if p.strip()):
+            raise ReleaseError("test proof commit is not an ancestor with only evidence/docs changes")
+        code_changed = _git("-C", str(cwd), "diff", "--name-only", proof_commit, commit,
+                            "--", "goe", "tests", "config", "contracts", "pyproject.toml")
+        if code_changed:
+            raise ReleaseError("code/config/tests changed after test proof")
     if proof.get("git_dirty"):
         raise ReleaseError("test proof was created on a dirty worktree")
     if proof.get("exit_code") != 0 or int(proof.get("failed", 0)) or int(proof.get("errors", 0)):
@@ -118,7 +134,7 @@ def verify_test_proof(proof_path: str | Path, *, cwd: str | Path = ".") -> dict[
     if _sha256(log.read_bytes()) != proof.get("log_sha256"):
         raise ReleaseError("test proof log hash mismatch")
     log_counts = _parse_pytest(log.read_text(encoding="utf-8", errors="replace"))
-    for key in ("passed", "failed", "skipped"):
+    for key in ("passed", "failed", "skipped", "errors"):
         if int(proof.get(key, -1)) != int(log_counts.get(key, -2)):
             raise ReleaseError(f"test proof {key} count disagrees with log")
     return proof
@@ -126,11 +142,18 @@ def verify_test_proof(proof_path: str | Path, *, cwd: str | Path = ".") -> dict[
 
 def build_manifest(store: Store, *, proof_path: str | Path,
                    out_dir: str | Path = "audit/releases", notes: str = "",
-                   require_clean: bool = True) -> dict[str, Any]:
+                   require_clean: bool = True, rerun: bool = True) -> dict[str, Any]:
     dirty = bool(_dirty_code())
     if require_clean and dirty:
         raise ReleaseError("refusing to freeze a dirty worktree")
     proof = verify_test_proof(proof_path)
+    if rerun:
+        # Independent re-execution: a caller cannot make a forged proof file enough.
+        proc = subprocess.run([str(x) for x in proof["command"]], capture_output=True, text=True)
+        rerun_counts = _parse_pytest((proc.stdout or "") + "\n" + (proc.stderr or ""))
+        if proc.returncode != 0 or rerun_counts["failed"] or rerun_counts["errors"] or rerun_counts["passed"] <= 0:
+            raise ReleaseError(f"release re-execution failed: rc={proc.returncode} {rerun_counts}")
+        proof["rerun"] = rerun_counts
     scan = store.conn.execute(
         "SELECT scan_id,as_of,status,config_hash,data_hash,started_at FROM scan_runs "
         "ORDER BY started_at DESC LIMIT 1").fetchone()
@@ -153,7 +176,8 @@ def build_manifest(store: Store, *, proof_path: str | Path,
         "opportunities_by_status": by_status,
         "test_evidence": {"proof_path": str(proof_path), "log_sha256": proof["log_sha256"],
                           "passed": proof["passed"], "failed": proof["failed"],
-                          "skipped": proof["skipped"], "command": proof["command"]},
+                          "skipped": proof["skipped"], "command": proof["command"],
+                          "rerun": proof.get("rerun")},
         "artifacts": artifacts, "notes": notes,
     }
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)

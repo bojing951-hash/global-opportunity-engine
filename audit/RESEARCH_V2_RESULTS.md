@@ -29,7 +29,8 @@ full sample D is below C and B/A. The earlier exploratory rater gave D 1.350; th
 0.833 — inter-rater instability is itself a validation failure. No weights were tuned on the reused
 date.
 
-## New frozen window (2025-12-31; not used for rules)
+## Additional exploratory window (2025-12-31; already used in V1 cases, not independent)
+This evaluation was run on V2 snapshot 83a1160. Later hypothesis/test-availability refinements were not re-rated; the result is not evidence for the current hypothesis quality and does not change NOT VALIDATED.
 | method | n | mean | P@3 |
 |---|---:|---:|---:|
 | A | 3 | 1.083 | 0.00 |

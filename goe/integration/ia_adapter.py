@@ -190,6 +190,13 @@ class IAAdapter:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd=str(self.path))
             elapsed = (datetime.now(timezone.utc) - started).total_seconds()
             semantics = parse_research_artifact(out_dir, proc.stdout or "", min_mtime=started)
+            # A process-level failure with no report is not a downstream refusal.
+            if proc.returncode != 0 and not semantics.get("report_path"):
+                semantics = {"semantic_status": "error",
+                             "reason": f"下游进程执行失败 rc={proc.returncode}: "
+                                       f"{(proc.stderr or proc.stdout or '')[-300:]}",
+                             "run_ok": False, "n_evidence_rows": None,
+                             "n_steps_failed": None, "report_path": None}
             # A zero exit code only proves the process ran. The task is "ok" only
             # when the downstream research artifact is semantically valid.
             overall = "ok" if (proc.returncode == 0 and semantics["semantic_status"] == "ok_valid") else "not_ok"

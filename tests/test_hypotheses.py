@@ -12,7 +12,9 @@ def spec(asset_class, name, region, is_futures=False):
 def build(s, **kw):
     base = dict(detector="price_return_shock", direction="down", ret1m=-0.08,
                 ddpct=0.03, gap_value=0.2, positioning_value=None,
-                mechanism_statuses=[], has_price_issue=False, as_of="2026-01-01")
+                mechanism_statuses=[], has_price_issue=False, as_of="2026-01-01",
+                available={"cross_asset": True, "fx": True, "benchmark": False,
+                           "policy_calendar": False})
     base.update(kw)
     return build_hypotheses(s, **base)
 
@@ -51,3 +53,21 @@ def test_untestable_hypotheses_do_not_count_as_open():
     pos = [h for h in b["hypotheses"] if h["id"] == "H-POS"][0]
     assert pos["status"] == "untestable"
     assert all(t["hypothesis_id"] != "H-POS" for t in b["tests"])
+
+
+def test_untestable_does_not_support_and_tests_declare_data_status():
+    b = build(spec("equity_index", "Nikkei 225", "JP"))
+    for h in b["hypotheses"]:
+        if h["status"] == "untestable":
+            assert h["evidence_for"] == [], h["id"]
+    for t in b["tests"]:
+        assert t["data_status"] in ("available", "obtainable")
+
+
+def test_no_self_benchmark_available():
+    # benchmark flag is passed by triage; this only verifies tests can be obtainable
+    b = build(spec("equity_index", "Nikkei 225", "JP"),
+              available={"cross_asset": True, "fx": True, "benchmark": False,
+                         "policy_calendar": False})
+    local = [t for t in b["tests"] if t["hypothesis_id"] == "H-LOCAL"][0]
+    assert local["data_status"] == "obtainable"

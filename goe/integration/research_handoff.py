@@ -52,7 +52,8 @@ def build_v2_question(candidate: dict[str, Any]) -> str:
 def handoff_v2(adapter: IAAdapter, candidate: dict[str, Any], out_dir: str | Path,
                timeout: int = 300) -> dict[str, Any]:
     question = build_v2_question(candidate)
-    res = adapter.run_task(question, Path(out_dir) / str(candidate.get("research_id", "RC")),
+    out_dir = Path(out_dir).resolve()
+    res = adapter.run_task(question, out_dir / str(candidate.get("research_id", "RC")),
                            timeout=timeout)
     res["question"] = question
     return res

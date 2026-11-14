@@ -34,3 +34,6 @@ secrets/
 # --- local scratch ---
 tmp/
 scratch/
+
+!audit/test_evidence/*.log
+!audit/test_evidence/*.proof.json
