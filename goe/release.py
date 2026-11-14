@@ -24,11 +24,13 @@ Hardening added after red-team round 1 (see ``audit/QA_REDTEAM_RELEASE.md``):
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import os
 import re
 import subprocess
 import sys
+import tarfile
 import tempfile
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
@@ -45,8 +47,8 @@ JUNIT_PLACEHOLDER = "{junit}"
 PYTEST_LAUNCHER = (
     "import os,sys;"
     "sys.path=[p for p in sys.path if p not in ('', '.')];"
-    "sys.path.append(os.getcwd());"  # repo package import, after site-packages
-    "import pytest;"
+    "import pytest;"            # resolve the real pytest before the tree is on sys.path
+    "sys.path.insert(0, os.getcwd());"  # then prefer the tree's own package over installed copies
     "raise SystemExit(pytest.main(sys.argv[1:]))"
 )
 
@@ -57,7 +59,7 @@ CATEGORY_MARKERS: dict[str, str] = {
 }
 DEFAULT_CATEGORY = "offline"
 RELEASE_CATEGORY = "offline"
-MIN_REQUIRED: dict[str, int] = {"offline": 193, "network": 9, "realdata": 1}
+MIN_REQUIRED: dict[str, int] = {"offline": 198, "network": 9, "realdata": 1}
 
 _HARDENED_ENV = (
     "PYTEST_ADDOPTS",
@@ -95,6 +97,7 @@ class ReleaseError(RuntimeError):
 def _clean_env() -> dict[str, str]:
     env = {k: v for k, v in os.environ.items() if k not in _HARDENED_ENV}
     env.pop("PYTHONPATH", None)
+    env.pop("PYTHONHOME", None)
     # keep the launch directory off sys.path at interpreter startup, so a repo-root
     # sitecustomize.py / pytest.py cannot execute before the trusted launcher
     env["PYTHONSAFEPATH"] = "1"
@@ -106,25 +109,23 @@ def _git_env() -> dict[str, str]:
 
 
 def _git(*args: str, cwd: str | Path = ".") -> str:
-    try:
-        return subprocess.run(
-            ["git", *args],
-            cwd=str(cwd),
-            capture_output=True,
-            text=True,
-            check=True,
-            env=_git_env(),
-        ).stdout.strip()
-    except Exception:
-        return ""
+    """Strict git: a failing command is an error, never a silent empty string."""
+    proc = subprocess.run(
+        ["git", *args], cwd=str(cwd), capture_output=True, text=True, env=_git_env()
+    )
+    if proc.returncode != 0:
+        raise ReleaseError(f"git {' '.join(args)} failed: {proc.stderr.strip()[:200]}")
+    return proc.stdout.strip()
 
 
-def _git_root(cwd: str | Path = ".") -> Path:
+def _git_root(cwd: str | Path = ".", *, exact: bool = False) -> Path:
     cwd_abs = Path(cwd).resolve()
     root = _git("rev-parse", "--show-toplevel", cwd=cwd_abs)
     if not root:
         raise ReleaseError("not inside a git repository")
     root_path = Path(root).resolve()
+    if exact and root_path != cwd_abs:
+        raise ReleaseError(f"release operations must run at the repository root ({root_path})")
     if root_path != cwd_abs and root_path not in cwd_abs.parents:
         raise ReleaseError(
             f"git reported root {root_path} which does not contain {cwd_abs} "
@@ -194,8 +195,22 @@ def _assert_command_is_canonical(command: list[str], category: str) -> None:
 # --------------------------------------------------------------- node id sets
 
 
-def collect_node_ids(cwd: str | Path = ".", category: str = DEFAULT_CATEGORY) -> list[str]:
-    root = _git_root(cwd)
+def _export_tree(root: Path, commit: str) -> Path:
+    """Materialise exactly the committed tree: local untracked/ignored files cannot leak in."""
+    proc = subprocess.run(
+        ["git", "-C", str(root), "archive", "--format=tar", commit],
+        capture_output=True,
+        env=_git_env(),
+    )
+    if proc.returncode != 0:
+        raise ReleaseError(f"cannot export tree for {commit[:10]}: {proc.stderr.decode()[:200]}")
+    dest = Path(tempfile.mkdtemp(prefix="goe-tree-"))
+    with tarfile.open(fileobj=io.BytesIO(proc.stdout)) as tar:
+        tar.extractall(dest, filter="data")
+    return dest
+
+
+def _collect_in(tree: Path, category: str = DEFAULT_CATEGORY) -> list[str]:
     cmd = [
         sys.executable,
         "-c",
@@ -209,7 +224,7 @@ def collect_node_ids(cwd: str | Path = ".", category: str = DEFAULT_CATEGORY) ->
         CATEGORY_MARKERS[category],
     ]
     proc = subprocess.run(
-        cmd, cwd=str(root), capture_output=True, text=True, timeout=900, env=_clean_env()
+        cmd, cwd=str(tree), capture_output=True, text=True, timeout=900, env=_clean_env()
     )
     ids = [
         ln.strip()
@@ -223,16 +238,30 @@ def collect_node_ids(cwd: str | Path = ".", category: str = DEFAULT_CATEGORY) ->
     return sorted(set(ids))
 
 
+def collect_node_ids(cwd: str | Path = ".", category: str = DEFAULT_CATEGORY) -> list[str]:
+    return _collect_in(_git_root(cwd, exact=True), category)
+
+
 def _junit_summary(junit_path: str | Path) -> dict[str, int]:
     path = Path(junit_path)
     if not path.exists():
         raise ReleaseError(f"junit evidence missing: {path}")
-    suites = list(ET.parse(path).getroot().iter("testsuite"))
+    root_el = ET.parse(path).getroot()
+    suites = [e for e in list(root_el) if e.tag == "testsuite"] or (
+        [root_el] if root_el.tag == "testsuite" else []
+    )
     if not suites:
         raise ReleaseError("junit evidence has no testsuite element")
 
     def total(attr: str) -> int:
-        return sum(int(s.get(attr, 0) or 0) for s in suites)
+        out = 0
+        for suite in suites:
+            raw = suite.get(attr, "0") or "0"
+            try:
+                out += int(raw)
+            except ValueError as exc:
+                raise ReleaseError(f"junit attribute {attr}={raw!r} is not an integer") from exc
+        return out
 
     return {
         "tests": total("tests"),
@@ -301,7 +330,7 @@ def run_test_proof(
     timeout: int = 3600,
 ) -> dict[str, Any]:
     """Run the canonical suite and write an immutable, portable proof file."""
-    root = _git_root(cwd)
+    root = _git_root(cwd, exact=True)
     if category not in CATEGORY_MARKERS:
         raise ReleaseError(f"unknown test category: {category}")
     commit = _git("rev-parse", "HEAD", cwd=root)
@@ -309,8 +338,10 @@ def run_test_proof(
         raise ReleaseError("cannot establish git commit for test proof")
     if _dirty_code(cwd=root):
         raise ReleaseError("test proof requires a clean worktree")
+    tree = _export_tree(root, commit)
 
-    expected = collect_node_ids(root, category)
+    tree = _export_tree(root, _git("rev-parse", "HEAD", cwd=root))
+    expected = _collect_in(tree, category)
     if len(expected) < MIN_REQUIRED[category]:
         raise ReleaseError(
             f"{category} suite collected {len(expected)} tests, "
@@ -320,7 +351,7 @@ def run_test_proof(
     tmpdir = Path(tempfile.mkdtemp(prefix="goe-junit-"))
     junit_tmp = tmpdir / "junit.xml"
     started = datetime.now(timezone.utc)
-    proc, output = _run_suite(root, category, junit_tmp, timeout)
+    proc, output = _run_suite(tree, category, junit_tmp, timeout)
     ended = datetime.now(timezone.utc)
 
     summary = _junit_summary(junit_tmp)
@@ -404,8 +435,12 @@ def _check_commit(proof: dict[str, Any], root: Path) -> None:
         == 0
     )
     changed = _git("-C", str(root), "diff", "--name-only", proof_commit, commit).splitlines()
-    allowed = ("audit/test_evidence/", "audit/releases/", "audit/", "docs/", "README.md", "TEST_RESULTS.md")
-    if not ancestor or any(not p.startswith(allowed) for p in changed if p.strip()):
+    allowed = ("audit/", "docs/")
+    root_docs = {"README.md", "TEST_RESULTS.md", "PROJECT_STATE.md", "AGENTS.md", "AGENT_TASKS.md",
+                 "ARCHITECTURE.md", "DECISIONS.md", "PROJECT_SPEC.md"}
+    if not ancestor or any(
+        not p.startswith(allowed) and p not in root_docs for p in changed if p.strip()
+    ):
         raise ReleaseError("test proof commit is not an ancestor with only evidence/docs changes")
     code_changed = _git(
         "-C", str(root), "diff", "--name-only", proof_commit, commit,
@@ -435,7 +470,9 @@ def verify_test_proof(
     rerun: bool = True,
 ) -> dict[str, Any]:
     proof = _load_proof(proof_path)
-    root = _git_root(cwd)
+    root = _git_root(cwd, exact=True)
+    if _dirty_code(cwd=root):
+        raise ReleaseError("cannot verify a proof on a dirty worktree")
     _check_commit(proof, root)
 
     category = proof.get("category")
@@ -457,7 +494,8 @@ def verify_test_proof(
     if recorded_py != current_py:
         raise ReleaseError(f"proof python {recorded_py} does not match current interpreter {current_py}")
 
-    expected = collect_node_ids(root, category)
+    tree = _export_tree(root, _git("rev-parse", "HEAD", cwd=root))
+    expected = _collect_in(tree, category)
     if len(expected) < MIN_REQUIRED[category]:
         raise ReleaseError(
             f"{category} suite collected {len(expected)} tests, "
@@ -499,7 +537,7 @@ def verify_test_proof(
     if rerun:
         tmpdir = Path(tempfile.mkdtemp(prefix="goe-rerun-"))
         junit_tmp = tmpdir / "junit.xml"
-        proc, output = _run_suite(root, category, junit_tmp, 3600)
+        proc, output = _run_suite(tree, category, junit_tmp, 3600)
         rerun_summary = _junit_summary(junit_tmp)
         if (
             proc.returncode != 0

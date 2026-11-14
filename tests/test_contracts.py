@@ -139,6 +139,7 @@ def test_release_rejects_missing_or_forged_proof(monkeypatch, store, tmp_path):
 
     monkeypatch.setattr(rel, "_git", lambda *a, **k: "abc123")
     monkeypatch.setattr(rel, "_git_root", lambda *a, **k: tmp_path.resolve())
+    monkeypatch.setattr(rel, "_dirty_code", lambda **k: False)
     with pytest.raises(rel.ReleaseError, match="missing"):
         rel.verify_test_proof(tmp_path / "nope.json")
 
@@ -161,15 +162,17 @@ def test_release_rejects_shell_spoof_and_rename_dirty(monkeypatch, tmp_path):
 
     import goe.release as rel
 
+    real_dirty = rel._dirty_code
     monkeypatch.setattr(rel, "_git", lambda *a, **kk: "abc123")
     monkeypatch.setattr(rel, "_git_root", lambda *a, **kk: tmp_path.resolve())
+    monkeypatch.setattr(rel, "_dirty_code", lambda **k: False)
     p = tmp_path / "proof.json"
     p.write_text(json.dumps(_v3_proof(command_template=["sh", "-c", "printf 179", "tests"])),
                  encoding="utf-8")
     with pytest.raises(rel.ReleaseError, match="forbidden selector|canonical"):
         rel.verify_test_proof(p)
     monkeypatch.setattr(rel, "_git", lambda *a, **kk: "R  audit/test_evidence/x -> goe/payload.py")
-    assert rel._dirty_code() is True
+    assert real_dirty() is True
 
 
 def test_release_rejects_reverse_rename_and_subset(monkeypatch, tmp_path):
@@ -177,10 +180,12 @@ def test_release_rejects_reverse_rename_and_subset(monkeypatch, tmp_path):
 
     import goe.release as rel
 
+    real_dirty = rel._dirty_code
     monkeypatch.setattr(rel, "_git", lambda *a, **kk: "R  goe/cli.py -> audit/test_evidence/cli.py")
-    assert rel._dirty_code() is True
+    assert real_dirty() is True
     monkeypatch.setattr(rel, "_git", lambda *a, **kk: "abc123")
     monkeypatch.setattr(rel, "_git_root", lambda *a, **kk: tmp_path.resolve())
+    monkeypatch.setattr(rel, "_dirty_code", lambda **k: False)
     # narrowing by marker is rejected even when the marker strings look plausible
     p = tmp_path / "proof"
     subset = list(rel.command_template("offline"))

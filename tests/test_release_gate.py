@@ -103,7 +103,7 @@ def test_tampered_counts_are_rejected(small_repo):
 
 def test_deleting_tests_after_proof_is_rejected(small_repo):
     proof = rel.run_test_proof(cwd=small_repo)
-    (small_repo / "tests" / "test_b.py").write_text("def test_three():\n    assert True\n")
+    (small_repo / "tests" / "test_b.py").unlink()  # a real shrink, not a no-op rewrite
     _git(small_repo, "add", "-A")
     _git(small_repo, "commit", "-qm", "shrink")
     with pytest.raises(rel.ReleaseError):
@@ -196,3 +196,62 @@ def test_absolute_evidence_path_is_rejected(small_repo, tmp_path):
     bad.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(rel.ReleaseError, match="repo-relative|escapes"):
         rel.verify_test_proof(bad, cwd=small_repo, rerun=False)
+
+
+# ---------------------------------------------------------------- red-team round 2
+
+
+def test_untracked_root_conftest_cannot_change_the_run(small_repo):
+    """P1: a conftest hidden from git must not exist in the executed tree."""
+    (small_repo / "conftest.py").write_text(
+        "import pytest\n\n"
+        "def pytest_collection_modifyitems(items):\n"
+        "    for item in items:\n"
+        "        item.add_marker(pytest.mark.skip(reason='hidden'))\n",
+        encoding="utf-8",
+    )
+    (small_repo / ".git" / "info" / "exclude").write_text("conftest.py\n", encoding="utf-8")
+    assert rel._dirty_code(cwd=small_repo) is False, "git cannot see the excluded file"
+    proof = rel.run_test_proof(cwd=small_repo)
+    assert proof["passed"] == 3 and proof["skipped"] == 0
+
+
+def test_verify_rejects_a_dirty_worktree(small_repo):
+    """P1: replaying on a dirty tree could run a different test body."""
+    proof = rel.run_test_proof(cwd=small_repo)
+    (small_repo / "tests" / "test_a.py").write_text(
+        "def test_one():\n    assert False\n\ndef test_two():\n    assert True\n", encoding="utf-8"
+    )
+    with pytest.raises(rel.ReleaseError, match="dirty worktree"):
+        rel.verify_test_proof(proof["proof_path"], cwd=small_repo, rerun=False)
+
+
+def test_git_failure_is_fail_closed(tmp_path):
+    """P1: a failed git call must raise, not look clean."""
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    with pytest.raises(rel.ReleaseError, match="git "):
+        rel._dirty_code(cwd=plain)
+
+
+def test_ancestor_worktree_decoy_is_rejected(small_repo):
+    """P2: root must be exactly the directory being released, not an ancestor."""
+    inner = small_repo / "inner"
+    inner.mkdir()
+    decoy = small_repo.parent / "outer-decoy"
+    decoy.mkdir(exist_ok=True)
+    _git(small_repo, "config", "core.worktree", str(decoy))
+    try:
+        with pytest.raises(rel.ReleaseError, match="must run at the repository root|decoy"):
+            rel._git_root(inner, exact=True)
+    finally:
+        _git(small_repo, "config", "--unset", "core.worktree")
+
+
+def test_root_doc_change_after_proof_is_allowed(small_repo):
+    """P1 regression: docs-only commits after the proof must remain replayable."""
+    proof = rel.run_test_proof(cwd=small_repo)
+    (small_repo / "PROJECT_STATE.md").write_text("# state\n", encoding="utf-8")
+    _git(small_repo, "add", "-A")
+    _git(small_repo, "commit", "-qm", "docs")
+    rel.verify_test_proof(proof["proof_path"], cwd=small_repo, rerun=False)
