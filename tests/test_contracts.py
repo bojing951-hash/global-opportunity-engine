@@ -103,13 +103,13 @@ def test_research_v2_real_scan_contract():
     assert any(r.priority_tier in ("A", "B", "C") for r in rows)
 
 
-def _v2_proof(**over):
+def _v3_proof(**over):
     import sys
 
     from goe.release import CATEGORY_MARKERS, command_template
 
     base = {
-        "schema": "goe-test-proof/v2",
+        "schema": "goe-test-proof/v3",
         "git_commit": "abc123",
         "git_dirty": False,
         "category": "offline",
@@ -138,6 +138,7 @@ def test_release_rejects_missing_or_forged_proof(monkeypatch, store, tmp_path):
     import goe.release as rel
 
     monkeypatch.setattr(rel, "_git", lambda *a, **k: "abc123")
+    monkeypatch.setattr(rel, "_git_root", lambda *a, **k: tmp_path.resolve())
     with pytest.raises(rel.ReleaseError, match="missing"):
         rel.verify_test_proof(tmp_path / "nope.json")
 
@@ -150,7 +151,7 @@ def test_release_rejects_missing_or_forged_proof(monkeypatch, store, tmp_path):
     # v2 but with an untrusted selector injected into the command template
     poisoned = tmp_path / "poisoned.json"
     cmd = list(rel.command_template("offline")) + ["--ignore=tests/test_research_v2.py"]
-    poisoned.write_text(json.dumps(_v2_proof(command_template=cmd)), encoding="utf-8")
+    poisoned.write_text(json.dumps(_v3_proof(command_template=cmd)), encoding="utf-8")
     with pytest.raises(rel.ReleaseError, match="forbidden selector|canonical"):
         rel.verify_test_proof(poisoned)
 
@@ -161,8 +162,9 @@ def test_release_rejects_shell_spoof_and_rename_dirty(monkeypatch, tmp_path):
     import goe.release as rel
 
     monkeypatch.setattr(rel, "_git", lambda *a, **kk: "abc123")
+    monkeypatch.setattr(rel, "_git_root", lambda *a, **kk: tmp_path.resolve())
     p = tmp_path / "proof.json"
-    p.write_text(json.dumps(_v2_proof(command_template=["sh", "-c", "printf 179", "tests"])),
+    p.write_text(json.dumps(_v3_proof(command_template=["sh", "-c", "printf 179", "tests"])),
                  encoding="utf-8")
     with pytest.raises(rel.ReleaseError, match="forbidden selector|canonical"):
         rel.verify_test_proof(p)
@@ -178,15 +180,16 @@ def test_release_rejects_reverse_rename_and_subset(monkeypatch, tmp_path):
     monkeypatch.setattr(rel, "_git", lambda *a, **kk: "R  goe/cli.py -> audit/test_evidence/cli.py")
     assert rel._dirty_code() is True
     monkeypatch.setattr(rel, "_git", lambda *a, **kk: "abc123")
+    monkeypatch.setattr(rel, "_git_root", lambda *a, **kk: tmp_path.resolve())
     # narrowing by marker is rejected even when the marker strings look plausible
     p = tmp_path / "proof"
     subset = list(rel.command_template("offline"))
     subset[subset.index("-m") + 1] = "not network and not realdata and not smoke"
-    p.write_text(json.dumps(_v2_proof(command_template=subset)), encoding="utf-8")
+    p.write_text(json.dumps(_v3_proof(command_template=subset)), encoding="utf-8")
     with pytest.raises(rel.ReleaseError, match="forbidden selector|canonical"):
         rel.verify_test_proof(p)
     # -k subsetting is rejected as well
     k_subset = ["python", "-m", "pytest", "tests", "-k", "smoke"]
-    p.write_text(json.dumps(_v2_proof(command_template=k_subset)), encoding="utf-8")
+    p.write_text(json.dumps(_v3_proof(command_template=k_subset)), encoding="utf-8")
     with pytest.raises(rel.ReleaseError, match="forbidden selector|canonical"):
         rel.verify_test_proof(p)

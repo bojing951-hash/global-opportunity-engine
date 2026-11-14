@@ -139,3 +139,60 @@ def test_verify_release_cli_rejects_bad_proof(tmp_path):
         no_rerun = True
 
     assert goe_cli.cmd_verify_release(Args()) == 1
+
+
+# ---------------------------------------------------------------- red-team round 1
+
+
+def test_root_pytest_module_cannot_shadow_the_runner(small_repo):
+    """P0: a repo-root pytest.py must not be able to fake the whole run."""
+    (small_repo / "pytest.py").write_text(
+        "import sys\nprint('188 passed in 0.01s')\nsys.exit(0)\n", encoding="utf-8"
+    )
+    _git(small_repo, "add", "-A")
+    _git(small_repo, "commit", "-qm", "shadow")
+    proof = rel.run_test_proof(cwd=small_repo)
+    assert proof["passed"] == 3, "the real pytest suite must be the one that ran"
+
+
+def test_skipped_tests_are_not_accepted(small_repo):
+    """P0: 1 passed + N skipped must never look like a full pass."""
+    (small_repo / "tests" / "conftest.py").write_text(
+        "import pytest\n\n"
+        "def pytest_collection_modifyitems(items):\n"
+        "    for item in items:\n"
+        "        item.add_marker(pytest.mark.skip(reason='x'))\n",
+        encoding="utf-8",
+    )
+    _git(small_repo, "add", "-A")
+    _git(small_repo, "commit", "-qm", "skip-all")
+    with pytest.raises(rel.ReleaseError, match="not clean|junit|skipped"):
+        rel.run_test_proof(cwd=small_repo)
+
+
+def test_assume_unchanged_is_treated_as_dirty(small_repo):
+    """P1: index flags must not hide a local edit from the clean-tree check."""
+    _git(small_repo, "update-index", "--assume-unchanged", "tests/test_a.py")
+    (small_repo / "tests" / "test_a.py").write_text("def test_one():\n    pass\n", encoding="utf-8")
+    assert rel._dirty_code(cwd=small_repo) is True
+
+
+def test_core_worktree_decoy_is_rejected(small_repo, tmp_path):
+    """P1: git must not be able to point the gate at a different tree."""
+    decoy = tmp_path / "decoy"
+    decoy.mkdir()
+    _git(small_repo, "config", "core.worktree", str(decoy))
+    with pytest.raises(rel.ReleaseError, match="does not contain|decoy"):
+        rel._git_root(small_repo)
+    _git(small_repo, "config", "--unset", "core.worktree")
+
+
+def test_absolute_evidence_path_is_rejected(small_repo, tmp_path):
+    """P2: evidence must stay inside the repository and stay portable."""
+    proof = rel.run_test_proof(cwd=small_repo)
+    data = json.loads(Path(proof["proof_path"]).read_text(encoding="utf-8"))
+    data["junit_path"] = str(Path(proof["junit_path"]).resolve())
+    bad = Path(proof["proof_path"]).with_name("absolute.json")
+    bad.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(rel.ReleaseError, match="repo-relative|escapes"):
+        rel.verify_test_proof(bad, cwd=small_repo, rerun=False)

@@ -1,25 +1,25 @@
-"""Release gate with machine-verifiable, portable test evidence.
+"""Release gate with machine-verifiable, portable test evidence (v3).
 
-Design contract (v2)
---------------------
-A release manifest may only be built from a test proof that the gate can
-*re-execute itself* on the current commit. Nothing in the proof file is trusted
-as a claim about what ran; the proof is only a record that is cross-checked
-against a fresh run.
+Threat model
+------------
+The proof file itself is attacker-writable, so nothing in it is trusted as a
+claim about what ran. The gate *re-executes* the suite and compares the executed
+set to the collected set.
 
-Root causes addressed:
+Hardening added after red-team round 1 (see ``audit/QA_REDTEAM_RELEASE.md``):
 
-* P1-01 (partial suites accepted): the caller can no longer pass a command.
-  The gate builds the pytest invocation itself, rejects any argv that is not
-  byte-equal to the canonical template (so ``--ignore``, ``--ignore-glob``,
-  ``--deselect``, ``-k``, a custom ``-m``, ``-c``, ``-p``, ``-o addopts=...``
-  and positional node ids are all rejected), clears pytest env vars, and
-  compares the *actual collected node ids* with the *executed* node ids parsed
-  from JUnit XML. A proof whose executed set is not identical to the collected
-  set is rejected. A minimum test floor per category blocks silent shrinkage.
-* P1-02 (non-portable evidence): proofs store a command *template* with
-  ``{python}`` / ``{junit}`` placeholders and repo-relative paths only. Any
-  Python >= 3.10 interpreter in a fresh clone can re-run the proof.
+* trusted pytest launcher — ``python -c`` with cwd removed from ``sys.path`` so a
+  repository-root ``pytest.py``/``pytest/`` cannot shadow the real pytest;
+* skipped/failed/errored testcases do not count as executed — a run must have
+  ``passed == required == executed`` and ``skipped == 0``;
+* counts come from the JUnit ``<testsuite>`` attributes, not from console text;
+* git calls run with ``GIT_*`` stripped and the reported root must contain the
+  working directory (blocks ``core.worktree`` / ``GIT_DIR`` decoys);
+* ``assume-unchanged`` / ``skip-worktree`` index flags are rejected as dirty;
+* evidence paths must stay inside the repository (no absolute paths);
+* JUnit classname resolution must map to exactly one collected node id;
+* only ``offline`` proofs may back a release; only evidence/docs may change
+  between proof commit and release commit.
 """
 from __future__ import annotations
 
@@ -37,26 +37,27 @@ from typing import Any
 
 from .db import Store
 
-PROOF_SCHEMA = "goe-test-proof/v2"
+PROOF_SCHEMA = "goe-test-proof/v3"
 PYTHON_PLACEHOLDER = "{python}"
 JUNIT_PLACEHOLDER = "{junit}"
 
-#: suite categories with independent acceptance requirements
+#: trusted launcher: drop cwd from sys.path before importing pytest, then run it
+PYTEST_LAUNCHER = (
+    "import sys;"
+    "sys.path=[p for p in sys.path if p not in ('', '.')];"
+    "import pytest;"
+    "raise SystemExit(pytest.main(sys.argv[1:]))"
+)
+
 CATEGORY_MARKERS: dict[str, str] = {
     "offline": "not network and not realdata",
     "network": "network and not realdata",
     "realdata": "realdata",
 }
 DEFAULT_CATEGORY = "offline"
-
-#: only the offline suite may back a release manifest
 RELEASE_CATEGORY = "offline"
+MIN_REQUIRED: dict[str, int] = {"offline": 193, "network": 9, "realdata": 1}
 
-#: anti-shrink floors. Raise these when tests are legitimately added; never lower
-#: them without a reviewed contract change.
-MIN_REQUIRED: dict[str, int] = {"offline": 188, "network": 9, "realdata": 1}
-
-#: pytest environment variables that can change collection/selection/plugins
 _HARDENED_ENV = (
     "PYTEST_ADDOPTS",
     "PYTEST_PLUGINS",
@@ -64,8 +65,8 @@ _HARDENED_ENV = (
     "PYTEST_DEBUG",
     "PYTEST_DISABLE_PLUGIN_AUTOLOAD",
 )
+_GIT_ENV_PREFIXES = ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_CONFIG", "GIT_OBJECT_DIRECTORY")
 
-#: argv tokens that can never appear in a release proof command
 FORBIDDEN_ARGS = (
     "--ignore",
     "--ignore-glob",
@@ -76,13 +77,11 @@ FORBIDDEN_ARGS = (
     "--co",
     "--collect-only",
     "--pyargs",
-    "-c",
     "-p",
     "-k",
-    "-m",
-    "-o",
     "::",
 )
+_EVIDENCE_ALLOWED = ("audit/test_evidence/", "audit/releases/")
 
 
 class ReleaseError(RuntimeError):
@@ -92,20 +91,42 @@ class ReleaseError(RuntimeError):
 # --------------------------------------------------------------------------- io
 
 
+def _clean_env() -> dict[str, str]:
+    env = {k: v for k, v in os.environ.items() if k not in _HARDENED_ENV}
+    env.pop("PYTHONPATH", None)
+    return env
+
+
+def _git_env() -> dict[str, str]:
+    return {k: v for k, v in os.environ.items() if not k.startswith(_GIT_ENV_PREFIXES)}
+
+
 def _git(*args: str, cwd: str | Path = ".") -> str:
     try:
         return subprocess.run(
-            ["git", *args], cwd=str(cwd), capture_output=True, text=True, check=True
+            ["git", *args],
+            cwd=str(cwd),
+            capture_output=True,
+            text=True,
+            check=True,
+            env=_git_env(),
         ).stdout.strip()
     except Exception:
         return ""
 
 
 def _git_root(cwd: str | Path = ".") -> Path:
-    root = _git("rev-parse", "--show-toplevel", cwd=cwd)
+    cwd_abs = Path(cwd).resolve()
+    root = _git("rev-parse", "--show-toplevel", cwd=cwd_abs)
     if not root:
         raise ReleaseError("not inside a git repository")
-    return Path(root).resolve()
+    root_path = Path(root).resolve()
+    if root_path != cwd_abs and root_path not in cwd_abs.parents:
+        raise ReleaseError(
+            f"git reported root {root_path} which does not contain {cwd_abs} "
+            "(possible core.worktree / GIT_DIR decoy)"
+        )
+    return root_path
 
 
 def _sha256(data: bytes) -> str:
@@ -116,45 +137,20 @@ def _sha256_json(obj: Any) -> str:
     return _sha256(json.dumps(obj, sort_keys=True, ensure_ascii=False).encode("utf-8"))
 
 
-def _clean_env() -> dict[str, str]:
-    env = {k: v for k, v in os.environ.items() if k not in _HARDENED_ENV}
-    env.pop("PYTHONPATH", None)
-    return env
-
-
 def _dirty_code(*, cwd: str | Path = ".") -> bool:
     """Dirty means code/config/docs changed; generated proof/manifest files are exempt."""
-    lines = _git("-C", str(cwd), "status", "--porcelain").splitlines()
-    allowed = ("audit/test_evidence/", "audit/releases/")
+    for line in _git("-C", str(cwd), "ls-files", "-v").splitlines():
+        if line[:1] in ("h", "S", "s"):
+            return True  # assume-unchanged / skip-worktree can hide local edits
+    lines = _git("-C", str(cwd), "status", "--porcelain", "--untracked-files=all").splitlines()
     for line in lines:
         if not line.strip():
             continue
         path = line[3:].strip()
         paths = [p.strip() for p in path.split(" -> ")] if " -> " in path else [path]
-        if any(not part.startswith(allowed) for part in paths):
+        if any(not part.startswith(_EVIDENCE_ALLOWED) for part in paths):
             return True
     return False
-
-
-def _parse_pytest(output: str) -> dict[str, int]:
-    def one(pattern: str) -> int:
-        m = re.search(pattern, output)
-        return int(m.group(1)) if m else 0
-
-    tail = "\n".join(
-        [
-            ln
-            for ln in output.splitlines()
-            if re.search(r"\d+ (passed|failed|skipped|deselected|error)", ln)
-        ][-5:]
-    )
-    return {
-        "passed": one(r"(\d+) passed"),
-        "failed": one(r"(\d+) failed"),
-        "skipped": one(r"(\d+) skipped"),
-        "deselected": one(r"(\d+) deselected"),
-        "errors": one(r"(\d+) errors?"),
-    }
 
 
 # --------------------------------------------------------------------- commands
@@ -165,8 +161,8 @@ def canonical_command(python: str, category: str, junit: str) -> list[str]:
         raise ReleaseError(f"unknown test category: {category}")
     return [
         python,
-        "-m",
-        "pytest",
+        "-c",
+        PYTEST_LAUNCHER,
         "tests",
         "-o",
         "addopts=",
@@ -183,12 +179,8 @@ def command_template(category: str) -> list[str]:
 
 
 def _assert_command_is_canonical(command: list[str], category: str) -> None:
-    """Reject any argv that is not exactly the canonical template (defence in depth)."""
     text = " ".join(str(x) for x in command)
     for token in FORBIDDEN_ARGS:
-        # "-m" / "-o" are legal only in their canonical positions, checked below.
-        if token in ("-m", "-o"):
-            continue
         if token in command or token in text:
             raise ReleaseError(f"proof command contains forbidden selector: {token}")
     if command != command_template(category):
@@ -199,12 +191,11 @@ def _assert_command_is_canonical(command: list[str], category: str) -> None:
 
 
 def collect_node_ids(cwd: str | Path = ".", category: str = DEFAULT_CATEGORY) -> list[str]:
-    """Collect every test node id that the canonical suite would run."""
     root = _git_root(cwd)
     cmd = [
         sys.executable,
-        "-m",
-        "pytest",
+        "-c",
+        PYTEST_LAUNCHER,
         "tests",
         "-o",
         "addopts=",
@@ -228,33 +219,56 @@ def collect_node_ids(cwd: str | Path = ".", category: str = DEFAULT_CATEGORY) ->
     return sorted(set(ids))
 
 
+def _junit_summary(junit_path: str | Path) -> dict[str, int]:
+    path = Path(junit_path)
+    if not path.exists():
+        raise ReleaseError(f"junit evidence missing: {path}")
+    suites = list(ET.parse(path).getroot().iter("testsuite"))
+    if not suites:
+        raise ReleaseError("junit evidence has no testsuite element")
+
+    def total(attr: str) -> int:
+        return sum(int(s.get(attr, 0) or 0) for s in suites)
+
+    return {
+        "tests": total("tests"),
+        "failures": total("failures"),
+        "errors": total("errors"),
+        "skipped": total("skipped"),
+    }
+
+
 def executed_node_ids(junit_path: str | Path, expected: list[str]) -> list[str]:
-    """Map JUnit testcases back to node ids, resolving the file from collected ids."""
-    files = {nid.split("::", 1)[0] for nid in expected}
+    """Map JUnit testcases to collected node ids; fail closed on ambiguity."""
+    expected_set = set(expected)
     path = Path(junit_path)
     if not path.exists():
         raise ReleaseError(f"junit evidence missing: {path}")
     root = ET.parse(path).getroot()
     out: list[str] = []
     for case in root.iter("testcase"):
+        outcome = {child.tag for child in case}
+        if outcome & {"skipped", "failure", "error"}:
+            raise ReleaseError(
+                f"test did not pass: {case.get('classname')}::{case.get('name')} "
+                f"({','.join(sorted(outcome & {'skipped', 'failure', 'error'}))})"
+            )
         classname = case.get("classname", "") or ""
         name = case.get("name", "") or ""
         parts = classname.split(".") if classname else []
-        resolved = None
-        for k in range(len(parts), 0, -1):
-            candidate = "/".join(parts[:k]) + ".py"
-            if candidate in files:
-                resolved = (candidate, ".".join(parts[k:]))
-                break
-        if resolved is None:
-            # fall back to the historical tests.<module> convention
-            if len(parts) >= 2 and parts[0] == "tests":
-                resolved = ("/".join(parts[:2]) + ".py", ".".join(parts[2:]))
-            else:
-                raise ReleaseError(f"cannot resolve junit testcase to a file: {classname}")
-        file, cls = resolved
-        node = file + "::" + (cls + "::" if cls else "") + name
-        out.append(node)
+        candidates: set[str] = set()
+        for k in range(1, len(parts) + 1):
+            file = "/".join(parts[:k]) + ".py"
+            cls = ".".join(parts[k:])
+            node = file + "::" + (cls + "::" if cls else "") + name
+            if node in expected_set:
+                candidates.add(node)
+        if len(candidates) != 1:
+            raise ReleaseError(
+                f"cannot resolve junit testcase {classname}::{name} to exactly one "
+                f"collected node id (candidates={len(candidates)})"
+            )
+        out.append(candidates.pop())
     if not out:
         raise ReleaseError("junit evidence contains no testcases")
     return sorted(out)
@@ -262,6 +276,14 @@ def executed_node_ids(junit_path: str | Path, expected: list[str]) -> list[str]:
 
 def _required_set(expected: list[str]) -> dict[str, Any]:
     return {"count": len(expected), "sha256": _sha256_json(expected)}
+
+
+def _run_suite(root: Path, category: str, junit_path: Path, timeout: int) -> tuple[subprocess.CompletedProcess, str]:
+    command = canonical_command(sys.executable, category, str(junit_path))
+    proc = subprocess.run(
+        command, cwd=str(root), capture_output=True, text=True, timeout=timeout, env=_clean_env()
+    )
+    return proc, (proc.stdout or "") + "\n" + (proc.stderr or "")
 
 
 # ------------------------------------------------------------------ proof flow
@@ -274,11 +296,7 @@ def run_test_proof(
     log_dir: str | Path = "audit/test_evidence",
     timeout: int = 3600,
 ) -> dict[str, Any]:
-    """Run the canonical suite and write an immutable, portable proof file.
-
-    The caller cannot influence the pytest invocation: there is no ``command``
-    parameter by design (root cause of P1-01).
-    """
+    """Run the canonical suite and write an immutable, portable proof file."""
     root = _git_root(cwd)
     if category not in CATEGORY_MARKERS:
         raise ReleaseError(f"unknown test category: {category}")
@@ -297,33 +315,22 @@ def run_test_proof(
 
     tmpdir = Path(tempfile.mkdtemp(prefix="goe-junit-"))
     junit_tmp = tmpdir / "junit.xml"
-    command = canonical_command(sys.executable, category, str(junit_tmp))
     started = datetime.now(timezone.utc)
-    proc = subprocess.run(
-        command,
-        cwd=str(root),
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-        env=_clean_env(),
-    )
+    proc, output = _run_suite(root, category, junit_tmp, timeout)
     ended = datetime.now(timezone.utc)
-    output = (proc.stdout or "") + "\n" + (proc.stderr or "")
-    counts = _parse_pytest(output)
-    if proc.returncode != 0 or counts["failed"] or counts["errors"]:
-        raise ReleaseError(f"test run failed: rc={proc.returncode} counts={counts}")
-    if counts["passed"] <= 0:
-        raise ReleaseError("test run reported no passed tests")
+
+    summary = _junit_summary(junit_tmp)
+    if proc.returncode != 0 or summary["failures"] or summary["errors"] or summary["skipped"]:
+        raise ReleaseError(f"test run not clean: rc={proc.returncode} junit={summary}")
+    if summary["tests"] != len(expected):
+        raise ReleaseError(
+            f"junit recorded {summary['tests']} tests but {len(expected)} were collected"
+        )
 
     executed = executed_node_ids(junit_tmp, expected)
-    if set(executed) != set(expected):
+    if set(executed) != set(expected) or len(executed) != len(expected):
         missing = sorted(set(expected) - set(executed))[:5]
-        extra = sorted(set(executed) - set(expected))[:5]
-        raise ReleaseError(
-            f"executed test set differs from collected set "
-            f"(missing={len(set(expected) - set(executed))} {missing}, "
-            f"extra={len(set(executed) - set(expected))} {extra})"
-        )
+        raise ReleaseError(f"executed set differs from collected set (missing={missing})")
 
     evidence_dir = Path(root) / log_dir
     evidence_dir.mkdir(parents=True, exist_ok=True)
@@ -347,15 +354,15 @@ def run_test_proof(
         "started_at": started.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "ended_at": ended.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "exit_code": proc.returncode,
-        **counts,
+        "passed": summary["tests"],
+        "failed": summary["failures"],
+        "errors": summary["errors"],
+        "skipped": summary["skipped"],
         "required": _required_set(expected),
-        "executed": {
-            "count": len(executed),
-            "sha256": _sha256_json(executed),
-        },
-        "log_path": str(log_path.relative_to(root)),
+        "executed": {"count": len(executed), "sha256": _sha256_json(executed)},
+        "log_path": log_path.relative_to(root).as_posix(),
         "log_sha256": _sha256(log_path.read_bytes()),
-        "junit_path": str(junit_path.relative_to(root)),
+        "junit_path": junit_path.relative_to(root).as_posix(),
         "junit_sha256": _sha256(junit_path.read_bytes()),
     }
     proof_path = evidence_dir / f"{base}.proof.json"
@@ -388,19 +395,33 @@ def _check_commit(proof: dict[str, Any], root: Path) -> None:
         subprocess.run(
             ["git", "-C", str(root), "merge-base", "--is-ancestor", proof_commit, commit],
             capture_output=True,
+            env=_git_env(),
         ).returncode
         == 0
     )
     changed = _git("-C", str(root), "diff", "--name-only", proof_commit, commit).splitlines()
-    allowed = ("audit/", "evaluation/", "docs/", "README.md", "TEST_RESULTS.md")
+    allowed = ("audit/test_evidence/", "audit/releases/", "audit/", "docs/", "README.md", "TEST_RESULTS.md")
     if not ancestor or any(not p.startswith(allowed) for p in changed if p.strip()):
         raise ReleaseError("test proof commit is not an ancestor with only evidence/docs changes")
     code_changed = _git(
         "-C", str(root), "diff", "--name-only", proof_commit, commit,
-        "--", "goe", "tests", "config", "contracts", "pyproject.toml",
+        "--", "goe", "tests", "config", "contracts", "scripts", "pyproject.toml", "evaluation",
     )
     if code_changed:
         raise ReleaseError("code/config/tests changed after test proof")
+
+
+def _relative_evidence(proof: dict[str, Any], root: Path, key: str) -> Path:
+    raw = proof.get(key)
+    if not raw:
+        raise ReleaseError(f"proof has no {key}")
+    candidate = Path(str(raw))
+    if candidate.is_absolute():
+        raise ReleaseError(f"{key} must be repo-relative, got an absolute path")
+    resolved = (root / candidate).resolve()
+    if root not in resolved.parents:
+        raise ReleaseError(f"{key} escapes the repository root")
+    return resolved
 
 
 def verify_test_proof(
@@ -409,7 +430,6 @@ def verify_test_proof(
     cwd: str | Path = ".",
     rerun: bool = True,
 ) -> dict[str, Any]:
-    """Verify a proof. With ``rerun=True`` (default) the gate re-executes the suite."""
     proof = _load_proof(proof_path)
     root = _git_root(cwd)
     _check_commit(proof, root)
@@ -425,15 +445,13 @@ def verify_test_proof(
         raise ReleaseError("test proof was created on a dirty worktree")
     if proof.get("exit_code") != 0 or int(proof.get("failed", 0)) or int(proof.get("errors", 0)):
         raise ReleaseError("test proof records failed tests")
-    if int(proof.get("passed", 0)) <= 0:
-        raise ReleaseError("test proof records no passed tests")
+    if int(proof.get("skipped", 0)):
+        raise ReleaseError("test proof records skipped tests; a release requires a clean run")
 
     recorded_py = str(proof.get("python_version", ""))
     current_py = f"{sys.version_info.major}.{sys.version_info.minor}"
     if recorded_py != current_py:
-        raise ReleaseError(
-            f"proof python {recorded_py} does not match current interpreter {current_py}"
-        )
+        raise ReleaseError(f"proof python {recorded_py} does not match current interpreter {current_py}")
 
     expected = collect_node_ids(root, category)
     if len(expected) < MIN_REQUIRED[category]:
@@ -442,61 +460,60 @@ def verify_test_proof(
             f"below the required floor of {MIN_REQUIRED[category]}"
         )
     replay_required = _required_set(expected)
-    if recorded := proof.get("required"):
-        if int(recorded.get("count", -1)) != replay_required["count"]:
-            raise ReleaseError("required test count disagrees with current collection")
-        if recorded.get("sha256") != replay_required["sha256"]:
-            raise ReleaseError("required test set hash disagrees with current collection")
-    else:
+    recorded = proof.get("required")
+    if not isinstance(recorded, dict):
         raise ReleaseError("proof has no required test set")
+    if int(recorded.get("count", -1)) != replay_required["count"]:
+        raise ReleaseError("required test count disagrees with current collection")
+    if recorded.get("sha256") != replay_required["sha256"]:
+        raise ReleaseError("required test set hash disagrees with current collection")
+    if int(proof.get("passed", -1)) != replay_required["count"]:
+        raise ReleaseError("passed count does not equal the required test count")
 
-    junit_rel = proof.get("junit_path")
-    if not junit_rel:
-        raise ReleaseError("proof has no junit evidence")
-    junit_path = root / junit_rel
+    junit_path = _relative_evidence(proof, root, "junit_path")
     if not junit_path.exists():
         raise ReleaseError("junit evidence is missing")
     if _sha256(junit_path.read_bytes()) != proof.get("junit_sha256"):
         raise ReleaseError("junit evidence hash mismatch")
+    summary = _junit_summary(junit_path)
+    if summary["tests"] != replay_required["count"] or summary["skipped"]:
+        raise ReleaseError(f"junit evidence is not a clean full run: {summary}")
     executed = executed_node_ids(junit_path, expected)
-    if set(executed) != set(expected):
+    if len(executed) != len(expected) or set(executed) != set(expected):
         raise ReleaseError("recorded executed set is not identical to the collected set")
     if int(proof.get("executed", {}).get("count", -1)) != len(executed):
         raise ReleaseError("executed count disagrees with junit evidence")
     if proof.get("executed", {}).get("sha256") != _sha256_json(executed):
         raise ReleaseError("executed set hash disagrees with junit evidence")
 
-    log_rel = proof.get("log_path")
-    log_path = root / str(log_rel)
+    log_path = _relative_evidence(proof, root, "log_path")
     if not log_path.exists():
         raise ReleaseError("test proof log is missing")
     if _sha256(log_path.read_bytes()) != proof.get("log_sha256"):
         raise ReleaseError("test proof log hash mismatch")
-    log_counts = _parse_pytest(log_path.read_text(encoding="utf-8", errors="replace"))
-    for key in ("passed", "failed", "skipped", "errors"):
-        if int(proof.get(key, -1)) != int(log_counts.get(key, -2)):
-            raise ReleaseError(f"test proof {key} count disagrees with log")
 
     if rerun:
         tmpdir = Path(tempfile.mkdtemp(prefix="goe-rerun-"))
         junit_tmp = tmpdir / "junit.xml"
-        cmd = canonical_command(sys.executable, category, str(junit_tmp))
-        proc = subprocess.run(
-            cmd, cwd=str(root), capture_output=True, text=True, timeout=3600, env=_clean_env()
-        )
-        output = (proc.stdout or "") + "\n" + (proc.stderr or "")
-        rerun_counts = _parse_pytest(output)
-        if proc.returncode != 0 or rerun_counts["failed"] or rerun_counts["errors"]:
-            raise ReleaseError(f"independent re-execution failed: rc={proc.returncode}")
+        proc, output = _run_suite(root, category, junit_tmp, 3600)
+        rerun_summary = _junit_summary(junit_tmp)
+        if (
+            proc.returncode != 0
+            or rerun_summary["failures"]
+            or rerun_summary["errors"]
+            or rerun_summary["skipped"]
+        ):
+            raise ReleaseError(f"independent re-execution not clean: {rerun_summary}")
         rerun_executed = executed_node_ids(junit_tmp, expected)
-        if set(rerun_executed) != set(expected):
+        if len(rerun_executed) != len(expected) or set(rerun_executed) != set(expected):
             raise ReleaseError("re-execution did not run the full collected test set")
-        if rerun_counts["passed"] != int(proof.get("passed", -1)):
-            raise ReleaseError("re-execution passed count differs from the recorded proof")
+        if rerun_summary["tests"] != int(proof.get("passed", -1)):
+            raise ReleaseError("re-execution test count differs from the recorded proof")
         proof = dict(proof)
         proof["rerun"] = {
-            "passed": rerun_counts["passed"],
+            "passed": rerun_summary["tests"],
             "executed": len(rerun_executed),
+            "skipped": rerun_summary["skipped"],
             "log_sha256": _sha256(output.encode("utf-8")),
         }
     return proof
