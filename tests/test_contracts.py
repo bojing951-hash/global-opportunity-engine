@@ -109,7 +109,7 @@ def _v3_proof(**over):
     from goe.release import CATEGORY_MARKERS, command_template
 
     base = {
-        "schema": "goe-test-proof/v3",
+        "schema": "goe-test-proof/v4",
         "git_commit": "abc123",
         "git_dirty": False,
         "category": "offline",

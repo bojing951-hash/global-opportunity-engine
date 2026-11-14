@@ -39,7 +39,7 @@ from typing import Any
 
 from .db import Store
 
-PROOF_SCHEMA = "goe-test-proof/v3"
+PROOF_SCHEMA = "goe-test-proof/v4"
 PYTHON_PLACEHOLDER = "{python}"
 JUNIT_PLACEHOLDER = "{junit}"
 
