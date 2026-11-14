@@ -1,4 +1,4 @@
-# VALIDATION RESULTS — round 1 (draft, updated after final scan)
+# VALIDATION RESULTS — rounds 1–2 (final)
 
 ## A. Data correctness (independent re-computation)
 
@@ -17,7 +17,7 @@
 | ERP/CAPE availability | used unreleased CAPE | PIT-filtered macro only | code + test |
 
 ## B. Tests
-- Offline: 121 passed (was 97), 9 network tests unchanged (run separately).
+- Offline: 137 passed (round 1: 121; baseline: 97), 9 network tests unchanged (run separately).
 - New regression files: `test_time_semantics.py`, `test_readiness_handoff.py`,
   `test_status_lifecycle.py`, `test_data_integrity.py` (+7), `test_archetypes.py`,
   rollback + expectation-gap gate tests.
@@ -34,14 +34,16 @@
   one current VIX candidate invalidated by its own VIX3M condition (0.439).
 
 ## D. Historical cases (PIT slice per evaluation date)
-Final after the detector-boundary fix: **7/7** (COVID, 2022 rate shock, UK LDI, SVB, yen carry,
-China policy rally, gold vs real rates); report `reports/validation_cases_20261114T033334Z.md`.
-The China case now passes through the observed-policy-action archetype (CSI 300, watch 0.678); the gold
-case passes through the symmetric upside-divergence archetype (low_priority), not through a forced
-mechanism narrative. Mechanisms were often `unsupported` — correctly reported, not treated as detection failure.
+Final after the detector-boundary fix and the stricter **case-entity** rule: **7/7** (COVID, 2022
+rate shock, UK LDI, SVB, yen carry, China policy rally, gold vs real rates); report
+`reports/validation_cases_20261114T063037Z.md`. The China case passes through the observed-policy-action
+archetype (CSI 300, watch); SVB via credit_stress on the derived CREDIT_RISK series (HYG/IEF are case
+assets); gold via the general **mechanism-breakdown** archetype ("gold vs real yields failed"), not a
+case-specific rule. Mechanisms were often `unsupported` — correctly reported, not treated as detection failure.
 
 ## E. Handoff (investment-agent)
-- Run executed; downstream `run_ok=true`, evidence rows 17, but step `S8_grounded_qa` semantically failed.
-- A records `semantic_status=partial`, task status `not_completed:partial`, event
-  `ia_research_not_completed` — NOT success. Reason surfaced to the operator.
-- Unit tests cover ok_valid / rejected / insufficient_data / partial / missing artifact / stdout `ok:false`.
+- Run executed; downstream process rc=0, but S8 returns `out_of_scope` (17 L2 views, 0 L1 facts,
+  L3/L4 not produced). A records `semantic_status=refused`, task `not_completed:refused`,
+  event `ia_research_not_completed`, CLI exit 2 — NOT success. Reason surfaced.
+- Unit tests cover ok_valid / refused / rejected / insufficient_data / partial / missing artifact /
+  stdout `ok:false`; a real `ok_valid` deep-research sample is still unavailable (B limitation).
