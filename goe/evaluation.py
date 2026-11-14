@@ -184,17 +184,23 @@ def write_blind_input(store: Store, dates: list[str], out_dir: str | Path = "aud
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
     rng = random.Random(42)
     records, mapping, diagnostics = [], {}, {}
+    pending: list[tuple[str, str, int, Any]] = []
     for as_of in dates:
         a, b, c, diag = build_eval_objects(store, as_of)
         diagnostics[as_of] = diag
         for method, objs in ((METHODS[0], a), (METHODS[1], b), (METHODS[2], c)):
             for rank, obj in enumerate(objs, start=1):
-                token = f"X{len(mapping)+1:02d}"
-                mapping[token] = {"as_of": as_of, "method": method, "rank": rank,
-                                  "entity_id": obj.entity_id, "theme": obj.theme}
-                sheet = obj.fact_sheet()
-                sheet["object_id"] = token
-                records.append({"as_of": as_of, "object_id": token, "facts": sheet})
+                pending.append((as_of, method, rank, obj))
+    # Assign anonymised ids AFTER a global shuffle, so X01..X36 do not reveal
+    # A/B/C blocks (audit R2: the old id order leaked the method).
+    rng.shuffle(pending)
+    for i, (as_of, method, rank, obj) in enumerate(pending, start=1):
+        token = f"X{i:02d}"
+        mapping[token] = {"as_of": as_of, "method": method, "rank": rank,
+                          "entity_id": obj.entity_id, "theme": obj.theme}
+        sheet = obj.fact_sheet()
+        sheet["object_id"] = token
+        records.append({"as_of": as_of, "object_id": token, "facts": sheet})
     rng.shuffle(records)
     payload = {
         "instructions": "Independent research-value rating. Method labels are hidden. "

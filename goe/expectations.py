@@ -151,20 +151,40 @@ def _driver_returns(fs, instrument_id: str) -> tuple[dict[str, pd.Series], str]:
         bench = load_universe().resolve_benchmark(spec)
     except Exception:
         bench = None
+    # Local market first; never use the asset itself as its own "market driver"
+    # (that produced R²=1 and a meaningless zero residual for SPY).
+    region_market = {
+        "CN": ["CN_EQ_CSI300", "CN_EQ_SSE", "CN_EQ_CSI500"],
+        "HK": ["HK_EQ_HSI", "HK_EQ_HSCEI", "HK_EQ_2800"],
+        "JP": ["JP_EQ_N225", "JP_EQ_TOPIX"],
+        "EA": ["EA_EQ_SX5E"],
+        "DE": ["DE_EQ_DAX"],
+        "UK": ["UK_EQ_FTSE"],
+        "FR": ["FR_EQ_CAC"],
+        "US": ["US_EQ_SPY", "US_EQ_RSP", "US_EQ_QQQ"],
+    }
+    local_fx = {"JP": ("jpy", "GX_FX_USDJPY"), "EA": ("eur", "GX_FX_EURUSD"),
+                "UK": ("gbp", "GX_FX_GBPUSD"), "CH": ("chf", "GX_FX_USDCHF"),
+                "AU": ("aud", "GX_FX_AUDUSD"), "KR": ("krw", "GX_FX_USDKRW"),
+                "BR": ("brl", "GX_FX_USDBRL"), "MX": ("mxn", "GX_FX_USDMXN")}
     if spec.is_equity:
-        market = None
-        for cand in ([bench] if bench else []) + ["US_EQ_SPY"]:
-            if cand and cand in prices.columns:
-                market = prices[cand]
+        cands = ([bench] if bench else []) + region_market.get(region, []) + ["US_EQ_SPY"]
+        market_id = None
+        for cand in cands:
+            if cand and cand != instrument_id and cand in prices.columns:
+                market_id = cand
                 break
-        if market is not None:
-            drivers["market"] = _period_return(market)
+        if market_id:
+            drivers["market"] = _period_return(prices[market_id])
         if "US_FX_DXY" in prices.columns:
             drivers["dollar"] = _period_return(prices["US_FX_DXY"])
         if "UST" in fs.curve and "10Y" in fs.curve["UST"].columns:
             drivers["rates"] = _period_change(fs.curve["UST"]["10Y"])
         if region in ("CN", "HK") and "CN_FX_USDCNY" in prices.columns:
             drivers["cny"] = _period_return(prices["CN_FX_USDCNY"])
+        fx = local_fx.get(region)
+        if fx and fx[1] in prices.columns:
+            drivers[fx[0]] = _period_return(prices[fx[1]])
         kind = "equity"
     elif spec.asset_class == "commodity":
         if "US_FX_DXY" in prices.columns:
@@ -193,12 +213,23 @@ def _residual_component(fs, instrument_id: str, as_of: pd.Timestamp) -> GapCompo
         return GapComponent(name, None, weight, "derived",
                             {"kind": kind, "n_obs": int(len(sample))},
                             f"样本不足（{len(sample)} < {RESIDUAL_MIN_OBS + 5} 个月度观测）")
-    # non-overlapping monthly observations (every 21 trading days)
-    sample = sample.iloc[::21]
-    if len(sample) < RESIDUAL_MIN_OBS + 2:
+    # Current observation = the latest date on which the asset AND drivers are
+    # all available. The old `sample.iloc[::21]` silently locked "current" to an
+    # earlier grid date (e.g. 10-30 while prices ran to 11-12).
+    current = sample.iloc[-1]
+    lag_days = int((pd.Timestamp(as_of) - pd.Timestamp(current.name)).days)
+    if lag_days > 10:
         return GapComponent(name, None, weight, "derived",
-                            {"kind": kind, "n_obs": int(len(sample))}, "非重叠月度样本不足")
-    fit, current = sample.iloc[:-1], sample.iloc[-1]
+                            {"kind": kind, "as_of_return_date": str(pd.Timestamp(current.name).date()),
+                             "lag_days": lag_days},
+                            f"残差观测滞后 as_of {lag_days} 天（驱动数据不新鲜）")
+    # Non-overlapping monthly observations for the regression, excluding current.
+    history = sample[sample.index < current.name].iloc[::21]
+    if len(history) < RESIDUAL_MIN_OBS:
+        return GapComponent(name, None, weight, "derived",
+                            {"kind": kind, "n_obs": int(len(history)), "lag_days": lag_days},
+                            f"非重叠月度样本不足（{len(history)} < {RESIDUAL_MIN_OBS}）")
+    fit = history
     X = np.column_stack([np.ones(len(fit)), fit[list(drivers)].to_numpy(dtype=float)])
     beta, *_ = np.linalg.lstsq(X, fit["y"].to_numpy(dtype=float), rcond=None)
     fitted = X @ beta
@@ -227,8 +258,11 @@ def _residual_component(fs, instrument_id: str, as_of: pd.Timestamp) -> GapCompo
         "residual_z": round(float(z), 3), "residual": round(resid_cur, 4),
         "actual_return": round(float(current["y"]), 4), "predicted_return": round(pred_cur, 4),
         "sign_consistent": sign_consistent,
-        "as_of_return_date": str(pd.Timestamp(sample.index[-1]).date()),
-        "meaning": "实际收益中无法由市场/美元/利率解释的部分（同向且 |z|>=1.5 才计分）",
+        "as_of_return_date": str(pd.Timestamp(current.name).date()),
+        "lag_days": lag_days,
+        "history_start": str(pd.Timestamp(fit.index.min()).date()),
+        "n_obs": int(len(fit)),
+        "meaning": "1 个月实际收益中无法由市场/美元/利率解释的部分（同向且 |z|>=1.5 才计分）",
     })
 
 

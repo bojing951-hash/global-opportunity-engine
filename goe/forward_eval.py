@@ -60,6 +60,26 @@ def build_forward_study(store: Store, mapping_path: str | Path = "audit/research
     df["abs_fwd_3m"] = df["fwd_3m"].abs()
     df["median_abs_3m"] = df["as_of"].map(med)
     df["material_move"] = df["abs_fwd_3m"] >= 1.5 * df["median_abs_3m"]
+    # Asset-class-relative excess: comparing an EM equity with SPY is not a
+    # like-for-like benchmark (audit R2).
+    cls_median: dict[tuple[str, str], float] = {}
+    for d in dates:
+        for cls in sorted({spec.asset_class for spec in universe.instruments.values()}):
+            vals = []
+            for iid, spec in universe.instruments.items():
+                if spec.asset_class != cls or iid not in close.columns:
+                    continue
+                r = _forward_return(close[iid], d, HORIZONS["3m"])
+                if r is not None:
+                    vals.append(r)
+            cls_median[(d, cls)] = float(np.median(vals)) if vals else float("nan")
+    def _cls_excess(row):
+        cls = universe.instruments.get(row["entity_id"]).asset_class if row["entity_id"] in universe.instruments else ""
+        b = cls_median.get((row["as_of"], cls))
+        if row["fwd_3m"] is None or b is None or not np.isfinite(b):
+            return None
+        return row["fwd_3m"] - b
+    df["excess_3m_vs_class"] = df.apply(_cls_excess, axis=1)
     summary = {}
     for method in METHODS:
         sub = df[df.method == method]
@@ -71,6 +91,8 @@ def build_forward_study(store: Store, mapping_path: str | Path = "audit/research
             "material_move_rate": _round(sub["material_move"].mean()),
             "mean_excess_3m_vs_spy": _round(sub["excess_3m_vs_spy"].mean()),
             "beat_spy_rate": _round((sub["excess_3m_vs_spy"] > 0).mean()),
+            "mean_excess_3m_vs_class": _round(sub["excess_3m_vs_class"].mean()),
+            "beat_class_rate": _round((sub["excess_3m_vs_class"] > 0).mean()),
         }
     per_date = []
     for d in dates:
@@ -98,13 +120,13 @@ def write_forward_report(store: Store, out_path: str | Path = "audit/FORWARD_RET
              "Selection is point-in-time (PIT mapping produced by `goe.evaluation`). Forward returns use",
              "only prices after each as-of date. No costs, no position sizing, no direction adjustment;",
              "the engine is a research-priority tool, not a portfolio. Small n (12 objects/method).", "",
-             "| method | n | mean fwd 1m | mean fwd 3m | mean abs fwd 3m | material move rate | mean excess 3m vs SPY | beat SPY rate |",
-             "|---|---:|---:|---:|---:|---:|---:|---:|"]
+             "| method | n | mean fwd 1m | mean fwd 3m | mean abs fwd 3m | material move rate | mean excess 3m vs SPY | beat SPY rate | mean excess 3m vs class | beat class rate |",
+             "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
     for m in METHODS:
         s = res["summary"][m]
         lines.append(f"| {m} | {s['n']} | {s['mean_fwd_1m']} | {s['mean_fwd_3m']} | "
                      f"{s['mean_abs_fwd_3m']} | {s['material_move_rate']} | {s['mean_excess_3m_vs_spy']} | "
-                     f"{s['beat_spy_rate']} |")
+                     f"{s['beat_spy_rate']} | {s['mean_excess_3m_vs_class']} | {s['beat_class_rate']} |")
     lines += ["", "Per as-of date (mean forward 3m return):", "",
               "| as_of | median abs 3m (universe) | A | B | C |", "|---|---:|---:|---:|---:|"]
     for r in res["per_date"]:

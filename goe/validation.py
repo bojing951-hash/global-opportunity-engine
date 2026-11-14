@@ -76,8 +76,20 @@ def run_case_validation(store: Store, out_dir: str | Path | None = None,
             window_anoms = anomalies[(anomalies.date >= start) & (anomalies.date <= end)] \
                 if not anomalies.empty else anomalies
             entities = set(c.get("entities", []) or [])
+            # Some detectors attach to derived series built FROM the case's own
+            # assets (e.g. CREDIT_RISK = HYG vs IEF). Count those as case-entity
+            # evidence, but do not count unrelated market-wide anomalies.
+            derived_parents = {
+                "CREDIT_RISK": {"US_CR_HYG", "US_FI_IEF"},
+                "equity_credit": {"US_EQ_SPY", "US_CR_HYG"},
+                "equity_oil": {"US_EQ_SPY", "CM_ENE_CL"},
+                "equity_vix": {"US_EQ_SPY", "US_VOL_VIX"},
+                "stock_bond": {"US_EQ_SPY", "US_FI_IEF"},
+                "VIX_TERM": {"US_VOL_VIX"},
+            }
+            derived = {syn for syn, parents in derived_parents.items() if parents & entities}
             if entities:
-                ent_anoms = window_anoms[window_anoms.entity_id.isin(entities)]
+                ent_anoms = window_anoms[window_anoms.entity_id.isin(entities | derived)]
             else:
                 ent_anoms = window_anoms
             # Detectors are evaluated globally within the window: several detectors
@@ -138,9 +150,12 @@ def run_case_validation(store: Store, out_dir: str | Path | None = None,
                     pass
             expected_mechs = c.get("expect_mechanisms", []) or []
             mech_checks = {}
+            mech_conf: dict[str, float] = {}
             for mid in expected_mechs:
                 hist = mech_union.get(mid, [])
                 statuses = [h["status"] for h in hist]
+                if hist:
+                    mech_conf[mid] = max(float(h.get("confidence", 0.0)) for h in hist)
                 if not hist:
                     mech_checks[mid] = "not_activated"
                 elif "supported" in statuses:
@@ -184,18 +199,26 @@ def run_case_validation(store: Store, out_dir: str | Path | None = None,
                                  "primary": d.primary_ids()} for d in relevant[:3]]
             exp_det = set(c.get("expect_detectors", []) or [])
             exp_fam = set(c.get("expect_families", []) or [])
+            # Case-entity-specific detection: the old criterion used the whole
+            # market's detector set, so 900+ anomalies guaranteed a hit even when
+            # none of the case's own assets/anomaly families fired.
+            entity_detectors = sorted(set(ent_anoms.detector)) if not ent_anoms.empty else []
+            entity_families = sorted(set(ent_anoms.family)) if not ent_anoms.empty else []
             checks = {
                 "detectors_expected": sorted(exp_det),
                 "detectors_found": found_detectors,
-                "detectors_hit": sorted(exp_det & set(found_detectors)),
+                "detectors_on_case_entities": entity_detectors,
+                "detectors_hit": sorted(exp_det & set(entity_detectors)),
                 "families_expected": sorted(exp_fam),
                 "families_found": found_families,
+                "families_on_case_entities": entity_families,
                 "mechanisms": mech_checks,
             }
-            det_hit = len(exp_det & set(found_detectors))
-            fam_hit = len(exp_fam & set(found_families))
+            det_hit = len(exp_det & set(entity_detectors))
+            fam_hit = len(exp_fam & set(entity_families))
             detection_ok = (det_hit > 0) or (fam_hit > 0)
-            mech_ok = any(v in ("supported", "mixed") for v in mech_checks.values()) if mech_checks else True
+            mech_ok = any(v == "supported" or (v == "mixed" and mech_conf.get(mid, 0) >= 0.30)
+                          for mid, v in mech_checks.items()) if mech_checks else True
             mech_evaluated = all(v not in ("not_activated",) for v in mech_checks.values()) if mech_checks else True
             # A case passes when the phenomenon was detected AND at least one of
             # the affected assets actually produced a candidate. Mechanism status

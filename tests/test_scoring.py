@@ -11,9 +11,9 @@ from goe.config import load_yaml_config
 from goe.opportunities import OpportunityEngine
 
 
-def _engine(rows=None) -> OpportunityEngine:
+def _engine(rows=None, data_degraded: bool = False) -> OpportunityEngine:
     fs = make_feature_set(rows=rows)
-    return OpportunityEngine(fs, pd.DataFrame())
+    return OpportunityEngine(fs, pd.DataFrame(), data_degraded=data_degraded)
 
 
 def _high_score_draft():
@@ -114,6 +114,28 @@ def test_missing_expectation_gap_caps_at_watch():
     engine._score(draft)
     assert draft.status == "watch"
     assert "预期差" in draft.status_reason
+
+
+def test_past_catalyst_is_not_forward_catalyst():
+    engine = _engine(rows=[
+        ("instrument", "US_EQ_SPY", "equity_etf", "US", "ma_gap_200d", "", END_DATE, 0.20),
+        ("instrument", "US_EQ_SPY", "equity_etf", "US", "drawdown_252d", "", END_DATE, -0.25),
+    ])
+    draft = _high_score_draft()
+    draft.catalysts = [{"date": "2024-11-01", "title": "past event", "type": "central_bank"}]  # -60d
+    engine._score(draft)
+    assert draft.score_components["catalyst"] == pytest.approx(0.1)
+
+
+def test_data_degradation_caps_deep_research():
+    engine = _engine(rows=[
+        ("instrument", "US_EQ_SPY", "equity_etf", "US", "ma_gap_200d", "", END_DATE, 0.20),
+        ("instrument", "US_EQ_SPY", "equity_etf", "US", "drawdown_252d", "", END_DATE, -0.25),
+    ], data_degraded=True)
+    draft = _high_score_draft()
+    engine._score(draft)
+    assert draft.status == "watch"
+    assert "降级" in draft.status_reason
 
 
 def test_low_score_draft_is_excluded_or_low_priority():

@@ -20,7 +20,8 @@ class StubEngine:
             "title": d.title, "market": d.market, "asset_class": d.asset_class,
             "instruments": d.instruments, "horizon": d.horizon, "status": d.status,
             "status_reason": d.status_reason, "score": d.score,
-            "score_breakdown": d.score_components, "discovery": d.discovery,
+            "score_breakdown": d.score_components,
+            "discovery": {**d.discovery, "invalidation_checks": d.invalidation_checks},
             "mechanism": d.mechanism, "evidence_for": d.evidence_for,
             "evidence_against": d.evidence_against, "catalysts": d.catalysts,
             "open_questions": d.open_questions, "invalidation": d.invalidation,
@@ -29,6 +30,11 @@ class StubEngine:
 
     def fv(self, *a, **k):
         return float("nan")
+
+
+class BreachedEngine(StubEngine):
+    def fv(self, *a, **k):
+        return 1.0  # every >0 invalidation check fires
 
 
 def _draft(status: str, score: float):
@@ -76,3 +82,12 @@ def test_terminal_status_is_not_resurrected(store):
     persist_drafts(store, StubEngine(_draft("deep_research", 0.75)), [_draft("deep_research", 0.75)])
     row = store.conn.execute("SELECT status FROM opportunities").fetchone()
     assert row["status"] == "invalidated"
+
+
+def test_current_candidate_is_invalidated_when_its_own_check_fires(store):
+    d = _draft("watch", 0.55)
+    d.invalidation_checks = [{"entity": "X", "feature": "f", "op": ">", "value": 0.0}]
+    persist_drafts(store, BreachedEngine(d), [d])
+    row = store.conn.execute("SELECT opportunity_id,status FROM opportunities").fetchone()
+    assert row["status"] == "invalidated", "a re-detected candidate must still respect invalidation_checks"
+    assert store.conn.execute("SELECT COUNT(*) FROM opportunities WHERE status='watch'").fetchone()[0] == 0

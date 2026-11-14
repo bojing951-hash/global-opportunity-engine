@@ -82,6 +82,8 @@ def test_research_question_is_self_contained(store):
     assert row["invalidation"] in question            # invalidation
     assert "请完成" in question
     assert "数据缺口" in question
+    assert "不构成投资建议" in question
+    assert "赔率" not in question
 
 
 def test_export_all_writes_pipeline_queue_tasks_and_schema(store, tmp_path):

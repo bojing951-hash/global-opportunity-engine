@@ -73,18 +73,33 @@ def parse_research_artifact(out_dir: str | Path, stdout: str = "") -> dict[str, 
     n_steps_failed = sum(1 for st in steps if isinstance(st, dict) and st.get("semantic_ok") is False)
     layers = payload.get("layers") or {}
     l1_available = bool((layers.get("L1_事实层") or {}).get("available"))
+    n_l1_rows = len((layers.get("L1_事实层") or {}).get("rows") or [])
+    n_l2_views = int(((layers.get("L2_机构观点层") or {}).get("views") or {}).get("n") or 0)
+    s8 = next((st for st in steps if isinstance(st, dict) and st.get("step") == "S8_grounded_qa"), None)
+    s8_status = (((s8 or {}).get("envelope") or {}).get("data") or {}).get("status")
+    s8_ok = (s8 or {}).get("semantic_ok")
     if run_ok is False:
         status, reason = "rejected", "下游研究明确返回失败/拒绝（run_ok=false）"
-    elif n_evidence == 0:
-        status, reason = "insufficient_data", "下游研究完成但证据行数为 0（数据不足）"
+    elif s8_status in ("out_of_scope", "refused", "rejected"):
+        # The downstream system REFUSED the question; this is not a partial study.
+        status, reason = "refused", f"下游明确拒答/越界（status={s8_status}）"
+    elif s8 is None:
+        status, reason = "partial", "缺少 S8 接地问答步骤，无法确认研究有效性"
+    elif s8_ok is False:
+        status, reason = "partial", "下游 S8 接地问答语义失败"
     elif n_steps_failed:
         status, reason = "partial", f"下游研究有 {n_steps_failed} 个步骤语义失败"
-    elif run_ok is True and (n_evidence or 0) >= 1:
-        status, reason = "ok_valid", "下游研究返回有效证据"
+    elif s8_ok is True and s8_status == "answered" and run_ok is True:
+        status, reason = "ok_valid", "下游 S8 已接地作答（answered）"
+        if n_l1_rows == 0 and n_l2_views == 0:
+            status, reason = "insufficient_data", "S8 声称作答但没有 L1 事实行或 L2 观点行"
+    elif (n_evidence or 0) == 0:
+        status, reason = "insufficient_data", "下游研究完成但证据行数为 0（数据不足）"
     else:
         status, reason = "partial", "结构化结果字段不完整，无法确认研究有效性"
     return {"semantic_status": status, "run_ok": run_ok, "n_evidence_rows": n_evidence,
             "n_steps_failed": n_steps_failed, "l1_available": l1_available,
+            "n_l1_rows": n_l1_rows, "n_l2_views": n_l2_views, "s8_status": s8_status,
             "report_path": str(report_path) if report_path else None, "reason": reason}
 
 

@@ -325,14 +325,9 @@ class MechanismEvaluator:
         # The condition observation is only KNOWN after its publication lag. Entry
         # must therefore be the first target price on/after (observation + lag),
         # otherwise the conditional statistics use information from the future.
-        try:
-            from ..config import load_macro
-            from ..features import RELEASE_LAG_DAYS
-
-            _m = load_macro().get(cond_id)
-            cond_lag = RELEASE_LAG_DAYS.get(_m.frequency, 0) if _m else 0
-        except Exception:
-            cond_lag = 0
+        # Macro feature dates are ALREADY availability dates; adding the release
+        # lag again double-counts it (audit R2). No extra lag here.
+        cond_lag = 0
         target_index = target_px.index
         events = []
         min_gap_days = max(1, int(horizon * 1.45))
