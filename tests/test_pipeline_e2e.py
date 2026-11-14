@@ -8,6 +8,8 @@ monkeypatches that seam so nothing is ever written to the repository's
 from __future__ import annotations
 
 import json
+
+import pytest
 from pathlib import Path
 
 import goe.pipeline as pipeline
@@ -23,6 +25,7 @@ def _run_scan(store, tmp_path, monkeypatch):
         ingest=False,
         out_dir=tmp_path / "reports",
         export=True,
+        readiness_min_coverage=0.0,   # synthetic store contains 8 of 125 configured instruments
     )
 
 
@@ -97,3 +100,19 @@ def test_run_scan_twice_does_not_duplicate_opportunities(store, tmp_path, monkey
         "SELECT COUNT(*) FROM scan_runs WHERE status='success' AND config_hash != '' AND data_hash != ''"
     ).fetchone()[0]
     assert success_runs == 2
+
+
+def test_failed_scan_rolls_back_partial_records(store, tmp_path, monkeypatch):
+    """A failure after anomaly persistence must not leave half-written artifacts."""
+    import goe.pipeline as pipeline
+
+    monkeypatch.setattr(pipeline, "write_reports",
+                        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("report failure")))
+    with pytest.raises(RuntimeError):
+        pipeline.run_scan(store, as_of=END_DATE, ingest=False, out_dir=tmp_path,
+                          export=False, readiness_min_coverage=0.0)
+    n_anom = store.scalar("SELECT COUNT(*) FROM anomalies")
+    n_opp = store.scalar("SELECT COUNT(*) FROM opportunities")
+    assert n_anom == 0 and n_opp == 0, (n_anom, n_opp)
+    status = store.scalar("SELECT status FROM scan_runs ORDER BY started_at DESC LIMIT 1")
+    assert status in ("failed", "rolled_back")

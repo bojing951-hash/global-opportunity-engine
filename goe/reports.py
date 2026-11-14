@@ -152,6 +152,20 @@ def render_opportunity(rec: dict[str, Any], detail: bool = True) -> str:
         lines.append(f"- {q}")
     lines.append("")
     lines.append(f"**失效条件**：{d.get('invalidation', '')}")
+    gap = (disc.get("expectation_gap") or {})
+    if gap:
+        lines.append("**预期差度量（可测代理）**：")
+        if gap.get("value") is None:
+            lines.append("- 不可测量（无可用估值/仓位/残差背离代理）——该候选不得进入重点研究")
+        else:
+            for name, comp in (gap.get("components") or {}).items():
+                if comp.get("value") is None:
+                    lines.append(f"- `{name}`：不可用（{comp.get('reason','')}）")
+                else:
+                    lines.append(f"- `{name}`：{comp['value']:.2f}（权重 {comp['weight']}；"
+                                 f"{comp.get('evidence',{}).get('meaning','')}）")
+            lines.append(f"- 合计 {gap['value']:.2f}，代理覆盖度 {gap.get('confidence',0):.0%}")
+        lines.append("")
     dq = json.loads(d["data_quality"]) if isinstance(d.get("data_quality"), str) else d.get("data_quality", {})
     if detail and dq:
         lines.append("")
@@ -181,7 +195,10 @@ def build_markdown(store: Store, fs: FeatureSet, anomalies: pd.DataFrame,
         "",
         "> 本报告是研究线索，不是交易建议。机会评分衡量研究优先级，不衡量预期收益；",
         "> 每条异常都带证据字段（阈值、公式、原始值），可用 `goe scan --as-of <日期>` 重建特征层复算；",
-        "> 异常记录持久化在 `anomalies` 表，机会与状态变更在 `opportunities` / `opportunity_events`。",
+        "> 异常记录持久化在 `anomalies` 表（含观测日/可用日）；机会与状态变更在 `opportunities` / `opportunity_events`。",
+        (f"> 数据就绪：覆盖率 {scan_meta.get('data_readiness',{}).get('coverage',0):.0%}，"
+         f"最后价格 {scan_meta.get('data_readiness',{}).get('last_price_date','')}，"
+         f"降级={scan_meta.get('data_readiness',{}).get('degraded')}。" if scan_meta.get('data_readiness') else ""),
         "",
         "## 1. 市场状态快照",
         "",
@@ -264,6 +281,12 @@ def build_markdown(store: Store, fs: FeatureSet, anomalies: pd.DataFrame,
             lines.append(f"| {r['opportunity_id']} {r['title']} | {r['score']:.2f} | {r['status']} | {r.get('status_reason', '')} |")
         lines.append("")
 
+    price_issues = scan_meta.get("price_data_issues") or []
+    if price_issues:
+        lines.append(f"**价格数据清洗**：本次处理 {len(price_issues)} 项（拆股调整/水平重定基/毛刺隔离/非正价格）。")
+        for it in price_issues[:8]:
+            lines.append(f"- `{it['instrument_id']}` {it['kind']} {it.get('date','')} {it.get('dates','')}")
+        lines.append("")
     lines += ["## 5. 数据质量与已知限制", ""]
     if quality_issues is not None and not quality_issues.empty:
         lines.append("| 时间 | 对象 | 问题码 | 严重度 | 说明 |")

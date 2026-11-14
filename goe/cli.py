@@ -173,6 +173,7 @@ def cmd_ingest(args: argparse.Namespace) -> int:
 # -------------------------------------------------------------------------- scan
 def cmd_scan(args: argparse.Namespace) -> int:
     from .pipeline import run_scan
+    from .readiness import ScanBlockedError
 
     store = _store(args)
     try:
@@ -181,6 +182,13 @@ def cmd_scan(args: argparse.Namespace) -> int:
             out_dir=args.out, export=not args.no_export, run_ia=args.handoff,
             ia_path=args.ia_path, max_candidates=args.max_candidates,
         )
+    except ScanBlockedError as exc:
+        msg = {"status": "blocked_data", "error": str(exc)}
+        if args.json:
+            _print_json(msg)
+        else:
+            print(f"SCAN BLOCKED: {exc}", file=sys.stderr)
+        return 2
     finally:
         store.close()
     if args.json:
@@ -233,8 +241,10 @@ def cmd_opp(args: argparse.Namespace) -> int:
                 print(f"  {e['at']} {e['event_type']}: {e.get('from_status')} -> {e.get('to_status')} {e.get('note','')}")
         return 0
     if args.action == "status":
-        ok = store.set_opportunity_status(args.id, args.set, args.reason or "manual update")
-        print(("updated " if ok else "no change ") + args.id)
+        source = "auto" if getattr(args, "auto", False) else "manual"
+        ok = store.set_opportunity_status(args.id, args.set, args.reason or "manual update",
+                                          source=source)
+        print(f"{'updated' if ok else 'no change'} {args.id} (source={source})")
         return 0 if ok else 1
     if args.action == "events":
         df = store.opportunity_events(args.id)
@@ -272,10 +282,12 @@ def cmd_handoff(args: argparse.Namespace) -> int:
             print(f"\n--- {row['opportunity_id']} (dry run) ---\n{q}\n")
             continue
         res = adapter.run_task(q, Path(args.out_dir) / row["opportunity_id"], timeout=args.timeout)
+        adapter.persist_result(store, row, q, res, Path(args.out_dir) / row["opportunity_id"])
         print(f"{row['opportunity_id']}: {res.get('status')} rc={res.get('returncode')} "
-              f"elapsed={res.get('elapsed_s')} out={res.get('out_dir')}")
-        if res.get("status") != "ok":
-            print((res.get("stderr_tail") or res.get("reason") or res.get("error") or "")[:1000])
+              f"semantic={res.get('semantic_status')} elapsed={res.get('elapsed_s')} "
+              f"out={res.get('out_dir')}")
+        if res.get("semantic_status") != "ok_valid":
+            print((res.get("semantic_reason") or res.get("stderr_tail") or res.get("error") or "")[:1000])
     return 0
 
 
@@ -403,6 +415,7 @@ def build_parser() -> argparse.ArgumentParser:
     o.add_argument("--limit", type=int, default=50)
     o.add_argument("--set", help="status: new/watch/deep_research/low_priority/excluded/archived")
     o.add_argument("--reason")
+    o.add_argument("--auto", action="store_true", help="清除人工保护，交回自动评分")
     o.add_argument("--json", action="store_true")
     o.set_defaults(func=cmd_opp)
 

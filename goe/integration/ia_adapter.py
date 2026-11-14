@@ -28,6 +28,66 @@ from typing import Any
 from ..db import Store
 
 
+def parse_research_artifact(out_dir: str | Path, stdout: str = "") -> dict[str, Any]:
+    """Read the downstream RESEARCH semantics, not just the process exit code.
+
+    The investment-agent completes with rc=0 even when the research result is
+    rejected or has no evidence rows. Success therefore requires a structured
+    artifact: ``run_ok`` true, at least one evidence row, and no failed pipeline
+    step. Returns a dict with semantic_status / run_ok / n_evidence_rows /
+    n_steps_failed / report_path / reason.
+    """
+    out = Path(out_dir)
+    reports = sorted(out.rglob("report.json"), key=lambda p: p.stat().st_mtime, reverse=True) if out.exists() else []
+    payload = None
+    report_path = None
+    if reports:
+        report_path = reports[0]
+        try:
+            payload = json.loads(report_path.read_text(encoding="utf-8"))
+        except Exception:
+            payload = None
+    if payload is None:
+        # fall back to a JSON envelope on stdout (ia_cli prints one in some modes)
+        for line in reversed((stdout or "").splitlines()):
+            line = line.strip()
+            if line.startswith("{") and line.endswith("}"):
+                try:
+                    cand = json.loads(line)
+                except Exception:
+                    continue
+                if isinstance(cand, dict) and ("ok" in cand or "run_ok" in cand):
+                    payload = cand
+                    break
+    if payload is None:
+        return {"semantic_status": "partial", "run_ok": None, "n_evidence_rows": None,
+                "n_steps_failed": None, "report_path": str(report_path) if report_path else None,
+                "reason": "研究进程结束但未找到可解析的结构化报告"}
+
+    run_ok = payload.get("run_ok")
+    if run_ok is None:
+        run_ok = payload.get("ok")
+    evidence = payload.get("evidence_index")
+    n_evidence = len(evidence) if isinstance(evidence, (list, dict)) else payload.get("n_evidence_rows")
+    steps = payload.get("steps") or []
+    n_steps_failed = sum(1 for st in steps if isinstance(st, dict) and st.get("semantic_ok") is False)
+    layers = payload.get("layers") or {}
+    l1_available = bool((layers.get("L1_事实层") or {}).get("available"))
+    if run_ok is False:
+        status, reason = "rejected", "下游研究明确返回失败/拒绝（run_ok=false）"
+    elif n_evidence == 0:
+        status, reason = "insufficient_data", "下游研究完成但证据行数为 0（数据不足）"
+    elif n_steps_failed:
+        status, reason = "partial", f"下游研究有 {n_steps_failed} 个步骤语义失败"
+    elif run_ok is True and (n_evidence or 0) >= 1:
+        status, reason = "ok_valid", "下游研究返回有效证据"
+    else:
+        status, reason = "partial", "结构化结果字段不完整，无法确认研究有效性"
+    return {"semantic_status": status, "run_ok": run_ok, "n_evidence_rows": n_evidence,
+            "n_steps_failed": n_steps_failed, "l1_available": l1_available,
+            "report_path": str(report_path) if report_path else None, "reason": reason}
+
+
 @dataclass
 class IAEnvironment:
     path: Path
@@ -95,9 +155,19 @@ class IAAdapter:
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd=str(self.path))
             elapsed = (datetime.now(timezone.utc) - started).total_seconds()
+            semantics = parse_research_artifact(out_dir, proc.stdout or "")
+            # A zero exit code only proves the process ran. The task is "ok" only
+            # when the downstream research artifact is semantically valid.
+            overall = "ok" if (proc.returncode == 0 and semantics["semantic_status"] == "ok_valid") else "not_ok"
             return {
-                "status": "ok" if proc.returncode == 0 else "failed",
+                "status": overall,
                 "returncode": proc.returncode,
+                "semantic_status": semantics["semantic_status"],
+                "semantic_reason": semantics["reason"],
+                "run_ok": semantics["run_ok"],
+                "n_evidence_rows": semantics["n_evidence_rows"],
+                "n_steps_failed": semantics["n_steps_failed"],
+                "report_path": semantics["report_path"],
                 "command": cmd,
                 "out_dir": str(out_dir),
                 "stdout_tail": (proc.stdout or "")[-4000:],
@@ -108,6 +178,30 @@ class IAAdapter:
             return {"status": "timeout", "command": cmd, "out_dir": str(out_dir), "timeout_s": timeout}
         except Exception as exc:  # noqa: BLE001
             return {"status": "error", "error": f"{type(exc).__name__}: {exc}", "command": cmd}
+
+    # ------------------------------------------------------------------ persist
+    def persist_result(self, store: Store, row: dict[str, Any], question: str,
+                       res: dict[str, Any], target: Path) -> None:
+        """Record the research run and its SEMANTIC status for one opportunity."""
+        sem = res.get("semantic_status", "unknown")
+        existing = store.conn.execute(
+            "SELECT task_id FROM research_tasks WHERE opportunity_id=? ORDER BY created_at LIMIT 1",
+            (row["opportunity_id"],)).fetchone()
+        task_id = existing["task_id"] if existing else f"RT-{row['opportunity_id']}"
+        store.add_opportunity_event(
+            row["opportunity_id"],
+            "ia_research_run" if sem == "ok_valid" else "ia_research_not_completed",
+            row["status"], row["status"],
+            f"investment-agent: {sem} ({res.get('semantic_reason', '')})", run_id=None)
+        store.upsert_research_task({
+            "task_id": task_id, "opportunity_id": row["opportunity_id"],
+            "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "target_system": "investment-agent",
+            "payload": {"question": question, "result": res},
+            "exported_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "export_path": str(target),
+            "status": "completed" if sem == "ok_valid" else f"not_completed:{sem}",
+        })
 
     # -------------------------------------------------------------------- queue
     def run_queue(self, store: Store, records: list[dict[str, Any]], limit: int = 3,
@@ -131,19 +225,7 @@ class IAAdapter:
             res = self.run_task(question, target)
             res["opportunity_id"] = row["opportunity_id"]
             results.append(res)
-            if res.get("status") == "ok":
-                store.add_opportunity_event(row["opportunity_id"], "ia_research_run", row["status"],
-                                            row["status"], f"investment-agent research-run 完成: {target}",
-                                            run_id=None)
-                store.upsert_research_task({
-                    "task_id": f"RT-{row['opportunity_id']}",
-                    "opportunity_id": row["opportunity_id"],
-                    "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                    "target_system": "investment-agent",
-                    "payload": {"question": question, "result": res},
-                    "exported_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                    "export_path": str(target), "status": "completed",
-                })
+            self.persist_result(store, row, question, res, target)
         return results
 
     # ---------------------------------------------------------------- questions
