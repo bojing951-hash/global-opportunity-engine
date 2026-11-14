@@ -38,3 +38,10 @@ QA verdict: PASS WITH ISSUES; two P1s. Both fixed after the report was written.
 - Real CFTC/BLS publication timestamps and vintages.
 - Human/expert blind labels and forward performance beyond the 12-object sample.
 - A real `ok_valid` A→B research handoff (B still returns out_of_scope on asset-specific questions).
+
+## Post-verification (QA_ROUND2_FIX_VERIFICATION.md)
+Independent verifier confirmed both P1s fixed and no new P0/P1. It noted the research task
+status had been overwritten by a later example export (`exported`); the handoff was re-run after
+that export and the task is now `not_completed:refused`. It also flagged a weak stale-series test
+and duplicate aggregate curve warnings; both were corrected (test now uses a series with no newer
+row; aggregate duplicate warning removed). Final tests: 137 offline.

@@ -190,8 +190,8 @@ def test_single_stale_series_is_disclosure_not_global_deep_cap(store):
     from goe.config import load_macro
     from goe.readiness import check_data_readiness
 
-    ids = list(load_macro())[:7]
-    for sid in ids:
+    ids = list(load_macro())[:8]
+    for sid in ids[:-1]:
         store.conn.execute("INSERT OR REPLACE INTO indicators(series_id,date,value,unit,source_id,fetched_at) "
                            "VALUES(?,?,?,?,?,?)", (sid, "2024-09-01", 1.0, "index", "test",
                                                    "2024-01-01T22:00:00Z"))

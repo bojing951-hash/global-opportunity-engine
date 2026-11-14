@@ -80,6 +80,9 @@ research edge and human/expert validation remain unproven (Gate C/D PARTIAL).
   (1) a single stale series globally capping deep research → split `degraded` vs
   `critical_degraded`; (2) all UST tenors stale not critical → per-curve-system critical check.
   Remaining items are P2 and documented in `audit/ROUND2_FIX_SUMMARY.md`.
+  A focused independent verification (`audit/QA_ROUND2_FIX_VERIFICATION.md`) confirmed both P1
+  fixes and found no new P0/P1; it also flagged a stale task-status artifact, corrected by
+  re-running the handoff after the example export.
 
 ## Reproduction
 ```bash

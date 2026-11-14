@@ -252,12 +252,8 @@ def check_data_readiness(store: Store, as_of: str | None = None, *,
         elif present_n and fresh_n < present_n * 0.5:
             res.warnings.append(f"{cid} 曲线多数期限过期：{fresh_n}/{present_n} 个在 15 天内有更新")
             res.degraded = True
-    if present_curve == 0:
-        res.warnings.append(f"收益率曲线缺失：0/{len(curve_ids)} 个期限可用")
-        res.degraded = True
-    elif present_curve < len(curve_ids) * 0.5:
-        res.warnings.append(f"收益率曲线不完整：仅 {present_curve}/{len(curve_ids)} 个期限存在")
-        res.degraded = True
+    # Per-system warnings above already cover missing/stale systems; do not add a
+    # duplicate aggregate warning here (QA P3).
     pos_ids = list(load_positioning())
     present_pos = store.conn.execute(
         f"SELECT COUNT(DISTINCT series_id) FROM indicators WHERE series_id IN ({','.join('?' for _ in pos_ids)})",
