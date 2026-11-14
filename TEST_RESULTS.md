@@ -69,7 +69,7 @@
 .venv/bin/python -m goe.cli replay --start ... --step 21  # 逐时点回放
 ```
 
-审计后最终结果：**7/7**（逐评估日独立 PIT 切片）；归档 `reports/validation_cases_*.md` + `audit/VALIDATION_RESULTS.md`。
+审计后最终结果：**7/7**（逐评估日独立 PIT 切片）；归档 `reports/validation_cases_20261114T092812Z.md` + `audit/VALIDATION_RESULTS.md`。
 方法与解读见 `docs/VALIDATION.md`；该验证衡量检测能力，不衡量收益。
 
 ## 5. 未覆盖 / 已知测试缺口

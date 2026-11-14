@@ -36,7 +36,7 @@
 ## D. Historical cases (PIT slice per evaluation date)
 Final after the detector-boundary fix and the stricter **case-entity** rule: **7/7** (COVID, 2022
 rate shock, UK LDI, SVB, yen carry, China policy rally, gold vs real rates); report
-`reports/validation_cases_20261114T063037Z.md`. The China case passes through the observed-policy-action
+`reports/validation_cases_20261114T092812Z.md`. The China case passes through the observed-policy-action
 archetype (CSI 300, watch); SVB via credit_stress on the derived CREDIT_RISK series (HYG/IEF are case
 assets); gold via the general **mechanism-breakdown** archetype ("gold vs real yields failed"), not a
 case-specific rule. Mechanisms were often `unsupported` — correctly reported, not treated as detection failure.
