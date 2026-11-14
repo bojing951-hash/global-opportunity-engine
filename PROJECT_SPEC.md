@@ -75,12 +75,12 @@
 |---|---|---|---|
 | 1 | 可运行的全球主要资产监测系统 | ✅（审计后） | `goe doctor`、`goe ingest`、`reports/` 生成；125 标的、10 年历史 |
 | 2 | 接入真实金融数据并记录来源/时效/覆盖 | ✅ | `config/sources.yaml`、`docs/DATA_SOURCES.md`、`quality_issues` |
-| 3 | 实现市场异常检测 | ✅ | `goe/anomalies.py`；`tests/test_anomalies.py`；本次扫描 2,935 条（200 天窗口） |
-| 4 | 实现宏观变量与跨资产传导分析 | ✅ | `config/mechanisms.yaml`（15）+ `goe/transmission/evaluator.py`；本次 6 条被激活（2 supported） |
+| 3 | 实现市场异常检测 | ✅ | `goe/anomalies.py`；`tests/test_anomalies.py`；审计后扫描 1,649 条（200 天窗口；trend_break 窗口边界伪信号已修复） |
+| 4 | 实现宏观变量与跨资产传导分析 | ✅ | `config/mechanisms.yaml`（15）+ `goe/transmission/evaluator.py`；审计后 5 条被激活（2 mixed / 3 unsupported；p 值与 BH-FDR） |
 | 5 | 实现投资机会候选池 | ✅ | `goe/opportunities.py` + `data/goe.db:opportunities` |
 | 6 | 每个候选含证据/原因/机制/待研究问题 | ✅ | `tests/test_export.py`、`reports/report_*.md` |
 | 7 | 可解释的机会筛选与排序 | ✅（审计后重构） | 预期差改为可测代理，缺失即不可升为重点研究； `config/scoring.yaml` + `tests/test_scoring.py` |
-| 8 | 与 investment-agent 的接口 | ✅ | `goe/integration/`；实测 `research-run` rc=0（见 docs/INTEGRATION_INVESTMENT_AGENT.md） |
+| 8 | 与 investment-agent 的接口 | ✅ | `goe/integration/`；实测 rc=0 但下游 1 个步骤语义失败，A 记录 `partial` / `not_completed:partial`（不把 rc=0 当成功） |
 | 9 | 历史测试、数据质量、端到端测试 | ✅ | 121 项离线 + 9 项联网测试通过；审计后 7 个历史情景在逐日 PIT 切片下 7/7 通过（见 audit/VALIDATION_RESULTS.md）；`TEST_RESULTS.md`、`docs/VALIDATION.md` |
 | 10 | 自动运行、失败恢复、状态持久化 | ✅ | `scripts/run_daily.sh` + launchd 模板；SQLite 持久化 + `PROJECT_STATE.md`；`scan_runs` 失败记录 |
 | 11 | 可查看的研究结果与运行说明 | ✅ | `reports/`、`goe web`、README 快速开始 |

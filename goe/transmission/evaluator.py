@@ -247,7 +247,7 @@ class MechanismEvaluator:
         stable_share = float((np.sign(recent) == expected).mean())
         # Overlapping windows are not independent observations: effective n is the
         # number of non-overlapping windows in the sample.
-        n_eff = max(10.0, len(df) / max(1, eff_window))
+        n_eff = max(4.0, len(df) / max(1, eff_window))
         p_value = _fisher_p(latest, n_eff)
         alpha = float(spec.get("alpha", 0.10))
         passed = bool(np.sign(latest) == expected and abs(latest) >= min_abs
@@ -290,8 +290,10 @@ class MechanismEvaluator:
             c = df["a"].shift(lag).corr(df["b"])
             if pd.notna(c) and abs(c) > abs(best_corr):
                 best_lag, best_corr = lag, float(c)
-        n_eff = max(10.0, len(df) / max(1, 2 * max_lag + 1))
-        p_value = _fisher_p(best_corr, n_eff)
+        n_eff = max(4.0, len(df) / max(1, 2 * max_lag + 1))
+        # the best lag was chosen out of 2*max_lag+1 candidates: Bonferroni-correct
+        # the p-value for the lag search (conservative).
+        p_value = min(1.0, _fisher_p(best_corr, n_eff) * (2 * max_lag + 1))
         alpha = float(spec.get("alpha", 0.10))
         passed = bool(np.sign(best_corr) == expected and abs(best_corr) >= float(spec.get("min_abs", 0.10))
                       and best_lag >= 0 and p_value <= alpha)

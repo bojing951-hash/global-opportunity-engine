@@ -21,7 +21,7 @@ Evidence = reproduction command/output, not assertion.
 | ID | Sev | Issue | Evidence | Root cause | Fix | Status |
 |---|---|---|---|---|---|---|
 | N-01 | P0 | Monday/post-holiday returns dropped on union calendar | SPY 2026-11-09 +2.37% had no 1d z; 122 Monday moves ≥3σ invisible | `pct_change` on union calendar yields NaN at Monday, then dropped | business-day panel + per-instrument `dropna().pct_change()`; `safe_pct_change` over valid observations | FIXED/VERIFIED (SPY 11-09 z=3.35) |
-| N-02 | P0 | trend_break false positives | 1,181/2,935 anomalies (40%), 88.6% 10 rows after non-trading day | `fillna(0)` + global `shift(10)` | per-instrument valid-observation sign flips; no fill | FIXED (trend_break 1,181→134 on recalibrated scan) |
+| N-02 | P0 | trend_break false positives | 1,181/2,935 anomalies (40%), 88.6% 10 rows after non-trading day | `fillna(0)` + global `shift(10)` | per-instrument valid-observation sign flips; no fill | FIXED (1,181→93 on final scan; window-boundary false signals from pre-detection truncation also fixed) |
 | N-03 | P0 | breadth dead (MA200 never reached on union calendar) | breadth_above_ma200 constant 0; no breadth anomalies | 200-row window < 200 trading days | business-day calendar; breadth 0 anomalies → 10, series non-constant | FIXED/VERIFIED |
 | N-04 | P1 | latest bar is intraday snapshot | SPY 753.11/5.9M vs final 754.37/38.4M | no completed-bar guard | regional close-time guard + fetched_at; US last bar dropped at 10:05 ET | FIXED (SPY last=2026-11-12) |
 | N-05 | P1 | Shiller CAPE/ERP bypasses PIT and staleness | at 2023-08-15 used CAPE published ~Sep | raw store read in cross-asset features | ERP uses PIT-filtered macro frame only | FIXED |

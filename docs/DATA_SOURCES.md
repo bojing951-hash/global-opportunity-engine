@@ -33,7 +33,7 @@
 
 | 前缀/示例 | 含义 |
 |---|---|
-| `US_EQ_SPY` 等 | 交易标的（见 `config/universe.yaml`，共 127 个） |
+| `US_EQ_SPY` 等 | 交易标的（见 `config/universe.yaml`，共 125 个） |
 | `UST:2Y`, `UST:10Y`, `UST:30Y` | 美国国债曲线期限（共 13 个） |
 | `JGB:10Y`, `EAC:10Y`, `CN:10Y` | 日本/欧元区/中国曲线期限 |
 | `US_CPI`, `US_CORE_CPI`, `US_UNRATE`, `US_PAYROLLS` | 美国宏观（BLS） |

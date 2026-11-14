@@ -17,7 +17,7 @@ newly-found P0/P1s fixed; residual limitations explicit, no fabricated validatio
 ## 2. Data reliability
 - Provenance complete (0 null source_id/fetched_at in 358,310 prices / 159,508 indicators).
 - Fixed: CFTC lookahead (as_of 2026-11-04 max row 2026-10-31) and net/OI (−0.2048 ratio);
-  Monday/post-holiday returns (SPY 2026-11-09 z=3.35); dead breadth; 40%→8% trend_break artefacts;
+  Monday/post-holiday returns (SPY 2026-11-09 z=3.35); dead breadth; 40%→5.6% trend_break artefacts;
   intraday last bar dropped (US last = 2026-11-12); ERP PIT; 3.213:1 conversion rebased;
   BLS/BIS revision lookback (monthly 150d).
 - **Residual/unverifiable**: actual CFTC/BLS publication timestamps vs assumed lags; futures roll
@@ -36,8 +36,8 @@ newly-found P0/P1s fixed; residual limitations explicit, no fabricated validatio
 ## 4. Real screening ability
 - Historical replay with independent PIT slices: **7/7** (COVID, 2022 rate shock, UK LDI, SVB,
   yen carry, China policy rally, gold vs real rates).
-- Current scan: 1,651 anomalies, 5 mechanisms (3 mixed/2 unsupported), 18 candidates
-  (10 watch, 6 low_priority, 2 excluded, **0 deep_research**).
+- Current scan: 1,649 anomalies, 5 mechanisms (2 mixed/3 unsupported), 18 candidates
+  (9 watch, 7 low_priority, 2 excluded, **0 deep_research**).
 - Top-3 research objects: QQQ policy repricing (Fed hike, 0.670), SPY VIX regime (0.662),
   XLP energy-inflation chain (0.653); each has a measurable gap or explicit gap=None and
   evidence/invalidations.
@@ -62,4 +62,7 @@ newly-found P0/P1s fixed; residual limitations explicit, no fabricated validatio
 Artifacts: `audit/ISSUE_LEDGER.md`, `FIX_LOG.md`, `VALIDATION_RESULTS.md`, `RESEARCH_QUALITY.md`,
 `reports/report_2026-11-13.md`, `reports/validation_cases_*.md`.
 
-QA: see `audit/FINAL_QA_AUDIT.md` (independent reviewer, pending insertion).
+QA: independent reviewer verdict **PASS WITH ISSUES**, no original P1 unresolved
+(`audit/FINAL_QA_AUDIT.md`). Responses to its residual risks are in `audit/QA_RESPONSE.md`;
+the only acknowledged unfixed items are the absence of forward-return/human validation, approximate
+mechanism p-values without HAC, and non-atomic mid-`persist_drafts` failure (disclosed, not claimed).

@@ -260,6 +260,7 @@ def cmd_handoff(args: argparse.Namespace) -> int:
 
     store = _store(args)
     adapter = IAAdapter(args.ia_path, python=args.ia_python)
+    exit_code = 0
     env = adapter.env
     print(f"investment-agent: {env.path} exists={env.exists} cli={env.has_cli} python={env.python}")
     for n in env.notes:
@@ -287,8 +288,9 @@ def cmd_handoff(args: argparse.Namespace) -> int:
               f"semantic={res.get('semantic_status')} elapsed={res.get('elapsed_s')} "
               f"out={res.get('out_dir')}")
         if res.get("semantic_status") != "ok_valid":
+            exit_code = 2
             print((res.get("semantic_reason") or res.get("stderr_tail") or res.get("error") or "")[:1000])
-    return 0
+    return exit_code
 
 
 # ---------------------------------------------------------------------- export

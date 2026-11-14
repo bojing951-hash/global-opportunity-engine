@@ -57,7 +57,7 @@
 见 `PROJECT_STATE.md` §6 与仓库内 `reports/`（示例拷贝在 `docs/examples/`）：
 
 - `goe ingest --mode backfill`：价格 358,310 行 / 125 标的；指标 159,508 行 / 92 序列；失败 0。
-- 审计后最终扫描：异常 1,651；机制 5（3 mixed / 2 unsupported，p 值 + BH-FDR）；机会 18（10 watch / 6 low_priority / 2 excluded / 0 deep_research）。
+- 审计后最终扫描：异常 1,649；机制 5（2 mixed / 3 unsupported，p 值 + BH-FDR）；机会 18（9 watch / 7 low_priority / 2 excluded / 0 deep_research）。
 - `goe handoff --ia-path ~/investment-agent-dev --limit 1`：investment-agent `research-run` 返回 rc=0，
   产出 `report.md` / `report.json`。
 

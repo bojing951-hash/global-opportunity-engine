@@ -829,10 +829,10 @@ def _benchmark_of(entity_id: str) -> str:
 def detect_anomalies(fs: FeatureSet, thresholds: dict[str, Any] | None = None,
                      detectors: Iterable[type[Detector]] | None = None,
                      since: str | None = None) -> pd.DataFrame:
-    if since:
-        from dataclasses import replace as _replace
-
-        fs = _replace(fs, long=fs.long[fs.long.date >= since].copy())
+    # IMPORTANT: do NOT truncate the long frame before detection. Windowed
+    # detectors (trend_break shift(10), percentile windows, ...) need the pre-window
+    # history; truncating first creates false signals at the window boundary.
+    # Filter the *emitted anomalies* to the requested window, after detection.
     ctx = DetectorContext(fs, thresholds)
     frames: list[pd.DataFrame] = []
     errors: list[str] = []
@@ -847,6 +847,8 @@ def detect_anomalies(fs: FeatureSet, thresholds: dict[str, Any] | None = None,
         out = pd.DataFrame()
     else:
         out = pd.concat(frames, ignore_index=True)
+        if since and not out.empty:
+            out = out[out["date"] >= since].copy()
         out = _apply_flood_control(out, ctx)
     out.attrs["errors"] = errors
     out.attrs["n_detectors"] = len(list(detectors or DETECTORS))

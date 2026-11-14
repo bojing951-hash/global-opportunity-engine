@@ -88,7 +88,9 @@ def test_corr_test_treats_window_as_trading_days_for_daily_series():
     12-day window) while treating monthly inputs as months.
     """
     rng = np.random.default_rng(7)
-    n = 270
+    # 2500 obs / 250-day window ~= 10 independent windows; significance is then
+    # meaningful (the old test relied on an inflated effective-n floor of 10).
+    n = 2500
     index = pd.bdate_range("2024-01-01", periods=n)
     a = pd.Series(rng.normal(size=n), index=index)
     b = pd.Series(-0.9 * a.values + 0.1 * rng.normal(size=n), index=index)
