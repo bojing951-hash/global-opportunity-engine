@@ -126,6 +126,8 @@ def test_release_manifest_rejects_network_category(monkeypatch, small_repo, tmp_
                   command_template=rel.command_template("network"))
     monkeypatch.setattr(rel, "verify_test_proof", lambda *a, **k: forged)
     monkeypatch.setattr(rel, "_dirty_code", lambda **k: False)
+    monkeypatch.setattr(rel, "_git_root", lambda *a, **k: tmp_path.resolve())
+    monkeypatch.setattr(rel, "_git", lambda *a, **k: "abc123")
     with pytest.raises(rel.ReleaseError, match="release requires"):
         rel.build_manifest(store=object(), proof_path=proof["proof_path"])
 
