@@ -59,7 +59,7 @@ CATEGORY_MARKERS: dict[str, str] = {
 }
 DEFAULT_CATEGORY = "offline"
 RELEASE_CATEGORY = "offline"
-MIN_REQUIRED: dict[str, int] = {"offline": 200, "network": 9, "realdata": 1}
+MIN_REQUIRED: dict[str, int] = {"offline": 201, "network": 9, "realdata": 1}
 
 _HARDENED_ENV = (
     "PYTHONOPTIMIZE",
@@ -300,7 +300,8 @@ def _assert_no_test_file_is_hidden(tree: Path, expected: list[str]) -> None:
     represented = {nid.split("::", 1)[0] for nid in expected}
     files = {
         p.relative_to(tree).as_posix()
-        for p in (tree / "tests").rglob("test_*.py")
+        for pattern in ("test_*.py", "*_test.py")
+        for p in (tree / "tests").rglob(pattern)
         if ".git" not in p.parts
     }
     hidden = sorted(files - represented)
