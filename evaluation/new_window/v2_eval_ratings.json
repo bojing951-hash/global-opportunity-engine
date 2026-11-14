@@ -1,0 +1,131 @@
+{
+  "rater": "independent-llm-new-window",
+  "criteria": [
+    "real_market_change",
+    "beyond_price",
+    "falsifiable",
+    "data_sufficiency"
+  ],
+  "ratings": [
+    {
+      "object_id": "V01",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "12月+64%,仅价格证据"
+    },
+    {
+      "object_id": "V02",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "近五年高位,涨幅温和"
+    },
+    {
+      "object_id": "V03",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "一年翻倍,无价格外证据"
+    },
+    {
+      "object_id": "V04",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "12月+141%,缺旁证"
+    },
+    {
+      "object_id": "V05",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 1,
+        "data_sufficiency": 2
+      },
+      "note": "持仓居中,双向价格冲击"
+    },
+    {
+      "object_id": "V06",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 1,
+        "falsifiable": 1,
+        "data_sufficiency": 2
+      },
+      "note": "单月-25%已回吐,低持仓"
+    },
+    {
+      "object_id": "V07",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "突破五年新高,缺基本面"
+    },
+    {
+      "object_id": "V08",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "与V03同,仅价格证据"
+    },
+    {
+      "object_id": "V09",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 2,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "持仓97分位,机制未证"
+    },
+    {
+      "object_id": "V10",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "与V03同,仅价格证据"
+    },
+    {
+      "object_id": "V11",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "与V04同,仅价格证据"
+    },
+    {
+      "object_id": "V12",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "与V04同,仅价格证据"
+    }
+  ]
+}

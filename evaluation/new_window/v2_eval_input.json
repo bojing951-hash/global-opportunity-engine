@@ -1,0 +1,464 @@
+{
+  "instructions": "Independent research-value rating; methods hidden; score four criteria 0-2 from the facts only.",
+  "criteria": [
+    "real_market_change",
+    "beyond_price",
+    "falsifiable",
+    "data_sufficiency"
+  ],
+  "objects": [
+    {
+      "as_of": "2025-12-31",
+      "object_id": "V01",
+      "facts": {
+        "object_id": "V01",
+        "name": "SPDR Gold Shares",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "return_1m": 0.0168,
+        "return_3m": 0.1131,
+        "return_12m": 0.6417,
+        "vol_pctile_5y": 0.9952,
+        "drawdown_pctile_5y": 0.5234,
+        "ma_gap_200d": 0.1934,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 0.54,
+            "available_date": "2025-12-29"
+          },
+          {
+            "detector": "vol_regime_shift",
+            "direction": "expansion",
+            "score": 0.72,
+            "available_date": "2025-12-31"
+          }
+        ],
+        "mechanisms": [
+          {
+            "id": "M02_GOLD_REAL_YIELD",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "secondary"
+          }
+        ],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2025-12-31",
+      "object_id": "V02",
+      "facts": {
+        "object_id": "V02",
+        "name": "AUD/USD",
+        "market": "AU",
+        "asset_class": "fx",
+        "return_1m": 0.0224,
+        "return_3m": 0.0125,
+        "return_12m": 0.0743,
+        "vol_pctile_5y": 0.0008,
+        "drawdown_pctile_5y": 0.9936,
+        "ma_gap_200d": 0.0305,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "drawdown_extreme",
+            "direction": "near_high",
+            "score": 0.99,
+            "available_date": "2025-12-24"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2025-12-31",
+      "object_id": "V03",
+      "facts": {
+        "object_id": "V03",
+        "name": "NYMEX Platinum front month",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "return_1m": 0.2182,
+        "return_3m": 0.2959,
+        "return_12m": 1.2757,
+        "vol_pctile_5y": 1.0,
+        "drawdown_pctile_5y": 0.3527,
+        "ma_gap_200d": 0.4851,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 1.0,
+            "available_date": "2025-12-29"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2025-12-31",
+      "object_id": "V04",
+      "facts": {
+        "object_id": "V04",
+        "name": "iShares Silver Trust",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "return_1m": 0.2266,
+        "return_3m": 0.5013,
+        "return_12m": 1.4073,
+        "vol_pctile_5y": 1.0,
+        "drawdown_pctile_5y": 0.5909,
+        "ma_gap_200d": 0.6722,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 0.37,
+            "available_date": "2025-12-31"
+          },
+          {
+            "detector": "vol_regime_shift",
+            "direction": "expansion",
+            "score": 1.0,
+            "available_date": "2025-12-31"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2025-12-31",
+      "object_id": "V05",
+      "facts": {
+        "object_id": "V05",
+        "name": "COMEX Silver front month",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "return_1m": 0.2006,
+        "return_3m": 0.4831,
+        "return_12m": 1.4234,
+        "vol_pctile_5y": 1.0,
+        "drawdown_pctile_5y": 0.5917,
+        "ma_gap_200d": 0.6605,
+        "positioning_net_pctile_5y": 0.4324,
+        "recent_anomalies": [
+          {
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 0.82,
+            "available_date": "2025-12-31"
+          },
+          {
+            "detector": "price_return_shock",
+            "direction": "up",
+            "score": 1.0,
+            "available_date": "2025-12-26"
+          },
+          {
+            "detector": "vol_regime_shift",
+            "direction": "expansion",
+            "score": 1.0,
+            "available_date": "2025-12-29"
+          }
+        ],
+        "mechanisms": [
+          {
+            "id": "M02_GOLD_REAL_YIELD",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "secondary"
+          }
+        ],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2025-12-31",
+      "object_id": "V06",
+      "facts": {
+        "object_id": "V06",
+        "name": "Henry Hub Natural Gas front month",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "return_1m": -0.251,
+        "return_3m": 0.0604,
+        "return_12m": 0.0146,
+        "vol_pctile_5y": 0.6068,
+        "drawdown_pctile_5y": 0.4464,
+        "ma_gap_200d": 0.0354,
+        "positioning_net_pctile_5y": 0.1351,
+        "recent_anomalies": [
+          {
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 0.17,
+            "available_date": "2025-12-30"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2025-12-31",
+      "object_id": "V07",
+      "facts": {
+        "object_id": "V07",
+        "name": "China Defense Sector ETF",
+        "market": "CN",
+        "asset_class": "sector_equity",
+        "return_1m": 0.1626,
+        "return_3m": 0.1413,
+        "return_12m": 0.3202,
+        "vol_pctile_5y": 0.2566,
+        "drawdown_pctile_5y": 0.9913,
+        "ma_gap_200d": 0.199,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "drawdown_extreme",
+            "direction": "near_high",
+            "score": 0.96,
+            "available_date": "2025-12-25"
+          },
+          {
+            "detector": "relative_strength_extreme",
+            "direction": "outperform",
+            "score": 0.41,
+            "available_date": "2025-12-31"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2025-12-31",
+      "object_id": "V08",
+      "facts": {
+        "object_id": "V08",
+        "name": "NYMEX Platinum front month",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "return_1m": 0.2182,
+        "return_3m": 0.2959,
+        "return_12m": 1.2757,
+        "vol_pctile_5y": 1.0,
+        "drawdown_pctile_5y": 0.3527,
+        "ma_gap_200d": 0.4851,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 1.0,
+            "available_date": "2025-12-29"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2025-12-31",
+      "object_id": "V09",
+      "facts": {
+        "object_id": "V09",
+        "name": "COMEX Copper front month",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "return_1m": 0.0788,
+        "return_3m": 0.1655,
+        "return_12m": 0.4124,
+        "vol_pctile_5y": 0.8014,
+        "drawdown_pctile_5y": 0.8944,
+        "ma_gap_200d": 0.1455,
+        "positioning_net_pctile_5y": 0.9691,
+        "recent_anomalies": [
+          {
+            "detector": "drawdown_extreme",
+            "direction": "near_high",
+            "score": 0.79,
+            "available_date": "2025-12-26"
+          },
+          {
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 0.19,
+            "available_date": "2025-12-29"
+          },
+          {
+            "detector": "price_return_shock",
+            "direction": "up",
+            "score": 0.18,
+            "available_date": "2025-12-26"
+          },
+          {
+            "detector": "relative_strength_extreme",
+            "direction": "outperform",
+            "score": 0.11,
+            "available_date": "2025-12-26"
+          }
+        ],
+        "mechanisms": [
+          {
+            "id": "M03_CHINA_CREDIT_IMPULSE",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "primary"
+          },
+          {
+            "id": "M07_COPPER_GOLD_GROWTH",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "primary"
+          },
+          {
+            "id": "M13_POSITIONING_EXTREMES",
+            "status": "unsupported",
+            "confidence": 0.05,
+            "role": "secondary"
+          }
+        ],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2025-12-31",
+      "object_id": "V10",
+      "facts": {
+        "object_id": "V10",
+        "name": "NYMEX Platinum front month",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "return_1m": 0.2182,
+        "return_3m": 0.2959,
+        "return_12m": 1.2757,
+        "vol_pctile_5y": 1.0,
+        "drawdown_pctile_5y": 0.3527,
+        "ma_gap_200d": 0.4851,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 1.0,
+            "available_date": "2025-12-29"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2025-12-31",
+      "object_id": "V11",
+      "facts": {
+        "object_id": "V11",
+        "name": "iShares Silver Trust",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "return_1m": 0.2266,
+        "return_3m": 0.5013,
+        "return_12m": 1.4073,
+        "vol_pctile_5y": 1.0,
+        "drawdown_pctile_5y": 0.5909,
+        "ma_gap_200d": 0.6722,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 0.37,
+            "available_date": "2025-12-31"
+          },
+          {
+            "detector": "vol_regime_shift",
+            "direction": "expansion",
+            "score": 1.0,
+            "available_date": "2025-12-31"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    },
+    {
+      "as_of": "2025-12-31",
+      "object_id": "V12",
+      "facts": {
+        "object_id": "V12",
+        "name": "iShares Silver Trust",
+        "market": "WORLD",
+        "asset_class": "commodity",
+        "return_1m": 0.2266,
+        "return_3m": 0.5013,
+        "return_12m": 1.4073,
+        "vol_pctile_5y": 1.0,
+        "drawdown_pctile_5y": 0.5909,
+        "ma_gap_200d": 0.6722,
+        "positioning_net_pctile_5y": null,
+        "recent_anomalies": [
+          {
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 0.37,
+            "available_date": "2025-12-31"
+          },
+          {
+            "detector": "vol_regime_shift",
+            "direction": "expansion",
+            "score": 1.0,
+            "available_date": "2025-12-31"
+          }
+        ],
+        "mechanisms": [],
+        "data_gaps": [
+          "no consensus earnings",
+          "no options-implied distribution"
+        ]
+      }
+    }
+  ]
+}

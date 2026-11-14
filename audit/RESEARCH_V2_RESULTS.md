@@ -29,6 +29,16 @@ full sample D is below C and B/A. The earlier exploratory rater gave D 1.350; th
 0.833 — inter-rater instability is itself a validation failure. No weights were tuned on the reused
 date.
 
+## New frozen window (2025-12-31; not used for rules)
+| method | n | mean | P@3 |
+|---|---:|---:|---:|
+| A | 3 | 1.083 | 0.00 |
+| B | 3 | 0.917 | 0.00 |
+| C | 3 | **1.500** | **0.67** |
+| D | 3 | 1.000 | 0.00 |
+
+D is again below C; `DISCOVERY VALUE: NOT VALIDATED`. See `evaluation/new_window/RESULTS.md`.
+
 ## Why V2 failed (construct/criterion mismatch; not a code bug)
 - The blind cards measure **asset selection worthiness**, not the V2 research question itself:
   hypotheses/falsifiers/decision-impact were hidden to keep methods blind. D's actual output was

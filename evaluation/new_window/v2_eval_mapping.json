@@ -1,0 +1,106 @@
+{
+  "mapping": {
+    "V01": {
+      "as_of": "2025-12-31",
+      "method": "D_v2_triage",
+      "rank": 1,
+      "entity_id": "CM_ETF_GLD",
+      "theme": "gold"
+    },
+    "V02": {
+      "as_of": "2025-12-31",
+      "method": "B_anomaly_score",
+      "rank": 3,
+      "entity_id": "GX_FX_AUDUSD",
+      "theme": "audusd"
+    },
+    "V03": {
+      "as_of": "2025-12-31",
+      "method": "B_anomaly_score",
+      "rank": 2,
+      "entity_id": "CM_MET_PL",
+      "theme": "platinum"
+    },
+    "V04": {
+      "as_of": "2025-12-31",
+      "method": "D_v2_triage",
+      "rank": 3,
+      "entity_id": "CM_ETF_SLV",
+      "theme": "silver"
+    },
+    "V05": {
+      "as_of": "2025-12-31",
+      "method": "C_v1_score",
+      "rank": 1,
+      "entity_id": "CM_MET_SI",
+      "theme": "silver"
+    },
+    "V06": {
+      "as_of": "2025-12-31",
+      "method": "A_price_move",
+      "rank": 1,
+      "entity_id": "CM_ENE_NG",
+      "theme": "natural_gas"
+    },
+    "V07": {
+      "as_of": "2025-12-31",
+      "method": "D_v2_triage",
+      "rank": 2,
+      "entity_id": "CN_SEC_DEF",
+      "theme": "china_defense"
+    },
+    "V08": {
+      "as_of": "2025-12-31",
+      "method": "A_price_move",
+      "rank": 3,
+      "entity_id": "CM_MET_PL",
+      "theme": "platinum"
+    },
+    "V09": {
+      "as_of": "2025-12-31",
+      "method": "C_v1_score",
+      "rank": 2,
+      "entity_id": "CM_MET_HG",
+      "theme": "copper"
+    },
+    "V10": {
+      "as_of": "2025-12-31",
+      "method": "C_v1_score",
+      "rank": 3,
+      "entity_id": "CM_MET_PL",
+      "theme": "platinum"
+    },
+    "V11": {
+      "as_of": "2025-12-31",
+      "method": "B_anomaly_score",
+      "rank": 1,
+      "entity_id": "CM_ETF_SLV",
+      "theme": "silver"
+    },
+    "V12": {
+      "as_of": "2025-12-31",
+      "method": "A_price_move",
+      "rank": 2,
+      "entity_id": "CM_ETF_SLV",
+      "theme": "silver"
+    }
+  },
+  "diagnostics": {
+    "2025-12-31": {
+      "as_of": "2025-12-31",
+      "n_anomalies": 1250,
+      "n_recent": 68,
+      "n_mechanisms": 7,
+      "v1_candidates": 14,
+      "v2_candidates": 6
+    }
+  },
+  "splits": {
+    "development": [],
+    "validation": [],
+    "test": [
+      "2025-12-31"
+    ]
+  },
+  "note": "Frozen new window, not used in V1/V2 rule design; single independent LLM rater, no human labels."
+}

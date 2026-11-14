@@ -1,0 +1,67 @@
+{
+  "summary": {
+    "A_price_move": {
+      "n": 3,
+      "mean": 1.0833,
+      "precision_at_3": 0.0,
+      "evidence_sufficiency": 1.3333,
+      "falsifiability": 1.0,
+      "duplicate_rate": 0
+    },
+    "B_anomaly_score": {
+      "n": 3,
+      "mean": 0.9167,
+      "precision_at_3": 0.0,
+      "evidence_sufficiency": 1.0,
+      "falsifiability": 1.0,
+      "duplicate_rate": 0
+    },
+    "C_v1_score": {
+      "n": 3,
+      "mean": 1.5,
+      "precision_at_3": 0.6667,
+      "evidence_sufficiency": 1.6667,
+      "falsifiability": 1.3333,
+      "duplicate_rate": 0
+    },
+    "D_v2_triage": {
+      "n": 3,
+      "mean": 1.0,
+      "precision_at_3": 0.0,
+      "evidence_sufficiency": 1.0,
+      "falsifiability": 1.0,
+      "duplicate_rate": 0
+    }
+  },
+  "test": {
+    "A_price_move": {
+      "n": 3,
+      "mean": 1.0833,
+      "precision_at_3": 0.0
+    },
+    "B_anomaly_score": {
+      "n": 3,
+      "mean": 0.9167,
+      "precision_at_3": 0.0
+    },
+    "C_v1_score": {
+      "n": 3,
+      "mean": 1.5,
+      "precision_at_3": 0.6667
+    },
+    "D_v2_triage": {
+      "n": 3,
+      "mean": 1.0,
+      "precision_at_3": 0.0
+    }
+  },
+  "d_beats_b_and_c_on_test": [
+    false,
+    false
+  ],
+  "discovery_value": "NOT VALIDATED",
+  "n_rated": 12,
+  "limitations": [
+    "single LLM rater; no human labels; small n; fact-card asymmetry; research value is not return prediction"
+  ]
+}

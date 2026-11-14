@@ -1,0 +1,27 @@
+{
+  "schema": "goe-test-proof/v1",
+  "git_commit": "5c192890e9e142cb71e5445eb5980e668c2d134b",
+  "git_dirty": false,
+  "command": [
+    "/Users/cast/Downloads/金融系统/global-opportunity-engine/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests",
+    "-o",
+    "addopts=",
+    "-q",
+    "-m",
+    "not network and not realdata"
+  ],
+  "cwd": "/Users/cast/Downloads/金融系统/global-opportunity-engine",
+  "exit_code": 0,
+  "started_at": "2026-11-14T14:58:59Z",
+  "ended_at": "2026-11-14T14:59:59Z",
+  "passed": 174,
+  "failed": 0,
+  "skipped": 0,
+  "deselected": 10,
+  "errors": 0,
+  "log_path": "audit/test_evidence/20261114T145959Z_5c192890e9.log",
+  "log_sha256": "e865bdc134833c3aa8370288f97690add97d72df2896ef3666749bb7148df853"
+}

@@ -3,7 +3,7 @@
 - Branch: `architecture/research-v2` (from frozen V1 `1f2b341`, tag `v1-frozen-1f2b341`)
 - V1 preserved: tag + `audit/V1_FREEZE.md`; V1 code/scoring not overwritten.
 - Tests: 166 offline passed (1 slow real-data V2 test skipped by default); 9 network unchanged.
-- Real V2 triage: 5 structured research candidates; top N225 (A), QQQ (B), TAIEX (B), XLV (B), EEM (B).
+- Real V2 triage: 5 structured research candidates; top N225 (A), QQQ (B), TAIEX (B), XLV (B), EEM (B); 20-candidate audit has 15 distinct hypothesis signatures.
 - V2 blind evaluation: 48 objects, 4 methods; the 2021 date was reused after a gate change, so there is **no independent test split**; result is NOT VALIDATED.
 
 ## Required statuses
@@ -12,9 +12,9 @@
 | EXECUTION ARCHITECTURE | **PASS with issues** | `contracts/` seven contracts, `goe/contracts.py`, `docs/AGENT_OPERATING_MODEL.md`, freeze gate `goe/release.py`, V1 tag, branch, contract tests |
 | DATA ARCHITECTURE | **PASS with residuals** | data/time contract; completed-bar DST rule; critical data contract; per-market/curve checks; residual publication/vintage/roll limitations |
 | RESEARCH CONTRACT | **PASS with issues** | `contracts/RESEARCH_CONTRACT.md`; ResearchCandidate schema validator; >=2 hypotheses, evidence classes, unknowns, falsifiers, cost/decision impact; contract tests |
-| ENGINEERING VALIDATION | **PASS with issues** | 166 offline tests; contract tests; real scan/triage; fault/rollback suites from V1; independent engineering QA found P1s that were fixed; verification reports are `V2_FINAL_QA_ENGINEERING.md` and `V2_FINAL_VERIFICATION_ENGINEERING.md` |
+| ENGINEERING VALIDATION | **PASS with issues** | 174 offline tests; contract tests; real scan/triage; fault/rollback suites from V1; independent engineering QA found P1s that were fixed; verification reports are `V2_FINAL_QA_ENGINEERING.md` and `V2_FINAL_VERIFICATION_ENGINEERING.md` |
 | RESEARCH METHODOLOGY | **PARTIAL** | competing hypotheses/unknowns/falsifiers now explicit; expectation data still proxies; V2 selection not proven better |
-| DISCOVERY VALUE | **NOT VALIDATED** | final rater D 0.833 vs C 0.979/B 0.917/A 0.875; the only held-out candidate date was reused after a gate change, so no independent test remains; second rater D 1.350 → instability. No tuning. |
+| DISCOVERY VALUE | **NOT VALIDATED** | new frozen window 2025-12-31: D 1.000 vs C 1.500/B 0.917/A 1.083, P@3 D 0.00; earlier reused 2021 data also D 0.833 < C 0.979. No tuning. |
 | A→B INTEGRATION | **PARTIAL** | fact-only V2 brief; latest real run B returned `rejected`, A persisted `not_completed:rejected` (never success); no real `ok_valid`; V2 CLI entry exists via `goe triage --handoff` |
 
 ## V2 blind evaluation (final)

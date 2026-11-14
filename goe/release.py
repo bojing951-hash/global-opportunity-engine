@@ -34,6 +34,13 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _dirty_code(*, cwd: str | Path = ".") -> bool:
+    """Dirty means code/config/docs changed; generated proof/manifest files are exempt."""
+    lines = _git("-C", str(cwd), "status", "--porcelain").splitlines()
+    allowed = ("audit/test_evidence/", "audit/releases/")
+    return any(not any(part in line for part in allowed) for line in lines if line.strip())
+
+
 def _parse_pytest(output: str) -> dict[str, int]:
     def one(pattern: str) -> int:
         m = re.search(pattern, output)
@@ -50,7 +57,7 @@ def run_test_proof(command: list[str] | None = None, *, cwd: str | Path = ".",
     """Run pytest and write an immutable test proof. Only clean commits pass."""
     cwd = Path(cwd).resolve()
     commit = _git("-C", str(cwd), "rev-parse", "HEAD")
-    dirty = bool(_git("-C", str(cwd), "status", "--porcelain"))
+    dirty = bool(_dirty_code(cwd=cwd))
     if dirty:
         raise ReleaseError("test proof requires a clean worktree")
     if not commit:
@@ -120,7 +127,7 @@ def verify_test_proof(proof_path: str | Path, *, cwd: str | Path = ".") -> dict[
 def build_manifest(store: Store, *, proof_path: str | Path,
                    out_dir: str | Path = "audit/releases", notes: str = "",
                    require_clean: bool = True) -> dict[str, Any]:
-    dirty = bool(_git("status", "--porcelain"))
+    dirty = bool(_dirty_code())
     if require_clean and dirty:
         raise ReleaseError("refusing to freeze a dirty worktree")
     proof = verify_test_proof(proof_path)

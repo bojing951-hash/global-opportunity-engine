@@ -61,6 +61,12 @@ No human labels, single rater, small n, 4 selected/method/date, fact-card asymme
 mechanism-rich assets), no cost/portfolio implication. These limits must appear with results.
 
 
+## New frozen window (added after 2021 reuse)
+2025-12-31 is selected as a window not used to define V1/V2 rules. It is **not a future window** and
+the rater may know outcomes; it is a selection-quality check only. Results: A 1.083/B 0.917/
+C 1.500/D 1.000, P@3 0/0/0.67/0. D does not beat C, so `DISCOVERY VALUE: NOT VALIDATED`.
+The window is not reused after this result.
+
 ## Known design limitations (after independent review)
 - The common fact card measures **selection worthiness of an asset**, not the full V2 research
   question; V2's hypotheses/falsifiers are hidden for method-blindness. A future protocol should use
