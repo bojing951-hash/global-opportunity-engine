@@ -238,7 +238,8 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                [_ev("未做同日横截面", "no same-day cross-section", "unknown", "cross_asset", as_of, "H-RISK")]),
             _h("H-INT", "央行干预/政策防线", "policy", "open" if region in ("JP", "CN") else "untestable",
                "干预时点应伴随官方储备/口头指引；汇率在关口附近反转。",
-               [_ev("区域有干预历史/政策敏感", region, "observed_fact", "config", as_of, "H-INT")],
+               [_ev("区域有干预历史/政策敏感", region, "observed_fact", "config", as_of, "H-INT")]
+               if region in ("JP", "CN") else [],
                [_ev("干预数据不可得", "intervention data missing", "unknown", "data_gap", as_of, "H-INT")]),
             _h("H-POS", "仓位/资金流的技术性反转", "positioning_flow",
                "open" if positioning_value is not None else "untestable",
@@ -261,7 +262,8 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
         hyps += [
             _h("H-SUPPLY", "供给冲击/库存变化", "fundamental", "untestable",
                "库存、产量或地缘供给应领先价格；曲线 backwardation 加深。",
-               [_ev("价格跳变可观察", f"1m={chg:.1%}", "observed_fact", "prices", as_of, "H-SUPPLY")],
+               [_ev("价格跳变可观察", f"1m={chg:.1%}", "observed_fact", "prices", as_of, "H-SUPPLY")]
+               if False else [],
                [_ev("库存/产量数据未接入", "inventory missing", "unknown", "data_gap", as_of, "H-SUPPLY")]),
             _h("H-DEMAND", "全球需求/增长预期", "global_risk", "open",
                "全球增长/工业产出应与商品同向；美元与利率同向确认。",
@@ -271,16 +273,19 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                "美元与实际利率应负向解释黄金/商品；控制后残差下降。",
                [_ev("DXY/UST 可用", "DXY, UST", "observed_fact", "prices", as_of, "H-USD")],
                [_ev("未做实时回归", "regression not run", "unknown", "derived", as_of, "H-USD")]),
-            _h("H-ART", "换月/连续合约数据伪影", "data_artifact", "open",
+            _h("H-ART", "换月/连续合约数据伪影", "data_artifact",
+               "open" if (getattr(spec, "is_futures", False) or crypto or has_price_issue) else "untestable",
                "换月日附近跳变；原始合约与连续合约不一致。",
-               [_ev("连续合约存在换月风险", "futures", "observed_fact", "data_quality", as_of, "H-ART")],
+               [_ev("连续合约存在换月风险", "futures", "observed_fact", "data_quality", as_of, "H-ART")]
+               if (getattr(spec, "is_futures", False) or crypto or has_price_issue) else [],
                [_ev("未记录换月/清洗问题", "no issue recorded", "observed_fact", "data_quality", as_of, "H-ART")]),
         ]
         tests += [_test("H-DEMAND", "全球增长代理与商品", "corr > 0.3", "cross_asset",
                         "available" if cross_ok else "obtainable"),
                   _test("H-USD", "美元/实际利率回归", "residual |z|<1.5", "DXY/UST",
-                        "available" if cross_ok else "obtainable"),
-                  _test("H-ART", "原始合约对账", "reconciles", "exchange", "obtainable")]
+                        "available" if cross_ok else "obtainable")]
+        if getattr(spec, "is_futures", False) or crypto or has_price_issue:
+            tests.append(_test("H-ART", "原始合约对账", "reconciles", "exchange", "obtainable"))
         decision = {"if_true": "若供给解释成立，研究库存/地缘情景；若美元解释成立，研究计价与对冲。",
                     "if_false": "若均不成立，保留为待验证情报，不直接做方向性判断。"}
         unknowns = ["库存/产量", "工业产出/PMI", "换月因子"]
@@ -318,6 +323,69 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                     "if_false": "证据不足，保留为市场情报。"}
         unknowns = ["一致预期", "仓位", "数据质量"]
         case = "other"
+
+    # Give each phenomenon its own hypothesis namespace and one case-specific driver.
+    if equity:
+        if ac == "sector_equity":
+            code = "SEC" + "".join(w[0] for w in spec.name.split()[:2]).upper()
+        elif region in ("US", "WORLD"):
+            code = "USEQ"
+        else:
+            code = "EQ" + str(region)
+    elif rates:
+        code = "RT" + str(region)
+    elif fx:
+        code = "FX" + str(region)
+    elif commodity:
+        n = spec.name.lower()
+        role = str(getattr(spec, "role", "") or "").lower()
+        code = "GOLD" if "gold" in n else ("SILV" if "silver" in n or "slv" in n else
+               ("AGRI" if (role == "agriculture" or any(x in n for x in ("wheat", "sugar", "corn", "soy", "cattle"))) else "ENER"))
+    elif crypto:
+        code = "CRYPTO"
+    else:
+        code = "OTHER"
+    prefix = f"H-{code}"
+    if commodity:
+        n = spec.name.lower()
+        if "gold" in n:
+            extra = _h(prefix + "-REAL", "黄金：实际利率/美元计价", "risk_premium", "open",
+                       "实际利率下行与美元走弱应支撑黄金；控制后残差下降。",
+                       [_ev("实际利率/美元可观察", "UST/DXY", "observed_fact", "prices", as_of, prefix + "-REAL")],
+                       [_ev("未做实时回归", "regression not run", "unknown", "derived", as_of, prefix + "-REAL")])
+            extra_test = _test(prefix + "-REAL", "实际利率与美元回归", "residual |z|<1.5", "UST/DXY", "available")
+        elif "silver" in n or "slv" in n:
+            extra = _h(prefix + "-INDUSTRIAL", "白银：工业需求/金银比", "fundamental", "open",
+                       "工业需求与金银比应解释白银；需要工业产出/ETF 流量。",
+                       [_ev("金银比可观察", "gold/silver ratio", "observed_fact", "prices", as_of, prefix + "-INDUSTRIAL")],
+                       [_ev("工业需求/ETF 流量缺失", "industrial/flows missing", "unknown", "data_gap", as_of, prefix + "-INDUSTRIAL")])
+            extra_test = _test(prefix + "-INDUSTRIAL", "金银比与工业需求代理", "corr > 0.3", "gold/industrial", "obtainable")
+        elif (str(getattr(spec, "role", "")).lower() == "agriculture"
+              or any(x in n for x in ("wheat", "sugar", "corn", "soy", "cattle"))):
+            extra = _h(prefix + "-WEATHER", "农产品：天气/供给冲击", "fundamental", "untestable",
+                       "天气/产量数据应领先；需要产区降雨/库存。",
+                       [], [_ev("天气/库存数据缺失", "weather/inventory missing", "unknown", "data_gap", as_of, prefix + "-WEATHER")])
+            extra_test = None
+        else:
+            extra = _h(prefix + "-CRACK", "能源：炼厂利润/供给", "fundamental", "obtainable",
+                       "裂解价差与库存应解释；需要炼厂利润/库存。",
+                       [_ev("能源价格可观察", f"1m={chg:.1%}", "observed_fact", "prices", as_of, prefix + "-CRACK")],
+                       [_ev("裂解价差/库存缺失", "crack/inventory missing", "unknown", "data_gap", as_of, prefix + "-CRACK")])
+            extra_test = _test(prefix + "-CRACK", "裂解价差与库存", "sign consistent", "crack/inventory", "obtainable")
+        hyps.append(extra)
+        if extra_test:
+            tests.append(extra_test)
+    # remap all IDs to the phenomenon namespace
+    idmap = {h["id"]: f"{prefix}-{h['id'][2:]}" for h in hyps}
+    for h in hyps:
+        h["id"] = h["id"] if h["id"].startswith(prefix + "-") else idmap[h["id"]]
+        for e in h["evidence_for"] + h["evidence_against"]:
+            if e.get("hypothesis_id"):
+                e["hypothesis_id"] = (e["hypothesis_id"] if e["hypothesis_id"].startswith(prefix + "-")
+                                      else idmap.get(e["hypothesis_id"], e["hypothesis_id"]))
+    for t in tests:
+        t["hypothesis_id"] = (t["hypothesis_id"] if t["hypothesis_id"].startswith(prefix + "-")
+                              else idmap.get(t["hypothesis_id"], t["hypothesis_id"]))
 
     open_hyps = [h for h in hyps if h["status"] == "open"]
     open_ids = {h["id"] for h in open_hyps}

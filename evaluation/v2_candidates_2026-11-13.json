@@ -25,7 +25,7 @@
       },
       "competing_hypotheses": [
         {
-          "id": "H-LOCAL",
+          "id": "H-EQJP-LOCAL",
           "label": "JP 本地市场/区域风险因子",
           "type": "global_risk",
           "status": "open",
@@ -38,12 +38,12 @@
               "class": "unknown",
               "source": "prices",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-LOCAL"
+              "hypothesis_id": "H-EQJP-LOCAL"
             }
           ]
         },
         {
-          "id": "H-GLOBAL",
+          "id": "H-EQJP-GLOBAL",
           "label": "全球共同风险/美元流动性冲击",
           "type": "global_risk",
           "status": "open",
@@ -55,7 +55,7 @@
               "class": "observed_fact",
               "source": "prices",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-GLOBAL"
+              "hypothesis_id": "H-EQJP-GLOBAL"
             }
           ],
           "evidence_against": [
@@ -65,12 +65,12 @@
               "class": "unknown",
               "source": "cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-GLOBAL"
+              "hypothesis_id": "H-EQJP-GLOBAL"
             }
           ]
         },
         {
-          "id": "H-FUND",
+          "id": "H-EQJP-FUND",
           "label": "JP 盈利/基本面预期变化",
           "type": "fundamental",
           "status": "untestable",
@@ -83,12 +83,12 @@
               "class": "unknown",
               "source": "data_gap",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-FUND"
+              "hypothesis_id": "H-EQJP-FUND"
             }
           ]
         },
         {
-          "id": "H-POLICY",
+          "id": "H-EQJP-POLICY",
           "label": "本地政策/监管冲击",
           "type": "policy",
           "status": "open",
@@ -100,7 +100,7 @@
               "class": "observed_fact",
               "source": "config",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-POLICY"
+              "hypothesis_id": "H-EQJP-POLICY"
             }
           ],
           "evidence_against": [
@@ -110,12 +110,12 @@
               "class": "unknown",
               "source": "calendar",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-POLICY"
+              "hypothesis_id": "H-EQJP-POLICY"
             }
           ]
         },
         {
-          "id": "H-FX",
+          "id": "H-EQJP-FX",
           "label": "本地汇率/资金流",
           "type": "global_risk",
           "status": "open",
@@ -127,7 +127,7 @@
               "class": "observed_fact",
               "source": "prices",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-FX"
+              "hypothesis_id": "H-EQJP-FX"
             }
           ],
           "evidence_against": [
@@ -137,12 +137,12 @@
               "class": "unknown",
               "source": "derived",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-FX"
+              "hypothesis_id": "H-EQJP-FX"
             }
           ]
         },
         {
-          "id": "H-POS",
+          "id": "H-EQJP-POS",
           "label": "仓位/资金流驱动的技术性移动",
           "type": "positioning_flow",
           "status": "untestable",
@@ -155,12 +155,12 @@
               "class": "unknown",
               "source": "CFTC",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-POS"
+              "hypothesis_id": "H-EQJP-POS"
             }
           ]
         },
         {
-          "id": "H-ART",
+          "id": "H-EQJP-ART",
           "label": "数据伪影（换月/拆股/盘中/陈旧）",
           "type": "data_artifact",
           "status": "untestable",
@@ -173,7 +173,7 @@
               "class": "observed_fact",
               "source": "data_quality",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-ART"
+              "hypothesis_id": "H-EQJP-ART"
             }
           ]
         }
@@ -185,7 +185,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-EQJP-GLOBAL"
         },
         {
           "claim": "区域属于政策敏感市场",
@@ -193,7 +193,7 @@
           "class": "observed_fact",
           "source": "config",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-POLICY"
+          "hypothesis_id": "H-EQJP-POLICY"
         },
         {
           "claim": "本地汇率可观察",
@@ -201,7 +201,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-FX"
+          "hypothesis_id": "H-EQJP-FX"
         }
       ],
       "critical_unknowns": [
@@ -211,28 +211,28 @@
       ],
       "falsification_conditions": [
         {
-          "hypothesis_id": "H-LOCAL",
+          "hypothesis_id": "H-EQJP-LOCAL",
           "test": "对本地基准与全球因子回归后的残差",
           "threshold": "|residual z| < 1.5",
           "data": "prices/regional benchmark",
           "data_status": "available"
         },
         {
-          "hypothesis_id": "H-GLOBAL",
+          "hypothesis_id": "H-EQJP-GLOBAL",
           "test": "同日跨资产 beta 与残差",
           "threshold": "R² > 0.5 且残差 |z|<1.5",
           "data": "cross_asset",
           "data_status": "available"
         },
         {
-          "hypothesis_id": "H-POLICY",
+          "hypothesis_id": "H-EQJP-POLICY",
           "test": "事件窗口前后的利率/资产反应",
           "threshold": "event-window abnormal return > 2σ",
           "data": "policy calendar/rates",
           "data_status": "obtainable"
         },
         {
-          "hypothesis_id": "H-FX",
+          "hypothesis_id": "H-EQJP-FX",
           "test": "本币汇率 beta",
           "threshold": "sign consistent",
           "data": "local FX",
@@ -280,7 +280,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-EQJP-GLOBAL"
         },
         {
           "claim": "区域属于政策敏感市场",
@@ -288,7 +288,7 @@
           "class": "observed_fact",
           "source": "config",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-POLICY"
+          "hypothesis_id": "H-EQJP-POLICY"
         },
         {
           "claim": "本地汇率可观察",
@@ -296,7 +296,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-FX"
+          "hypothesis_id": "H-EQJP-FX"
         }
       ],
       "evidence_against": [
@@ -306,7 +306,7 @@
           "class": "unknown",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-LOCAL"
+          "hypothesis_id": "H-EQJP-LOCAL"
         },
         {
           "claim": "未提供同日跨资产横截面",
@@ -314,7 +314,7 @@
           "class": "unknown",
           "source": "cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-EQJP-GLOBAL"
         },
         {
           "claim": "一致预期/财报修正未接入",
@@ -322,7 +322,7 @@
           "class": "unknown",
           "source": "data_gap",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-FUND"
+          "hypothesis_id": "H-EQJP-FUND"
         },
         {
           "claim": "没有可核验的决议/公告时点",
@@ -330,7 +330,7 @@
           "class": "unknown",
           "source": "calendar",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-POLICY"
+          "hypothesis_id": "H-EQJP-POLICY"
         },
         {
           "claim": "未做汇率 beta",
@@ -338,7 +338,7 @@
           "class": "unknown",
           "source": "derived",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-FX"
+          "hypothesis_id": "H-EQJP-FX"
         },
         {
           "claim": "仓位极端程度不足或缺失",
@@ -346,7 +346,7 @@
           "class": "unknown",
           "source": "CFTC",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-POS"
+          "hypothesis_id": "H-EQJP-POS"
         },
         {
           "claim": "未记录价格清洗问题",
@@ -354,7 +354,7 @@
           "class": "observed_fact",
           "source": "data_quality",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-ART"
+          "hypothesis_id": "H-EQJP-ART"
         }
       ],
       "evaluation_id": "D:2026-11-13:JP_EQ_N225",
@@ -386,7 +386,7 @@
       },
       "competing_hypotheses": [
         {
-          "id": "H-SECTOR",
+          "id": "H-SECHC-SECTOR",
           "label": "Health Care Select Sector SPDR 行业相对基本面/需求",
           "type": "fundamental",
           "status": "untestable",
@@ -399,12 +399,12 @@
               "class": "unknown",
               "source": "data_gap",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-SECTOR"
+              "hypothesis_id": "H-SECHC-SECTOR"
             }
           ]
         },
         {
-          "id": "H-STYLE",
+          "id": "H-SECHC-STYLE",
           "label": "利率/风格因子驱动的相对表现",
           "type": "risk_premium",
           "status": "open",
@@ -416,7 +416,7 @@
               "class": "observed_fact",
               "source": "prices",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-STYLE"
+              "hypothesis_id": "H-SECHC-STYLE"
             }
           ],
           "evidence_against": [
@@ -426,12 +426,12 @@
               "class": "unknown",
               "source": "derived",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-STYLE"
+              "hypothesis_id": "H-SECHC-STYLE"
             }
           ]
         },
         {
-          "id": "H-GLOBAL",
+          "id": "H-SECHC-GLOBAL",
           "label": "全球风险/行业轮动",
           "type": "global_risk",
           "status": "open",
@@ -443,7 +443,7 @@
               "class": "observed_fact",
               "source": "prices",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-GLOBAL"
+              "hypothesis_id": "H-SECHC-GLOBAL"
             }
           ],
           "evidence_against": [
@@ -453,12 +453,12 @@
               "class": "unknown",
               "source": "cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-GLOBAL"
+              "hypothesis_id": "H-SECHC-GLOBAL"
             }
           ]
         },
         {
-          "id": "H-POS",
+          "id": "H-SECHC-POS",
           "label": "仓位/资金流拥挤",
           "type": "positioning_flow",
           "status": "untestable",
@@ -471,7 +471,7 @@
               "class": "unknown",
               "source": "data_gap",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-POS"
+              "hypothesis_id": "H-SECHC-POS"
             }
           ]
         }
@@ -483,7 +483,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-STYLE"
+          "hypothesis_id": "H-SECHC-STYLE"
         },
         {
           "claim": "行业相对表现可观察",
@@ -491,7 +491,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-SECHC-GLOBAL"
         }
       ],
       "critical_unknowns": [
@@ -501,14 +501,14 @@
       ],
       "falsification_conditions": [
         {
-          "hypothesis_id": "H-STYLE",
+          "hypothesis_id": "H-SECHC-STYLE",
           "test": "相对基准的利率 beta",
           "threshold": "beta significant and sign consistent",
           "data": "UST",
           "data_status": "available"
         },
         {
-          "hypothesis_id": "H-GLOBAL",
+          "hypothesis_id": "H-SECHC-GLOBAL",
           "test": "行业多空对全球因子回归",
           "threshold": "residual |z|<1.5",
           "data": "cross_asset",
@@ -556,7 +556,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-STYLE"
+          "hypothesis_id": "H-SECHC-STYLE"
         },
         {
           "claim": "行业相对表现可观察",
@@ -564,7 +564,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-SECHC-GLOBAL"
         }
       ],
       "evidence_against": [
@@ -574,7 +574,7 @@
           "class": "unknown",
           "source": "data_gap",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-SECTOR"
+          "hypothesis_id": "H-SECHC-SECTOR"
         },
         {
           "claim": "未估计行业利率 beta",
@@ -582,7 +582,7 @@
           "class": "unknown",
           "source": "derived",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-STYLE"
+          "hypothesis_id": "H-SECHC-STYLE"
         },
         {
           "claim": "没有同日行业横截面",
@@ -590,7 +590,7 @@
           "class": "unknown",
           "source": "cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-SECHC-GLOBAL"
         },
         {
           "claim": "行业资金流未接入",
@@ -598,7 +598,7 @@
           "class": "unknown",
           "source": "data_gap",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-POS"
+          "hypothesis_id": "H-SECHC-POS"
         }
       ],
       "evaluation_id": "D:2026-11-13:US_SEC_XLV",
@@ -630,7 +630,7 @@
       },
       "competing_hypotheses": [
         {
-          "id": "H-GLOBAL",
+          "id": "H-USEQ-GLOBAL",
           "label": "全球共同风险/美元流动性冲击",
           "type": "global_risk",
           "status": "open",
@@ -642,7 +642,7 @@
               "class": "observed_fact",
               "source": "prices",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-GLOBAL"
+              "hypothesis_id": "H-USEQ-GLOBAL"
             }
           ],
           "evidence_against": [
@@ -652,12 +652,12 @@
               "class": "unknown",
               "source": "cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-GLOBAL"
+              "hypothesis_id": "H-USEQ-GLOBAL"
             }
           ]
         },
         {
-          "id": "H-RATES",
+          "id": "H-USEQ-RATES",
           "label": "美国利率/估值折现率",
           "type": "risk_premium",
           "status": "open",
@@ -669,7 +669,7 @@
               "class": "observed_fact",
               "source": "curve",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-RATES"
+              "hypothesis_id": "H-USEQ-RATES"
             }
           ],
           "evidence_against": [
@@ -679,12 +679,12 @@
               "class": "unknown",
               "source": "derived",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-RATES"
+              "hypothesis_id": "H-USEQ-RATES"
             }
           ]
         },
         {
-          "id": "H-FUND",
+          "id": "H-USEQ-FUND",
           "label": "US 盈利/估值预期变化",
           "type": "fundamental",
           "status": "untestable",
@@ -697,12 +697,12 @@
               "class": "unknown",
               "source": "data_gap",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-FUND"
+              "hypothesis_id": "H-USEQ-FUND"
             }
           ]
         },
         {
-          "id": "H-POS",
+          "id": "H-USEQ-POS",
           "label": "仓位/资金流驱动的技术性移动",
           "type": "positioning_flow",
           "status": "untestable",
@@ -715,12 +715,12 @@
               "class": "unknown",
               "source": "CFTC",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-POS"
+              "hypothesis_id": "H-USEQ-POS"
             }
           ]
         },
         {
-          "id": "H-ART",
+          "id": "H-USEQ-ART",
           "label": "数据伪影（换月/拆股/盘中/陈旧）",
           "type": "data_artifact",
           "status": "untestable",
@@ -733,7 +733,7 @@
               "class": "observed_fact",
               "source": "data_quality",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-ART"
+              "hypothesis_id": "H-USEQ-ART"
             }
           ]
         }
@@ -745,7 +745,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-USEQ-GLOBAL"
         },
         {
           "claim": "利率与估值代理可观察",
@@ -753,7 +753,7 @@
           "class": "observed_fact",
           "source": "curve",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-RATES"
+          "hypothesis_id": "H-USEQ-RATES"
         }
       ],
       "critical_unknowns": [
@@ -763,14 +763,14 @@
       ],
       "falsification_conditions": [
         {
-          "hypothesis_id": "H-GLOBAL",
+          "hypothesis_id": "H-USEQ-GLOBAL",
           "test": "同日跨资产 beta 与残差",
           "threshold": "R² > 0.5 且残差 |z|<1.5",
           "data": "cross_asset",
           "data_status": "available"
         },
         {
-          "hypothesis_id": "H-RATES",
+          "hypothesis_id": "H-USEQ-RATES",
           "test": "利率 beta 与估值分位",
           "threshold": "beta significant",
           "data": "UST/valuation",
@@ -818,7 +818,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-USEQ-GLOBAL"
         },
         {
           "claim": "利率与估值代理可观察",
@@ -826,7 +826,7 @@
           "class": "observed_fact",
           "source": "curve",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-RATES"
+          "hypothesis_id": "H-USEQ-RATES"
         }
       ],
       "evidence_against": [
@@ -836,7 +836,7 @@
           "class": "unknown",
           "source": "cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-USEQ-GLOBAL"
         },
         {
           "claim": "未估计实时利率 beta",
@@ -844,7 +844,7 @@
           "class": "unknown",
           "source": "derived",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-RATES"
+          "hypothesis_id": "H-USEQ-RATES"
         },
         {
           "claim": "一致预期/财报修正未接入",
@@ -852,7 +852,7 @@
           "class": "unknown",
           "source": "data_gap",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-FUND"
+          "hypothesis_id": "H-USEQ-FUND"
         },
         {
           "claim": "仓位极端程度不足或缺失",
@@ -860,7 +860,7 @@
           "class": "unknown",
           "source": "CFTC",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-POS"
+          "hypothesis_id": "H-USEQ-POS"
         },
         {
           "claim": "未记录价格清洗问题",
@@ -868,7 +868,7 @@
           "class": "observed_fact",
           "source": "data_quality",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-ART"
+          "hypothesis_id": "H-USEQ-ART"
         }
       ],
       "evaluation_id": "D:2026-11-13:US_EQ_QQQ",
@@ -900,7 +900,7 @@
       },
       "competing_hypotheses": [
         {
-          "id": "H-LOCAL",
+          "id": "H-EQTW-LOCAL",
           "label": "TW 本地市场/区域风险因子",
           "type": "global_risk",
           "status": "open",
@@ -913,12 +913,12 @@
               "class": "unknown",
               "source": "prices",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-LOCAL"
+              "hypothesis_id": "H-EQTW-LOCAL"
             }
           ]
         },
         {
-          "id": "H-GLOBAL",
+          "id": "H-EQTW-GLOBAL",
           "label": "全球共同风险/美元流动性冲击",
           "type": "global_risk",
           "status": "open",
@@ -930,7 +930,7 @@
               "class": "observed_fact",
               "source": "prices",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-GLOBAL"
+              "hypothesis_id": "H-EQTW-GLOBAL"
             }
           ],
           "evidence_against": [
@@ -940,12 +940,12 @@
               "class": "unknown",
               "source": "cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-GLOBAL"
+              "hypothesis_id": "H-EQTW-GLOBAL"
             }
           ]
         },
         {
-          "id": "H-FUND",
+          "id": "H-EQTW-FUND",
           "label": "TW 盈利/基本面预期变化",
           "type": "fundamental",
           "status": "untestable",
@@ -958,12 +958,12 @@
               "class": "unknown",
               "source": "data_gap",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-FUND"
+              "hypothesis_id": "H-EQTW-FUND"
             }
           ]
         },
         {
-          "id": "H-POLICY",
+          "id": "H-EQTW-POLICY",
           "label": "本地政策/监管冲击",
           "type": "policy",
           "status": "untestable",
@@ -976,12 +976,12 @@
               "class": "unknown",
               "source": "calendar",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-POLICY"
+              "hypothesis_id": "H-EQTW-POLICY"
             }
           ]
         },
         {
-          "id": "H-POS",
+          "id": "H-EQTW-POS",
           "label": "仓位/资金流驱动的技术性移动",
           "type": "positioning_flow",
           "status": "untestable",
@@ -994,12 +994,12 @@
               "class": "unknown",
               "source": "CFTC",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-POS"
+              "hypothesis_id": "H-EQTW-POS"
             }
           ]
         },
         {
-          "id": "H-ART",
+          "id": "H-EQTW-ART",
           "label": "数据伪影（换月/拆股/盘中/陈旧）",
           "type": "data_artifact",
           "status": "untestable",
@@ -1012,7 +1012,7 @@
               "class": "observed_fact",
               "source": "data_quality",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-ART"
+              "hypothesis_id": "H-EQTW-ART"
             }
           ]
         }
@@ -1024,7 +1024,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-EQTW-GLOBAL"
         }
       ],
       "critical_unknowns": [
@@ -1034,14 +1034,14 @@
       ],
       "falsification_conditions": [
         {
-          "hypothesis_id": "H-LOCAL",
+          "hypothesis_id": "H-EQTW-LOCAL",
           "test": "对本地基准与全球因子回归后的残差",
           "threshold": "|residual z| < 1.5",
           "data": "prices/regional benchmark",
           "data_status": "obtainable"
         },
         {
-          "hypothesis_id": "H-GLOBAL",
+          "hypothesis_id": "H-EQTW-GLOBAL",
           "test": "同日跨资产 beta 与残差",
           "threshold": "R² > 0.5 且残差 |z|<1.5",
           "data": "cross_asset",
@@ -1089,7 +1089,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-EQTW-GLOBAL"
         }
       ],
       "evidence_against": [
@@ -1099,7 +1099,7 @@
           "class": "unknown",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-LOCAL"
+          "hypothesis_id": "H-EQTW-LOCAL"
         },
         {
           "claim": "未提供同日跨资产横截面",
@@ -1107,7 +1107,7 @@
           "class": "unknown",
           "source": "cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-EQTW-GLOBAL"
         },
         {
           "claim": "一致预期/财报修正未接入",
@@ -1115,7 +1115,7 @@
           "class": "unknown",
           "source": "data_gap",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-FUND"
+          "hypothesis_id": "H-EQTW-FUND"
         },
         {
           "claim": "没有可核验的决议/公告时点",
@@ -1123,7 +1123,7 @@
           "class": "unknown",
           "source": "calendar",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-POLICY"
+          "hypothesis_id": "H-EQTW-POLICY"
         },
         {
           "claim": "仓位极端程度不足或缺失",
@@ -1131,7 +1131,7 @@
           "class": "unknown",
           "source": "CFTC",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-POS"
+          "hypothesis_id": "H-EQTW-POS"
         },
         {
           "claim": "未记录价格清洗问题",
@@ -1139,7 +1139,7 @@
           "class": "observed_fact",
           "source": "data_quality",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-ART"
+          "hypothesis_id": "H-EQTW-ART"
         }
       ],
       "evaluation_id": "D:2026-11-13:TW_EQ_TAIEX",
@@ -1171,7 +1171,7 @@
       },
       "competing_hypotheses": [
         {
-          "id": "H-GLOBAL",
+          "id": "H-USEQ-GLOBAL",
           "label": "全球共同风险/美元流动性冲击",
           "type": "global_risk",
           "status": "open",
@@ -1183,7 +1183,7 @@
               "class": "observed_fact",
               "source": "prices",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-GLOBAL"
+              "hypothesis_id": "H-USEQ-GLOBAL"
             }
           ],
           "evidence_against": [
@@ -1193,12 +1193,12 @@
               "class": "unknown",
               "source": "cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-GLOBAL"
+              "hypothesis_id": "H-USEQ-GLOBAL"
             }
           ]
         },
         {
-          "id": "H-RATES",
+          "id": "H-USEQ-RATES",
           "label": "美国利率/估值折现率",
           "type": "risk_premium",
           "status": "open",
@@ -1210,7 +1210,7 @@
               "class": "observed_fact",
               "source": "curve",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-RATES"
+              "hypothesis_id": "H-USEQ-RATES"
             }
           ],
           "evidence_against": [
@@ -1220,12 +1220,12 @@
               "class": "unknown",
               "source": "derived",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-RATES"
+              "hypothesis_id": "H-USEQ-RATES"
             }
           ]
         },
         {
-          "id": "H-FUND",
+          "id": "H-USEQ-FUND",
           "label": "WORLD 盈利/估值预期变化",
           "type": "fundamental",
           "status": "untestable",
@@ -1238,12 +1238,12 @@
               "class": "unknown",
               "source": "data_gap",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-FUND"
+              "hypothesis_id": "H-USEQ-FUND"
             }
           ]
         },
         {
-          "id": "H-POS",
+          "id": "H-USEQ-POS",
           "label": "仓位/资金流驱动的技术性移动",
           "type": "positioning_flow",
           "status": "untestable",
@@ -1256,12 +1256,12 @@
               "class": "unknown",
               "source": "CFTC",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-POS"
+              "hypothesis_id": "H-USEQ-POS"
             }
           ]
         },
         {
-          "id": "H-ART",
+          "id": "H-USEQ-ART",
           "label": "数据伪影（换月/拆股/盘中/陈旧）",
           "type": "data_artifact",
           "status": "untestable",
@@ -1274,12 +1274,12 @@
               "class": "observed_fact",
               "source": "data_quality",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-ART"
+              "hypothesis_id": "H-USEQ-ART"
             }
           ]
         },
         {
-          "id": "H-USD",
+          "id": "H-USEQ-USD",
           "label": "美元/新兴市场资金流",
           "type": "global_risk",
           "status": "open",
@@ -1291,7 +1291,7 @@
               "class": "observed_fact",
               "source": "prices",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-USD"
+              "hypothesis_id": "H-USEQ-USD"
             }
           ],
           "evidence_against": [
@@ -1301,7 +1301,7 @@
               "class": "unknown",
               "source": "derived",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-USD"
+              "hypothesis_id": "H-USEQ-USD"
             }
           ]
         }
@@ -1313,7 +1313,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-USEQ-GLOBAL"
         },
         {
           "claim": "利率与估值代理可观察",
@@ -1321,7 +1321,7 @@
           "class": "observed_fact",
           "source": "curve",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-RATES"
+          "hypothesis_id": "H-USEQ-RATES"
         },
         {
           "claim": "DXY 可观察",
@@ -1329,7 +1329,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-USD"
+          "hypothesis_id": "H-USEQ-USD"
         }
       ],
       "critical_unknowns": [
@@ -1339,21 +1339,21 @@
       ],
       "falsification_conditions": [
         {
-          "hypothesis_id": "H-GLOBAL",
+          "hypothesis_id": "H-USEQ-GLOBAL",
           "test": "同日跨资产 beta 与残差",
           "threshold": "R² > 0.5 且残差 |z|<1.5",
           "data": "cross_asset",
           "data_status": "available"
         },
         {
-          "hypothesis_id": "H-RATES",
+          "hypothesis_id": "H-USEQ-RATES",
           "test": "利率 beta 与估值分位",
           "threshold": "beta significant",
           "data": "UST/valuation",
           "data_status": "obtainable"
         },
         {
-          "hypothesis_id": "H-USD",
+          "hypothesis_id": "H-USEQ-USD",
           "test": "美元 beta",
           "threshold": "negative and significant",
           "data": "DXY",
@@ -1401,7 +1401,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-USEQ-GLOBAL"
         },
         {
           "claim": "利率与估值代理可观察",
@@ -1409,7 +1409,7 @@
           "class": "observed_fact",
           "source": "curve",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-RATES"
+          "hypothesis_id": "H-USEQ-RATES"
         },
         {
           "claim": "DXY 可观察",
@@ -1417,7 +1417,7 @@
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-USD"
+          "hypothesis_id": "H-USEQ-USD"
         }
       ],
       "evidence_against": [
@@ -1427,7 +1427,7 @@
           "class": "unknown",
           "source": "cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-GLOBAL"
+          "hypothesis_id": "H-USEQ-GLOBAL"
         },
         {
           "claim": "未估计实时利率 beta",
@@ -1435,7 +1435,7 @@
           "class": "unknown",
           "source": "derived",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-RATES"
+          "hypothesis_id": "H-USEQ-RATES"
         },
         {
           "claim": "一致预期/财报修正未接入",
@@ -1443,7 +1443,7 @@
           "class": "unknown",
           "source": "data_gap",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-FUND"
+          "hypothesis_id": "H-USEQ-FUND"
         },
         {
           "claim": "仓位极端程度不足或缺失",
@@ -1451,7 +1451,7 @@
           "class": "unknown",
           "source": "CFTC",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-POS"
+          "hypothesis_id": "H-USEQ-POS"
         },
         {
           "claim": "未记录价格清洗问题",
@@ -1459,7 +1459,7 @@
           "class": "observed_fact",
           "source": "data_quality",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-ART"
+          "hypothesis_id": "H-USEQ-ART"
         },
         {
           "claim": "未做美元 beta",
@@ -1467,7 +1467,7 @@
           "class": "unknown",
           "source": "derived",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-USD"
+          "hypothesis_id": "H-USEQ-USD"
         }
       ],
       "evaluation_id": "D:2026-11-13:WORLD_EQ_EEM",

@@ -42,6 +42,8 @@ def _dirty_code(*, cwd: str | Path = ".") -> bool:
         if not line.strip():
             continue
         path = line[3:].strip()
+        if " -> " in path:
+            path = path.split(" -> ", 1)[1].strip()
         if not path.startswith(allowed):
             return True
     return False
@@ -126,8 +128,10 @@ def verify_test_proof(proof_path: str | Path, *, cwd: str | Path = ".") -> dict[
     if int(proof.get("passed", 0)) <= 0:
         raise ReleaseError("test proof records no passed tests")
     cmd = [str(x) for x in proof.get("command", [])]
-    if not any("pytest" in c for c in cmd) or "tests" not in cmd:
-        raise ReleaseError("proof command is not the repository pytest suite")
+    exe = Path(cmd[0]).name.lower() if cmd else ""
+    if not (exe.startswith("python") and len(cmd) >= 4 and cmd[1] == "-m" and cmd[2] == "pytest"
+            and "tests" in cmd and "-c" not in cmd):
+        raise ReleaseError("proof command must be a direct python -m pytest tests invocation")
     log = Path(proof.get("log_path", ""))
     if not log.exists():
         raise ReleaseError("test proof log is missing")
@@ -147,13 +151,21 @@ def build_manifest(store: Store, *, proof_path: str | Path,
     if require_clean and dirty:
         raise ReleaseError("refusing to freeze a dirty worktree")
     proof = verify_test_proof(proof_path)
+    rerun_info = None
     if rerun:
         # Independent re-execution: a caller cannot make a forged proof file enough.
         proc = subprocess.run([str(x) for x in proof["command"]], capture_output=True, text=True)
-        rerun_counts = _parse_pytest((proc.stdout or "") + "\n" + (proc.stderr or ""))
+        output = (proc.stdout or "") + "\n" + (proc.stderr or "")
+        rerun_counts = _parse_pytest(output)
         if proc.returncode != 0 or rerun_counts["failed"] or rerun_counts["errors"] or rerun_counts["passed"] <= 0:
             raise ReleaseError(f"release re-execution failed: rc={proc.returncode} {rerun_counts}")
-        proof["rerun"] = rerun_counts
+        if int(rerun_counts["passed"]) != int(proof["passed"]):
+            raise ReleaseError("rerun passed count differs from the recorded proof")
+        log_dir = Path("audit/test_evidence"); log_dir.mkdir(parents=True, exist_ok=True)
+        rerun_log = log_dir / f"rerun_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.log"
+        rerun_log.write_text(output, encoding="utf-8")
+        rerun_info = {"counts": rerun_counts, "log_path": str(rerun_log),
+                      "log_sha256": _sha256(rerun_log.read_bytes())}
     scan = store.conn.execute(
         "SELECT scan_id,as_of,status,config_hash,data_hash,started_at FROM scan_runs "
         "ORDER BY started_at DESC LIMIT 1").fetchone()
@@ -177,7 +189,7 @@ def build_manifest(store: Store, *, proof_path: str | Path,
         "test_evidence": {"proof_path": str(proof_path), "log_sha256": proof["log_sha256"],
                           "passed": proof["passed"], "failed": proof["failed"],
                           "skipped": proof["skipped"], "command": proof["command"],
-                          "rerun": proof.get("rerun")},
+                          "rerun": rerun_info},
         "artifacts": artifacts, "notes": notes,
     }
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)

@@ -15,7 +15,7 @@
 | ENGINEERING VALIDATION | **PASS** | fresh clone 176 passed/10 deselected; real test-proof release gate; V2 lifecycle/orphan/FK tests; independent red-team found P1s that were fixed |
 | RESEARCH METHODOLOGY | **PARTIAL** | competing hypotheses/unknowns/falsifiers now explicit; expectation data still proxies; V2 selection not proven better |
 | DISCOVERY VALUE | **NOT VALIDATED** | exploratory 2025-12-31 (already used in V1 cases, not independent): D 1.000 vs C 1.500/B 0.917/A 1.083, P@3 D 0.00; earlier reused 2021 data also D 0.833 < C 0.979. Research-question quality still unmeasured; no tuning. |
-| A→B INTEGRATION | **PARTIAL** | fact-only V2 brief; latest real run B returned `refused` (S8 out_of_scope), A persisted `not_completed:refused` (never success); no real `ok_valid`; V2 CLI `goe triage --handoff` works. An earlier run failed at process level and is now mapped to `error`, not B rejection. |
+| A→B INTEGRATION | **PARTIAL** | fact-only V2 brief; latest real run B returned `refused` (S8 no_registry_identity), A persisted `not_completed:refused` (never success); no real `ok_valid`; V2 CLI `goe triage --handoff` works. An earlier run failed at process level and is now mapped to `error`, not B rejection. |
 
 ## V2 blind evaluation (final)
 - 4 dates: 2022-10-31, 2023-03-31, 2024-09-30 (development), 2021-12-31 (exploratory/reused).
@@ -26,8 +26,9 @@
 - Why: cards measure asset selection, not D's research brief; D is pre-gated while A/B/C are not; reused-date D n=3; single LLM/no human labels. See `audit/RESEARCH_V2_RESULTS.md`.
 
 ## A→B actual behavior
-V2 fact-only question for N225 produced downstream `run_ok` false/rejected; A persisted
-`not_completed:rejected` and kept the candidate. No fake end-to-end success. B's limitations are
+V2 fact-only question for N225 produced downstream `run_ok` false/refused
+(S8 `no_registry_identity`); A persisted `not_completed:refused` and kept the candidate. No fake
+end-to-end success. B's limitations are
 external; B was not modified.
 
 ## Verification status

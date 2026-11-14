@@ -12,7 +12,7 @@
 | C_v1_score | 3 | 1.5 | 0.6667 | 1.6667 | 1.3333 | 0 |
 | D_v2_triage | 3 | 1.0 | 0.0 | 1.0 | 1.0 | 0 |
 
-## Test split
+## Exploratory window (not independent)
 
 | method | n | mean | P@3 |
 |---|---:|---:|---:|
@@ -22,5 +22,5 @@
 | D_v2_triage | 3 | 1.0 | 0.0 |
 
 **DISCOVERY VALUE: NOT VALIDATED**
-- D beats B and C on test (mean and P@3): [False, False]
+- 2025-12-31 is not an independent test (used in a V1 case); D does not beat B/C on both metrics
 - If NOT VALIDATED: do not tune V2 weights on any reused date; report failure.

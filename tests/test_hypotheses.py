@@ -50,9 +50,9 @@ def test_decision_impact_is_not_a_global_boilerplate():
 
 def test_untestable_hypotheses_do_not_count_as_open():
     b = build(spec("fx", "DXY", "US"), positioning_value=None)
-    pos = [h for h in b["hypotheses"] if h["id"] == "H-POS"][0]
+    pos = [h for h in b["hypotheses"] if h["id"].endswith("-POS")][0]
     assert pos["status"] == "untestable"
-    assert all(t["hypothesis_id"] != "H-POS" for t in b["tests"])
+    assert all(t["hypothesis_id"] != pos["id"] for t in b["tests"])
 
 
 def test_untestable_does_not_support_and_tests_declare_data_status():
@@ -69,5 +69,23 @@ def test_no_self_benchmark_available():
     b = build(spec("equity_index", "Nikkei 225", "JP"),
               available={"cross_asset": True, "fx": True, "benchmark": False,
                          "policy_calendar": False})
-    local = [t for t in b["tests"] if t["hypothesis_id"] == "H-LOCAL"][0]
+    local = [t for t in b["tests"] if t["hypothesis_id"].endswith("-LOCAL")][0]
     assert local["data_status"] == "obtainable"
+
+
+def test_all_untestable_hypotheses_have_no_supporting_evidence():
+    cases = [
+        ("equity_index", "Nikkei 225", "JP", False),
+        ("equity_etf", "QQQ", "US", False),
+        ("sector_equity", "Health Care Select Sector SPDR", "US", False),
+        ("fx", "USD/BRL", "BR", False),
+        ("fixed_income", "Bund", "DE", False),
+        ("commodity", "COMEX Gold", "WORLD", True),
+        ("commodity", "iShares Silver Trust", "US", False),
+        ("crypto", "Bitcoin", "WORLD", False),
+    ]
+    for ac, name, region, fut in cases:
+        b = build(spec(ac, name, region, fut))
+        for h in b["hypotheses"]:
+            if h["status"] == "untestable":
+                assert h["evidence_for"] == [], (ac, h["id"])

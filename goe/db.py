@@ -835,6 +835,9 @@ class Store:
                     (hid, rid, key, h.get("type"), h.get("status"), h.get("label"),
                      json.dumps(h, ensure_ascii=False, default=str), now),
                 )
+            # Evidence is a versioned snapshot of the current candidate; tasks/results/events
+            # remain append-only, so updating a candidate does not delete research history.
+            c.execute("DELETE FROM research_v2_evidence WHERE research_id=?", (rid,))
             for e in list(candidate.get("evidence", [])) + list(candidate.get("evidence_for", [])) + list(candidate.get("evidence_against", [])):
                 eid = hash_json([rid, e.get("claim"), e.get("source"), e.get("available_at"), e.get("class")])
                 c.execute(

@@ -124,3 +124,20 @@ def test_release_rejects_missing_or_forged_proof(monkeypatch, store, tmp_path):
     path.write_text(json.dumps(forged), encoding="utf-8")
     with pytest.raises(rel.ReleaseError, match="disagrees|hash"):
         rel.verify_test_proof(path)
+
+
+def test_release_rejects_shell_spoof_and_rename_dirty(monkeypatch, tmp_path):
+    import hashlib, json
+    import goe.release as rel
+
+    monkeypatch.setattr(rel, "_git", lambda *a: "abc123")
+    log = tmp_path / "run.log"; log.write_text("1 passed in 1s\n")
+    proof = {"schema": "goe-test-proof/v1", "git_commit": "abc123", "git_dirty": False,
+             "command": ["sh", "-c", "printf '176 passed'", "tests", "pytest"],
+             "exit_code": 0, "passed": 1, "failed": 0, "errors": 0, "skipped": 0,
+             "log_path": str(log), "log_sha256": hashlib.sha256(log.read_bytes()).hexdigest()}
+    p = tmp_path / "proof.json"; p.write_text(json.dumps(proof))
+    with pytest.raises(rel.ReleaseError, match="direct python"):
+        rel.verify_test_proof(p)
+    monkeypatch.setattr(rel, "_git", lambda *a, **k: "R  audit/test_evidence/x -> goe/payload.py")
+    assert rel._dirty_code() is True
