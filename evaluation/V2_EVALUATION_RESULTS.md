@@ -12,11 +12,11 @@
 | C_v1_score | 12 | 0.9792 | 0.1667 | 0.5 | 1.5 | 0 |
 | D_v2_triage | 12 | 0.8333 | 0.0 | 0.25 | 1.5 | 0 |
 
-## Test split (2021-12-31; held out)
+## Independent test split — NOT AVAILABLE
+The only candidate test date was reused after a V2 gate change; it is
+exploratory, not an independent test. DISCOVERY VALUE must remain NOT VALIDATED.
 
-| method | n | mean | P@3 |
-|---|---:|---:|---:|
 
 **DISCOVERY VALUE: NOT VALIDATED**
-- D beats B and C on test (mean and P@3): [False, False]
-- If NOT VALIDATED: do not tune V2 weights on this test date; report failure.
+- no independent test split exists; no validation claim is permitted
+- If NOT VALIDATED: do not tune V2 weights on any reused date; report failure.

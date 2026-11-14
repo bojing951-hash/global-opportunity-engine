@@ -76,3 +76,30 @@ def test_v2_evaluation_decision_rule_is_not_automatic(tmp_path):
     # D mean 1.5 vs others 1.5 -> not strictly better; decision must not be VALIDATED
     assert res["discovery_value"] in ("VALIDATED", "NOT VALIDATED")
     assert (tmp_path / "V2_EVALUATION_RESULTS.md").exists()
+
+
+def test_evaluation_decision_rule_requires_test_and_both_metrics(tmp_path):
+    from goe.research_evaluation import score_ratings
+
+    def make(split_dates):
+        mapping = {"mapping": {}, "splits": {"test": split_dates}}
+        for mi, method in enumerate(("A_price_move", "B_anomaly_score", "C_v1_score", "D_v2_triage")):
+            for j in range(3):
+                token = f"T{mi}{j}"
+                mapping["mapping"][token] = {"as_of": split_dates[0] if split_dates else "2026-01-01",
+                                             "method": method, "rank": j + 1,
+                                             "entity_id": f"E{mi}{j}", "theme": f"TH{mi}{j}"}
+        ratings = []
+        for token, meta in mapping["mapping"].items():
+            strong = meta["method"] == "D_v2_triage"
+            scores = {k: (2 if strong else 1) for k in
+                      ("real_market_change", "beyond_price", "falsifiable", "data_sufficiency")}
+            ratings.append({"object_id": token, "scores": scores})
+        return ratings, mapping
+
+    rat, mp = make(["2026-01-01"])
+    good = score_ratings(rat, mp, tmp_path / "good")
+    assert good["discovery_value"] == "VALIDATED"
+    rat2, mp2 = make([])
+    no_test = score_ratings(rat2, mp2, tmp_path / "none")
+    assert no_test["discovery_value"] == "NOT VALIDATED"

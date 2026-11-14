@@ -67,6 +67,7 @@ mechanism-rich assets), no cost/portfolio implication. These limits must appear 
   a common research-brief template for all methods.
 - D applies materiality/evidence gates before ranking; A/B/C do not. This can confound "selection
   filter" with "ranking"; the test split is therefore not proof of an isolated ranking effect.
-- Test split (2021-12-31) yielded D n=1, below the pre-registered n>=3; result must be NOT VALIDATED.
+- The candidate 2021-12-31 date was reused after a V2 gate change; it is exploratory, not a test.
+  There is no independent test split, so the result must remain NOT VALIDATED by construction.
 - The 2026 LLM rater may know historical outcomes; no human/expert labels. These limits are not
   fixable by more tuning.

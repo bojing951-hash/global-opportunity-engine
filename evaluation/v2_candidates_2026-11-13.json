@@ -1,0 +1,1258 @@
+{
+  "schema": "research-candidates/v2",
+  "as_of": "2026-11-13",
+  "candidates": [
+    {
+      "research_id": "RC-20261113-12",
+      "as_of": "2026-11-13",
+      "market": "JP",
+      "asset_class": "equity_index",
+      "instruments": [
+        "JP_EQ_N225"
+      ],
+      "observed_phenomenon": "Nikkei 225 近期 drawdown_extreme（deep_drawdown，分数 0.98）；1 个月收益 -9.7%；回撤分位 0.03。",
+      "materiality": {
+        "level": 3,
+        "importance": 0.8,
+        "anomaly_score": 0.9841143764892772,
+        "return_1m": -0.09745378675255034,
+        "gap_score": 0.709,
+        "gap_level": 2,
+        "mechanism_conflict": true,
+        "distinguishability_level": 2,
+        "decision_impact_level": 2,
+        "has_change": true
+      },
+      "competing_hypotheses": [
+        {
+          "id": "H1",
+          "label": "风险溢价/风险厌恶变化",
+          "type": "risk_premium",
+          "status": "open",
+          "implications": "信用/波动率与风险资产应同向；不需盈利下修。",
+          "evidence_for": [
+            {
+              "claim": "机制/预期差代理显示未解释变化",
+              "value": "gap=0.71",
+              "class": "statistical_association",
+              "source": "derived",
+              "available_at": "2026-11-13"
+            }
+          ],
+          "evidence_against": []
+        },
+        {
+          "id": "H2",
+          "label": "基本面/盈利预期变化",
+          "type": "fundamental",
+          "status": "untestable",
+          "implications": "盈利修正应领先或同步；本系统无一致预期，需外部验证。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "一致预期未接入",
+              "value": "cannot test directly",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H3",
+          "label": "仓位/资金流驱动的技术性移动",
+          "type": "positioning_flow",
+          "status": "untestable",
+          "implications": "CFTC 极端仓位、随后反转；ETF/期权资金流需补充。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "仓位不在极端",
+              "value": "neutral/unknown",
+              "class": "unknown",
+              "source": "CFTC",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H4",
+          "label": "全球共同风险冲击（跨资产同日）",
+          "type": "global_risk",
+          "status": "open",
+          "implications": "同日多资产同向下跌/上涨，beta 解释而非本地故事。",
+          "evidence_for": [
+            {
+              "claim": "资产出现较大单月变动",
+              "value": "1m=-0.09745378675255034",
+              "class": "observed_fact",
+              "source": "prices",
+              "available_at": "2026-11-13"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "没有同日的独立跨资产样本",
+              "value": "not established in this card",
+              "class": "unknown",
+              "source": "cross_asset",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H5",
+          "label": "数据伪影（换月/拆股/盘中/陈旧）",
+          "type": "data_artifact",
+          "status": "untestable",
+          "implications": "换月/拆股/数据修订可解释；需核对原始合约与抓取时间。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "未记录价格清洗问题",
+              "value": "no price_data_issue",
+              "class": "observed_fact",
+              "source": "data_quality",
+              "available_at": "2026-11-13"
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "claim": "近期异常",
+          "value": "drawdown_extreme deep_drawdown 分数 0.98",
+          "class": "observed_fact",
+          "source": "engine/anomalies",
+          "available_at": "2026-11-06"
+        },
+        {
+          "claim": "1 个月收益",
+          "value": "-9.7%",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "驱动残差背离",
+          "value": "z=-2.564, R²=0.7793",
+          "class": "statistical_association",
+          "source": "derived/residual",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "机制 M14_JAPAN_CARRY_UNWIND 状态 unsupported",
+          "value": "confidence=0.05",
+          "class": "statistical_association",
+          "source": "mechanism_stats",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "盈利预期/期权分布缺失",
+          "value": "无法区分基本面与风险溢价",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "critical_unknowns": [
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "falsification_conditions": [
+        {
+          "test": "信用利差代理回升（风险溢价解释被削弱）",
+          "threshold": "z > -1 (current -0.55)",
+          "data": "CREDIT_RISK",
+          "hypothesis_id": "H1"
+        },
+        {
+          "test": "机制 M14_JAPAN_CARRY_UNWIND 的滚动相关恢复原符号",
+          "threshold": "sign stable 60d",
+          "data": "mechanism",
+          "hypothesis_id": "H1"
+        },
+        {
+          "test": "后续价格/仓位/宏观证据与当前解释相反",
+          "threshold": "documented review",
+          "data": "open",
+          "hypothesis_id": "H1"
+        }
+      ],
+      "required_data": [
+        "价格/成交量",
+        "CFTC 持仓（周度）",
+        "收益率曲线",
+        "宏观序列（按发布滞后）",
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "research_cost": {
+        "hours": 10,
+        "data_access": "medium"
+      },
+      "decision_impact": {
+        "if_true": "若风险溢价/数据伪影解释成立，下调该线索的研究优先级，不改变仓位判断。",
+        "if_false": "若基本面或仓位假设获得支持，交给 B 做估值/情景研究。"
+      },
+      "priority_tier": "A",
+      "priority_rank": 1,
+      "rationale": "tier A: materiality L3, gap L2, distinguishability L2, impact L2, mechanism_conflict=True, cost=10h",
+      "data_quality": {
+        "score": 0.4,
+        "gaps": [
+          "分析师一致预期/修正",
+          "期权隐含分布",
+          "ETF 资金流",
+          "信用 OAS（仅有 HYG/IEF 代理）"
+        ]
+      },
+      "evidence_gaps": [
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "evidence_for": [
+        {
+          "claim": "可观察异常",
+          "value": "drawdown_extreme deep_drawdown score=0.98",
+          "class": "observed_fact",
+          "source": "engine/anomalies",
+          "available_at": "2026-11-06"
+        },
+        {
+          "claim": "价格变化",
+          "value": "1m=-9.7%",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "evidence_against": [
+        {
+          "claim": "机制检验失败/不稳定",
+          "value": "mechanism status mixed/unsupported/weak",
+          "class": "statistical_association",
+          "source": "mechanism_stats",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "evaluation_id": "D:2026-11-13:JP_EQ_N225",
+      "method": "D_v2_triage",
+      "v1_score": 0.5577,
+      "v1_status": "watch",
+      "theme": "japan_equity"
+    },
+    {
+      "research_id": "RC-20261113-15",
+      "as_of": "2026-11-13",
+      "market": "US",
+      "asset_class": "equity_etf",
+      "instruments": [
+        "US_EQ_QQQ"
+      ],
+      "observed_phenomenon": "Invesco QQQ (Nasdaq 100) 近期 price_return_shock（up，分数 0.13）；1 个月收益 -5.6%；回撤分位 0.29。",
+      "materiality": {
+        "level": 2,
+        "importance": 0.95,
+        "anomaly_score": 0.12537393433190536,
+        "return_1m": -0.05594351960212729,
+        "gap_score": 0.328,
+        "gap_level": 2,
+        "mechanism_conflict": true,
+        "distinguishability_level": 2,
+        "decision_impact_level": 2,
+        "has_change": true
+      },
+      "competing_hypotheses": [
+        {
+          "id": "H1",
+          "label": "风险溢价/风险厌恶变化",
+          "type": "risk_premium",
+          "status": "open",
+          "implications": "信用/波动率与风险资产应同向；不需盈利下修。",
+          "evidence_for": [
+            {
+              "claim": "机制/预期差代理显示未解释变化",
+              "value": "gap=0.33",
+              "class": "statistical_association",
+              "source": "derived",
+              "available_at": "2026-11-13"
+            }
+          ],
+          "evidence_against": []
+        },
+        {
+          "id": "H2",
+          "label": "基本面/盈利预期变化",
+          "type": "fundamental",
+          "status": "untestable",
+          "implications": "盈利修正应领先或同步；本系统无一致预期，需外部验证。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "一致预期未接入",
+              "value": "cannot test directly",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H3",
+          "label": "仓位/资金流驱动的技术性移动",
+          "type": "positioning_flow",
+          "status": "untestable",
+          "implications": "CFTC 极端仓位、随后反转；ETF/期权资金流需补充。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "仓位不在极端",
+              "value": "neutral/unknown",
+              "class": "unknown",
+              "source": "CFTC",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H4",
+          "label": "全球共同风险冲击（跨资产同日）",
+          "type": "global_risk",
+          "status": "open",
+          "implications": "同日多资产同向下跌/上涨，beta 解释而非本地故事。",
+          "evidence_for": [
+            {
+              "claim": "资产出现较大单月变动",
+              "value": "1m=-0.05594351960212729",
+              "class": "observed_fact",
+              "source": "prices",
+              "available_at": "2026-11-13"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "没有同日的独立跨资产样本",
+              "value": "not established in this card",
+              "class": "unknown",
+              "source": "cross_asset",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H5",
+          "label": "数据伪影（换月/拆股/盘中/陈旧）",
+          "type": "data_artifact",
+          "status": "untestable",
+          "implications": "换月/拆股/数据修订可解释；需核对原始合约与抓取时间。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "未记录价格清洗问题",
+              "value": "no price_data_issue",
+              "class": "observed_fact",
+              "source": "data_quality",
+              "available_at": "2026-11-13"
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "claim": "近期异常",
+          "value": "price_return_shock up 分数 0.13",
+          "class": "observed_fact",
+          "source": "engine/anomalies",
+          "available_at": "2026-11-09"
+        },
+        {
+          "claim": "1 个月收益",
+          "value": "-5.6%",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "驱动残差背离",
+          "value": "z=-1.992, R²=0.8567",
+          "class": "statistical_association",
+          "source": "derived/residual",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "机制 M01_REAL_RATES_USD_ALLOCATION 状态 unsupported",
+          "value": "confidence=0.05",
+          "class": "statistical_association",
+          "source": "mechanism_stats",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "盈利预期/期权分布缺失",
+          "value": "无法区分基本面与风险溢价",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "critical_unknowns": [
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "falsification_conditions": [
+        {
+          "test": "信用利差代理回升（风险溢价解释被削弱）",
+          "threshold": "z > -1 (current -0.55)",
+          "data": "CREDIT_RISK",
+          "hypothesis_id": "H1"
+        },
+        {
+          "test": "相对强弱 z 回归 0（本地冲击论点被削弱）",
+          "threshold": "z crosses 0 (current -2.33)",
+          "data": "prices",
+          "hypothesis_id": "H1"
+        },
+        {
+          "test": "机制 M01_REAL_RATES_USD_ALLOCATION 的滚动相关恢复原符号",
+          "threshold": "sign stable 60d",
+          "data": "mechanism",
+          "hypothesis_id": "H1"
+        },
+        {
+          "test": "后续价格/仓位/宏观证据与当前解释相反",
+          "threshold": "documented review",
+          "data": "open",
+          "hypothesis_id": "H1"
+        }
+      ],
+      "required_data": [
+        "价格/成交量",
+        "CFTC 持仓（周度）",
+        "收益率曲线",
+        "宏观序列（按发布滞后）",
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "research_cost": {
+        "hours": 10,
+        "data_access": "medium"
+      },
+      "decision_impact": {
+        "if_true": "若风险溢价/数据伪影解释成立，下调该线索的研究优先级，不改变仓位判断。",
+        "if_false": "若基本面或仓位假设获得支持，交给 B 做估值/情景研究。"
+      },
+      "priority_tier": "B",
+      "priority_rank": 2,
+      "rationale": "tier B: materiality L2, gap L2, distinguishability L2, impact L2, mechanism_conflict=True, cost=10h",
+      "data_quality": {
+        "score": 0.4,
+        "gaps": [
+          "分析师一致预期/修正",
+          "期权隐含分布",
+          "ETF 资金流",
+          "信用 OAS（仅有 HYG/IEF 代理）"
+        ]
+      },
+      "evidence_gaps": [
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "evidence_for": [
+        {
+          "claim": "可观察异常",
+          "value": "price_return_shock up score=0.13",
+          "class": "observed_fact",
+          "source": "engine/anomalies",
+          "available_at": "2026-11-09"
+        },
+        {
+          "claim": "价格变化",
+          "value": "1m=-5.6%",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "evidence_against": [
+        {
+          "claim": "机制检验失败/不稳定",
+          "value": "mechanism status mixed/unsupported/weak",
+          "class": "statistical_association",
+          "source": "mechanism_stats",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "evaluation_id": "D:2026-11-13:US_EQ_QQQ",
+      "method": "D_v2_triage",
+      "v1_score": 0.5142,
+      "v1_status": "low_priority",
+      "theme": "us_equity_growth"
+    },
+    {
+      "research_id": "RC-20261113-14",
+      "as_of": "2026-11-13",
+      "market": "TW",
+      "asset_class": "equity_index",
+      "instruments": [
+        "TW_EQ_TAIEX"
+      ],
+      "observed_phenomenon": "TAIEX 近期 price_return_shock（down，分数 0.81）；1 个月收益 -9.7%；回撤分位 0.20。",
+      "materiality": {
+        "level": 2,
+        "importance": 0.5,
+        "anomaly_score": 0.8096038529330292,
+        "return_1m": -0.09652588305404886,
+        "gap_score": 0.782,
+        "gap_level": 2,
+        "mechanism_conflict": false,
+        "distinguishability_level": 1,
+        "decision_impact_level": 1,
+        "has_change": true
+      },
+      "competing_hypotheses": [
+        {
+          "id": "H1",
+          "label": "风险溢价/风险厌恶变化",
+          "type": "risk_premium",
+          "status": "open",
+          "implications": "信用/波动率与风险资产应同向；不需盈利下修。",
+          "evidence_for": [
+            {
+              "claim": "机制/预期差代理显示未解释变化",
+              "value": "gap=0.78",
+              "class": "statistical_association",
+              "source": "derived",
+              "available_at": "2026-11-13"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "没有独立的信用/波动证据",
+              "value": "needs CREDIT_RISK",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H2",
+          "label": "基本面/盈利预期变化",
+          "type": "fundamental",
+          "status": "untestable",
+          "implications": "盈利修正应领先或同步；本系统无一致预期，需外部验证。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "一致预期未接入",
+              "value": "cannot test directly",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H3",
+          "label": "仓位/资金流驱动的技术性移动",
+          "type": "positioning_flow",
+          "status": "untestable",
+          "implications": "CFTC 极端仓位、随后反转；ETF/期权资金流需补充。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "仓位不在极端",
+              "value": "neutral/unknown",
+              "class": "unknown",
+              "source": "CFTC",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H4",
+          "label": "全球共同风险冲击（跨资产同日）",
+          "type": "global_risk",
+          "status": "open",
+          "implications": "同日多资产同向下跌/上涨，beta 解释而非本地故事。",
+          "evidence_for": [
+            {
+              "claim": "资产出现较大单月变动",
+              "value": "1m=-0.09652588305404886",
+              "class": "observed_fact",
+              "source": "prices",
+              "available_at": "2026-11-13"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "没有同日的独立跨资产样本",
+              "value": "not established in this card",
+              "class": "unknown",
+              "source": "cross_asset",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H5",
+          "label": "数据伪影（换月/拆股/盘中/陈旧）",
+          "type": "data_artifact",
+          "status": "untestable",
+          "implications": "换月/拆股/数据修订可解释；需核对原始合约与抓取时间。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "未记录价格清洗问题",
+              "value": "no price_data_issue",
+              "class": "observed_fact",
+              "source": "data_quality",
+              "available_at": "2026-11-13"
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "claim": "近期异常",
+          "value": "price_return_shock down 分数 0.81",
+          "class": "observed_fact",
+          "source": "engine/anomalies",
+          "available_at": "2026-11-06"
+        },
+        {
+          "claim": "1 个月收益",
+          "value": "-9.7%",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "驱动残差背离",
+          "value": "z=-2.673, R²=0.4378",
+          "class": "statistical_association",
+          "source": "derived/residual",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "盈利预期/期权分布缺失",
+          "value": "无法区分基本面与风险溢价",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "critical_unknowns": [
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）",
+        "该资产没有可检验的宏观传导机制"
+      ],
+      "falsification_conditions": [
+        {
+          "test": "信用利差代理回升（风险溢价解释被削弱）",
+          "threshold": "z > -1 (current -0.55)",
+          "data": "CREDIT_RISK",
+          "hypothesis_id": "H1"
+        },
+        {
+          "test": "后续价格/仓位/宏观证据与当前解释相反",
+          "threshold": "documented review",
+          "data": "open",
+          "hypothesis_id": "H1"
+        }
+      ],
+      "required_data": [
+        "价格/成交量",
+        "CFTC 持仓（周度）",
+        "收益率曲线",
+        "宏观序列（按发布滞后）",
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "research_cost": {
+        "hours": 12,
+        "data_access": "medium"
+      },
+      "decision_impact": {
+        "if_true": "若风险溢价/数据伪影解释成立，下调该线索的研究优先级，不改变仓位判断。",
+        "if_false": "若基本面或仓位假设获得支持，交给 B 做估值/情景研究。"
+      },
+      "priority_tier": "B",
+      "priority_rank": 3,
+      "rationale": "tier B: materiality L2, gap L2, distinguishability L1, impact L1, mechanism_conflict=False, cost=12h",
+      "data_quality": {
+        "score": 0.4,
+        "gaps": [
+          "分析师一致预期/修正",
+          "期权隐含分布",
+          "ETF 资金流",
+          "信用 OAS（仅有 HYG/IEF 代理）",
+          "该资产没有可检验的宏观传导机制"
+        ]
+      },
+      "evidence_gaps": [
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）",
+        "该资产没有可检验的宏观传导机制"
+      ],
+      "evidence_for": [
+        {
+          "claim": "可观察异常",
+          "value": "price_return_shock down score=0.81",
+          "class": "observed_fact",
+          "source": "engine/anomalies",
+          "available_at": "2026-11-06"
+        },
+        {
+          "claim": "价格变化",
+          "value": "1m=-9.7%",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "evidence_against": [
+        {
+          "claim": "竞争解释尚未被排除",
+          "value": "缺少独立证据区分风险溢价/基本面/仓位",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "evaluation_id": "D:2026-11-13:TW_EQ_TAIEX",
+      "method": "D_v2_triage",
+      "v1_score": 0.3792,
+      "v1_status": "excluded",
+      "theme": "taiwan_equity"
+    },
+    {
+      "research_id": "RC-20261113-19",
+      "as_of": "2026-11-13",
+      "market": "US",
+      "asset_class": "sector_equity",
+      "instruments": [
+        "US_SEC_XLV"
+      ],
+      "observed_phenomenon": "Health Care Select Sector SPDR 近期 price_return_shock（up，分数 0.17）；1 个月收益 +8.0%；回撤分位 0.87。",
+      "materiality": {
+        "level": 2,
+        "importance": 0.6,
+        "anomaly_score": 0.16697510183366862,
+        "return_1m": 0.0797309414916334,
+        "gap_score": 1.0,
+        "gap_level": 2,
+        "mechanism_conflict": false,
+        "distinguishability_level": 1,
+        "decision_impact_level": 1,
+        "has_change": true
+      },
+      "competing_hypotheses": [
+        {
+          "id": "H1",
+          "label": "风险溢价/风险厌恶变化",
+          "type": "risk_premium",
+          "status": "open",
+          "implications": "信用/波动率与风险资产应同向；不需盈利下修。",
+          "evidence_for": [
+            {
+              "claim": "机制/预期差代理显示未解释变化",
+              "value": "gap=1.00",
+              "class": "statistical_association",
+              "source": "derived",
+              "available_at": "2026-11-13"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "没有独立的信用/波动证据",
+              "value": "needs CREDIT_RISK",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H2",
+          "label": "基本面/盈利预期变化",
+          "type": "fundamental",
+          "status": "untestable",
+          "implications": "盈利修正应领先或同步；本系统无一致预期，需外部验证。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "一致预期未接入",
+              "value": "cannot test directly",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H3",
+          "label": "仓位/资金流驱动的技术性移动",
+          "type": "positioning_flow",
+          "status": "untestable",
+          "implications": "CFTC 极端仓位、随后反转；ETF/期权资金流需补充。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "仓位不在极端",
+              "value": "neutral/unknown",
+              "class": "unknown",
+              "source": "CFTC",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H4",
+          "label": "全球共同风险冲击（跨资产同日）",
+          "type": "global_risk",
+          "status": "open",
+          "implications": "同日多资产同向下跌/上涨，beta 解释而非本地故事。",
+          "evidence_for": [
+            {
+              "claim": "资产出现较大单月变动",
+              "value": "1m=0.0797309414916334",
+              "class": "observed_fact",
+              "source": "prices",
+              "available_at": "2026-11-13"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "没有同日的独立跨资产样本",
+              "value": "not established in this card",
+              "class": "unknown",
+              "source": "cross_asset",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H5",
+          "label": "数据伪影（换月/拆股/盘中/陈旧）",
+          "type": "data_artifact",
+          "status": "untestable",
+          "implications": "换月/拆股/数据修订可解释；需核对原始合约与抓取时间。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "未记录价格清洗问题",
+              "value": "no price_data_issue",
+              "class": "observed_fact",
+              "source": "data_quality",
+              "available_at": "2026-11-13"
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "claim": "近期异常",
+          "value": "price_return_shock up 分数 0.17",
+          "class": "observed_fact",
+          "source": "engine/anomalies",
+          "available_at": "2026-11-11"
+        },
+        {
+          "claim": "1 个月收益",
+          "value": "+8.0%",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "驱动残差背离",
+          "value": "z=3.077, R²=0.4191",
+          "class": "statistical_association",
+          "source": "derived/residual",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "盈利预期/期权分布缺失",
+          "value": "无法区分基本面与风险溢价",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "critical_unknowns": [
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）",
+        "该资产没有可检验的宏观传导机制"
+      ],
+      "falsification_conditions": [
+        {
+          "test": "信用利差代理回升（风险溢价解释被削弱）",
+          "threshold": "z > -1 (current -0.55)",
+          "data": "CREDIT_RISK",
+          "hypothesis_id": "H1"
+        },
+        {
+          "test": "相对强弱 z 回归 0（本地冲击论点被削弱）",
+          "threshold": "z crosses 0 (current 2.46)",
+          "data": "prices",
+          "hypothesis_id": "H1"
+        },
+        {
+          "test": "后续价格/仓位/宏观证据与当前解释相反",
+          "threshold": "documented review",
+          "data": "open",
+          "hypothesis_id": "H1"
+        }
+      ],
+      "required_data": [
+        "价格/成交量",
+        "CFTC 持仓（周度）",
+        "收益率曲线",
+        "宏观序列（按发布滞后）",
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "research_cost": {
+        "hours": 12,
+        "data_access": "medium"
+      },
+      "decision_impact": {
+        "if_true": "若风险溢价/数据伪影解释成立，下调该线索的研究优先级，不改变仓位判断。",
+        "if_false": "若基本面或仓位假设获得支持，交给 B 做估值/情景研究。"
+      },
+      "priority_tier": "B",
+      "priority_rank": 4,
+      "rationale": "tier B: materiality L2, gap L2, distinguishability L1, impact L1, mechanism_conflict=False, cost=12h",
+      "data_quality": {
+        "score": 0.4,
+        "gaps": [
+          "分析师一致预期/修正",
+          "期权隐含分布",
+          "ETF 资金流",
+          "信用 OAS（仅有 HYG/IEF 代理）",
+          "该资产没有可检验的宏观传导机制"
+        ]
+      },
+      "evidence_gaps": [
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）",
+        "该资产没有可检验的宏观传导机制"
+      ],
+      "evidence_for": [
+        {
+          "claim": "可观察异常",
+          "value": "price_return_shock up score=0.17",
+          "class": "observed_fact",
+          "source": "engine/anomalies",
+          "available_at": "2026-11-11"
+        },
+        {
+          "claim": "价格变化",
+          "value": "1m=+8.0%",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "evidence_against": [
+        {
+          "claim": "竞争解释尚未被排除",
+          "value": "缺少独立证据区分风险溢价/基本面/仓位",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "evaluation_id": "D:2026-11-13:US_SEC_XLV",
+      "method": "D_v2_triage",
+      "v1_score": null,
+      "v1_status": null,
+      "theme": "us_sector_health"
+    },
+    {
+      "research_id": "RC-20261113-21",
+      "as_of": "2026-11-13",
+      "market": "WORLD",
+      "asset_class": "equity_etf",
+      "instruments": [
+        "WORLD_EQ_EEM"
+      ],
+      "observed_phenomenon": "iShares MSCI Emerging Markets 近期 vol_regime_shift（expansion，分数 0.33）；1 个月收益 -5.0%；回撤分位 0.24。",
+      "materiality": {
+        "level": 2,
+        "importance": 0.5,
+        "anomaly_score": 0.3271983444756895,
+        "return_1m": -0.050473676515090604,
+        "gap_score": 0.281,
+        "gap_level": 1,
+        "mechanism_conflict": true,
+        "distinguishability_level": 2,
+        "decision_impact_level": 1,
+        "has_change": true
+      },
+      "competing_hypotheses": [
+        {
+          "id": "H1",
+          "label": "风险溢价/风险厌恶变化",
+          "type": "risk_premium",
+          "status": "open",
+          "implications": "信用/波动率与风险资产应同向；不需盈利下修。",
+          "evidence_for": [
+            {
+              "claim": "机制/预期差代理显示未解释变化",
+              "value": "gap=0.28",
+              "class": "statistical_association",
+              "source": "derived",
+              "available_at": "2026-11-13"
+            }
+          ],
+          "evidence_against": []
+        },
+        {
+          "id": "H2",
+          "label": "基本面/盈利预期变化",
+          "type": "fundamental",
+          "status": "untestable",
+          "implications": "盈利修正应领先或同步；本系统无一致预期，需外部验证。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "一致预期未接入",
+              "value": "cannot test directly",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H3",
+          "label": "仓位/资金流驱动的技术性移动",
+          "type": "positioning_flow",
+          "status": "untestable",
+          "implications": "CFTC 极端仓位、随后反转；ETF/期权资金流需补充。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "仓位不在极端",
+              "value": "neutral/unknown",
+              "class": "unknown",
+              "source": "CFTC",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H4",
+          "label": "全球共同风险冲击（跨资产同日）",
+          "type": "global_risk",
+          "status": "open",
+          "implications": "同日多资产同向下跌/上涨，beta 解释而非本地故事。",
+          "evidence_for": [
+            {
+              "claim": "资产出现较大单月变动",
+              "value": "1m=-0.050473676515090604",
+              "class": "observed_fact",
+              "source": "prices",
+              "available_at": "2026-11-13"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "没有同日的独立跨资产样本",
+              "value": "not established in this card",
+              "class": "unknown",
+              "source": "cross_asset",
+              "available_at": "2026-11-13"
+            }
+          ]
+        },
+        {
+          "id": "H5",
+          "label": "数据伪影（换月/拆股/盘中/陈旧）",
+          "type": "data_artifact",
+          "status": "untestable",
+          "implications": "换月/拆股/数据修订可解释；需核对原始合约与抓取时间。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "未记录价格清洗问题",
+              "value": "no price_data_issue",
+              "class": "observed_fact",
+              "source": "data_quality",
+              "available_at": "2026-11-13"
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "claim": "近期异常",
+          "value": "vol_regime_shift expansion 分数 0.33",
+          "class": "observed_fact",
+          "source": "engine/anomalies",
+          "available_at": "2026-11-12"
+        },
+        {
+          "claim": "1 个月收益",
+          "value": "-5.0%",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "驱动残差背离",
+          "value": "z=-1.921, R²=0.6344",
+          "class": "statistical_association",
+          "source": "derived/residual",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "机制 M01_REAL_RATES_USD_ALLOCATION 状态 unsupported",
+          "value": "confidence=0.05",
+          "class": "statistical_association",
+          "source": "mechanism_stats",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "机制 M09_DOLLAR_LIQUIDITY_EM_STRESS 状态 unsupported",
+          "value": "confidence=0.05",
+          "class": "statistical_association",
+          "source": "mechanism_stats",
+          "available_at": "2026-11-13"
+        },
+        {
+          "claim": "盈利预期/期权分布缺失",
+          "value": "无法区分基本面与风险溢价",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "critical_unknowns": [
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "falsification_conditions": [
+        {
+          "test": "信用利差代理回升（风险溢价解释被削弱）",
+          "threshold": "z > -1 (current -0.55)",
+          "data": "CREDIT_RISK",
+          "hypothesis_id": "H1"
+        },
+        {
+          "test": "相对强弱 z 回归 0（本地冲击论点被削弱）",
+          "threshold": "z crosses 0 (current -2.23)",
+          "data": "prices",
+          "hypothesis_id": "H1"
+        },
+        {
+          "test": "机制 M01_REAL_RATES_USD_ALLOCATION 的滚动相关恢复原符号",
+          "threshold": "sign stable 60d",
+          "data": "mechanism",
+          "hypothesis_id": "H1"
+        },
+        {
+          "test": "后续价格/仓位/宏观证据与当前解释相反",
+          "threshold": "documented review",
+          "data": "open",
+          "hypothesis_id": "H1"
+        }
+      ],
+      "required_data": [
+        "价格/成交量",
+        "CFTC 持仓（周度）",
+        "收益率曲线",
+        "宏观序列（按发布滞后）",
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "research_cost": {
+        "hours": 10,
+        "data_access": "medium"
+      },
+      "decision_impact": {
+        "if_true": "若风险溢价/数据伪影解释成立，下调该线索的研究优先级，不改变仓位判断。",
+        "if_false": "若基本面或仓位假设获得支持，交给 B 做估值/情景研究。"
+      },
+      "priority_tier": "B",
+      "priority_rank": 5,
+      "rationale": "tier B: materiality L2, gap L1, distinguishability L2, impact L1, mechanism_conflict=True, cost=10h",
+      "data_quality": {
+        "score": 0.4,
+        "gaps": [
+          "分析师一致预期/修正",
+          "期权隐含分布",
+          "ETF 资金流",
+          "信用 OAS（仅有 HYG/IEF 代理）"
+        ]
+      },
+      "evidence_gaps": [
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "evidence_for": [
+        {
+          "claim": "可观察异常",
+          "value": "vol_regime_shift expansion score=0.33",
+          "class": "observed_fact",
+          "source": "engine/anomalies",
+          "available_at": "2026-11-12"
+        },
+        {
+          "claim": "价格变化",
+          "value": "1m=-5.0%",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "evidence_against": [
+        {
+          "claim": "机制检验失败/不稳定",
+          "value": "mechanism status mixed/unsupported/weak",
+          "class": "statistical_association",
+          "source": "mechanism_stats",
+          "available_at": "2026-11-13"
+        }
+      ],
+      "evaluation_id": "D:2026-11-13:WORLD_EQ_EEM",
+      "method": "D_v2_triage",
+      "v1_score": null,
+      "v1_status": null,
+      "theme": "em_equity_broad"
+    }
+  ],
+  "note": "Research questions, not investment conclusions; V2 triage does not replace B."
+}

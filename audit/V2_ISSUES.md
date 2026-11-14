@@ -9,8 +9,8 @@
 | V2-05 | P1 | research schema missed evidence_for/against, evaluation id, source/future checks, positive hours | contract validator + fields added | FIXED |
 | V2-06 | P1 | priority rule was dead code/weighted; H3 always open; falsifiers generic | ordinal M/G/D/I rules; H3 requires usable positioning; falsifiers use candidate-specific thresholds | FIXED |
 | V2-07 | P1 | V1 comparison metadata null (`DataFrame` iteration) | `.to_dict("records")` | FIXED |
-| V2-08 | P1 | evaluation measures asset cards rather than D's research questions; D prefiltered; test n=1 | disclosed; protocol amended as a limitation; result remains NOT VALIDATED; future evaluation needs common research-brief template and larger held-out sample | OPEN (research limitation) |
-| V2-09 | P1 | V2 handoff not wired to CLI; timeout persisted as unknown | module contract + persistence; CLI integration remains a V3 item; timeout label preserved in result | PARTIAL |
+| V2-08 | P1 | evaluation measures asset cards rather than D's research questions; D prefiltered; the 2021 date was reused (no independent test) | disclosed; protocol amended as a limitation; result remains NOT VALIDATED; future evaluation needs a common research-brief template and a new future test window | OPEN (research limitation) |
+| V2-09 | P1 | V2 handoff not wired to CLI; timeout persisted as unknown | `goe triage --handoff`, timeout/id/L1 semantics implemented and verified | FIXED |
 | V2-10 | P2 | duplicate/identical cards, no CI, single LLM rater | documented; no false `VALIDATED` claim | OPEN (research limitation) |
 
 ## Current V2 verdict

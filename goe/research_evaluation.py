@@ -202,15 +202,21 @@ def score_ratings(ratings: list[dict[str, Any]], mapping: dict[str, Any],
         if s:
             lines.append(f"| {m} | {s['n']} | {s['mean']} | {s['precision_at_3']} | "
                          f"{s['evidence_sufficiency']} | {s['falsifiability']} | {s['duplicate_rate']} |")
-    lines += ["", "## Test split (2021-12-31; held out)", "",
-              "| method | n | mean | P@3 |", "|---|---:|---:|---:|"]
+    if test.empty:
+        lines += ["", "## Independent test split — NOT AVAILABLE",
+                  "The only candidate test date was reused after a V2 gate change; it is",
+                  "exploratory, not an independent test. DISCOVERY VALUE must remain NOT VALIDATED.", ""]
+    else:
+        lines += ["", "## Test split", "",
+                  "| method | n | mean | P@3 |", "|---|---:|---:|---:|"]
     for m in METHODS:
         s = test_summary.get(m)
         if s:
             lines.append(f"| {m} | {s['n']} | {s['mean']} | {s['precision_at_3']} |")
     lines += ["", f"**DISCOVERY VALUE: {result['discovery_value']}**",
-              f"- D beats B and C on test (mean and P@3): {wins}",
-              "- If NOT VALIDATED: do not tune V2 weights on this test date; report failure.",
+              f"- D beats B and C on test (mean and P@3): {wins}" if test_summary else
+              "- no independent test split exists; no validation claim is permitted",
+              "- If NOT VALIDATED: do not tune V2 weights on any reused date; report failure.",
               ""]
     (out / "V2_EVALUATION_RESULTS.md").write_text("\n".join(lines), encoding="utf-8")
     return result
