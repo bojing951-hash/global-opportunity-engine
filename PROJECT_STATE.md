@@ -7,14 +7,14 @@
 | 项 | 状态 / 证据 |
 |---|---|
 | 分支 | `architecture/research-v2`（远程 HEAD `047918f`） |
-| 修复提交 | `c0392de` → `3c3d03f` → `63e4afb` → `fe3867d` → `fccfa9f` |
-| 测试 | **193 offline passed / 0 skipped / 10 deselected**（network 9 + realdata 1） |
-| 测试证明 | `audit/test_evidence/20261114T180115Z_fccfa9fc20.proof.json`（schema v3） |
+| 修复提交 | `c0392de` → `3c3d03f` → `63e4afb` → `fe3867d` → `fccfa9f` → `0e35e74` → `1983b68` |
+| 测试 | **200 offline passed / 0 skipped / 10 deselected**（network 9 + realdata 1） |
+| 测试证明 | `audit/test_evidence/20261114T190212Z_1983b6845d.proof.json`（schema v4） |
 | 独立验证 | `python -m goe.cli verify-release --proof <proof>` → accepted，重放 193/193 |
-| 移植性 | 全新 clone（6.9 MB，无 .venv）用外部解释器重放 → accepted |
+| 移植性 | 全新 clone（6.9 MB，无 .venv）用外部解释器重放 → accepted（200/200） |
 | 红队轮 1 | 4 个攻击成功（P0×2：根目录伪 pytest、skip 计数），已全部修复；见 `audit/QA_REDTEAM_RELEASE.md` |
-| 红队轮 2 | v3 复审（进行中） |
-| 剩余风险 | 测试质量不可证、`.git/info/exclude` 隐藏本地文件、宿主级篡改、network/realdata 尚未纳入发布 |
+| 红队轮 2–4 | 各轮均有发现（4×P1 / 1×P1 / PASS+P2），已全部修复并回归测试 |
+| 剩余风险 | 测试质量不可证、宿主级篡改、跨 OS 未在 CI 验证、临时目录未清理（详见 `audit/RELEASE_GATE_ACCEPTANCE.md`） |
 
 **P1-01 / P1-02 状态：FIXED（工程层）。** 门禁不再接受调用方提供的 pytest 命令；已执行集合必须等于收集集合；
 证明只含 `{python}`/`{junit}` 模板与仓库相对路径；发布清单必须重放整套测试后才生成。
