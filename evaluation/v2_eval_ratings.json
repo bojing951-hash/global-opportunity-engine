@@ -1,0 +1,471 @@
+{
+  "rater": "independent-llm-v2",
+  "criteria": [
+    "real_market_change",
+    "beyond_price",
+    "falsifiable",
+    "data_sufficiency"
+  ],
+  "ratings": [
+    {
+      "object_id": "V01",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 1,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "防御反弹，机制弱，检测分低"
+    },
+    {
+      "object_id": "V02",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "波动率骤降近五年低位，纯价格"
+    },
+    {
+      "object_id": "V03",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "季涨七成，机制不支持"
+    },
+    {
+      "object_id": "V04",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "单月反弹，仅相对强度异动"
+    },
+    {
+      "object_id": "V05",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "单月涨27%，双检测器共振"
+    },
+    {
+      "object_id": "V06",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "单月涨49%，三检测器满格"
+    },
+    {
+      "object_id": "V07",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "券商月涨40%，异动叠加"
+    },
+    {
+      "object_id": "V08",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "美元波动率跃升，仓位偏轻"
+    },
+    {
+      "object_id": "V09",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "取暖油季涨24%，检测极弱"
+    },
+    {
+      "object_id": "V10",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "牛价五年高位，无异动源"
+    },
+    {
+      "object_id": "V11",
+      "scores": {
+        "real_market_change": 0,
+        "beyond_price": 1,
+        "falsifiable": 1,
+        "data_sufficiency": 2
+      },
+      "note": "几无变化，仅仓位与弱机制"
+    },
+    {
+      "object_id": "V12",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 1,
+        "data_sufficiency": 2
+      },
+      "note": "VIX单月跌45%，仓位中性"
+    },
+    {
+      "object_id": "V13",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "富时近高位，异动温和"
+    },
+    {
+      "object_id": "V14",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "汇率波动近极值，单日冲击"
+    },
+    {
+      "object_id": "V15",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "比特币季涨七成，机制弱"
+    },
+    {
+      "object_id": "V16",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "同美元指数：波动跃升"
+    },
+    {
+      "object_id": "V17",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "中概深度回撤，双机制未证"
+    },
+    {
+      "object_id": "V18",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "短债波动极值，双向冲击"
+    },
+    {
+      "object_id": "V19",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "日元近高位，机制未证"
+    },
+    {
+      "object_id": "V20",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 1,
+        "falsifiable": 1,
+        "data_sufficiency": 2
+      },
+      "note": "白银月涨16%，仅有仓位"
+    },
+    {
+      "object_id": "V21",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "科技反弹，异动分低"
+    },
+    {
+      "object_id": "V22",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 2,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "标普近低位，机制获支持"
+    },
+    {
+      "object_id": "V23",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "港股科技深度回撤近极值"
+    },
+    {
+      "object_id": "V24",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 2,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "日元深回撤，仓位极端低"
+    },
+    {
+      "object_id": "V25",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "同券商：月涨40%异动叠加"
+    },
+    {
+      "object_id": "V26",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "天然气季跌52%，无机制"
+    },
+    {
+      "object_id": "V27",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 2,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "日元深回撤，仓位极低"
+    },
+    {
+      "object_id": "V28",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "同创业板：涨49%异动满格"
+    },
+    {
+      "object_id": "V29",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "欧股近高位，动能温和"
+    },
+    {
+      "object_id": "V30",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 2,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "日元深回撤，机制不支持"
+    },
+    {
+      "object_id": "V31",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 0
+      },
+      "note": "年涨四倍，波动分位失真"
+    },
+    {
+      "object_id": "V32",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "港股科技月涨38%，四异动"
+    },
+    {
+      "object_id": "V33",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "中概年跌49%，检测分低"
+    },
+    {
+      "object_id": "V34",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "沪深三百深回撤，双机制"
+    },
+    {
+      "object_id": "V35",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "科创月涨35%，三异动满格"
+    },
+    {
+      "object_id": "V36",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 0,
+        "falsifiable": 0,
+        "data_sufficiency": 1
+      },
+      "note": "医疗缓涨，无异动无机制"
+    },
+    {
+      "object_id": "V37",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "沪深三百月涨22%，冲击满格"
+    },
+    {
+      "object_id": "V38",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "能源月涨25%，机制置信低"
+    },
+    {
+      "object_id": "V39",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "同沪深三百：月涨22%"
+    },
+    {
+      "object_id": "V40",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 1,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "纳指近五年低位，机制未证"
+    },
+    {
+      "object_id": "V41",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 2,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "新兴市场近高位，机制混杂"
+    },
+    {
+      "object_id": "V42",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 2,
+        "falsifiable": 2,
+        "data_sufficiency": 2
+      },
+      "note": "白银仓位近极值，年涨38%"
+    },
+    {
+      "object_id": "V43",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 0
+      },
+      "note": "年涨万倍，波动分位异常"
+    },
+    {
+      "object_id": "V44",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 1,
+        "falsifiable": 2,
+        "data_sufficiency": 1
+      },
+      "note": "同沪深三百：涨22%，双机制"
+    },
+    {
+      "object_id": "V45",
+      "scores": {
+        "real_market_change": 1,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "机构债双向冲击，聚合变化小"
+    },
+    {
+      "object_id": "V46",
+      "scores": {
+        "real_market_change": 2,
+        "beyond_price": 0,
+        "falsifiable": 1,
+        "data_sufficiency": 1
+      },
+      "note": "国企指数深回撤，异动满格"
+    }
+  ]
+}

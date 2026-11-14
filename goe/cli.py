@@ -293,6 +293,28 @@ def cmd_handoff(args: argparse.Namespace) -> int:
     return exit_code
 
 
+def cmd_triage(args: argparse.Namespace) -> int:
+    """Research Discovery V2: structured research candidates (not a trade)."""
+    import json as _json
+    from .research_triage import run_triage
+
+    store = _store(args)
+    as_of = args.as_of or store.scalar("SELECT MAX(date) FROM prices")
+    rows = run_triage(store, as_of=as_of, max_candidates=args.limit)
+    out = Path(args.out) if args.out else (project_root() / "exports")
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / f"research_candidates_{as_of}.json"
+    payload = {"schema": "research-candidates/v2", "as_of": as_of,
+               "candidates": [r.to_dict() for r in rows],
+               "note": "Research questions, not investment conclusions; V2 triage does not replace B."}
+    path.write_text(_json.dumps(payload, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    print(f"triage as_of={as_of} candidates={len(rows)} out={path}")
+    for r in rows:
+        print(f"  {r.research_id} tier={r.priority_tier} rank={r.priority_rank} "
+              f"{','.join(r.instruments)} gap={r.materiality.get('gap_score')} cost={r.research_cost['hours']}h")
+    return 0
+
+
 # ---------------------------------------------------------------------- export
 def cmd_export(args: argparse.Namespace) -> int:
     from .integration.exporter import export_all
@@ -431,6 +453,13 @@ def build_parser() -> argparse.ArgumentParser:
     h.add_argument("--dry-run", action="store_true")
     h.add_argument("--question-patch", help="输出 research_questions 追加提案 JSON")
     h.set_defaults(func=cmd_handoff)
+
+    t = sub.add_parser("triage", help="Research Discovery V2：生成结构化研究问题")
+    t.add_argument("--db", default=None)
+    t.add_argument("--as-of", default=None)
+    t.add_argument("--out", default=None)
+    t.add_argument("--limit", type=int, default=5)
+    t.set_defaults(func=cmd_triage)
 
     e = sub.add_parser("export", help="重新导出最近机会管线的交接文件")
     e.add_argument("--db")
