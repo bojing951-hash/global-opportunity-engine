@@ -8,7 +8,7 @@ Files: `v2_eval_input.json`, `v2_eval_mapping.json`, `v2_eval_ratings.json`,
 A max |1m move|; B max recent anomaly; C frozen V1 score; D V2 triage. Same dates/FeatureSet/
 anomaly/mechanism snapshot, theme-deduped. Fact cards use an identical schema; labels/scores/
 hypotheses hidden; IDs globally shuffled. Independent LLM rater, four criteria 0–2.
-Development: 2022-10-31, 2024-09-30. Validation: 2023-03-31. Test (held out): 2021-12-31.
+Development/exploratory: 2022-10-31, 2023-03-31, 2024-09-30, 2021-12-31 (reused; no independent test).
 
 ## Final rater (48 objects; exploratory, no independent test)
 | method | n | mean worthiness | P@3 | evidence suff. | falsifiability |
@@ -35,7 +35,7 @@ date.
   therefore not evaluated.
 - D applies materiality/evidence gates before ranking; A/B/C do not. This confounds selection with
   ranking and makes P@3 not a like-for-like metric.
-- Test split has only 3 D objects; no human labels; single LLM rater (two raters disagreed strongly).
+- The reused 2021 date has only 3 D objects; no human labels; single LLM rater (two raters disagreed strongly).
 - V2 still lacks consensus/options data; critical unknowns are declared but not resolved.
 - The right next experiment is a common research-brief template for all methods, a common candidate
   pool with D-filter-only/random-within-pool baselines, multiple raters/human labels, and a frozen

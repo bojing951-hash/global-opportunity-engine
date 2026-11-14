@@ -51,7 +51,7 @@ state "single LLM rater, no human labels".
 - Research Time Saved = requires human workflow measurement; NOT MEASURED unless timed.
 
 ## Decision rule
-On the **test** split, D must beat both B and C on Research Worthiness and Precision@3, with no
+If an independent test split exists, D must beat both B and C on Research Worthiness and Precision@3, with no
 material regression on evidence sufficiency/falsifiability. If D fails, publish:
 `DISCOVERY VALUE: NOT VALIDATED`, keep A/B/C results, and do not tune weights on the test split.
 Any improvement on development/validation only is reported as exploratory.

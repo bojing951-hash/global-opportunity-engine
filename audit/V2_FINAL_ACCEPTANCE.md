@@ -23,7 +23,7 @@
 - Full sample: A .875, B .917, C .979, D .833. Reused 2021: A .833, B .583, C .583, D .750, P@3 all zero.
 - With no independent test, `DISCOVERY VALUE: NOT VALIDATED` by construction; D does not beat C/B on the full sample.
 - The earlier exploratory rating gave D 1.350; it did not replicate (0.833). This is reported, not hidden.
-- Why: cards measure asset selection, not D's research brief; D is pre-gated while A/B/C are not; test n=3; single LLM/no human labels. See `audit/RESEARCH_V2_RESULTS.md`.
+- Why: cards measure asset selection, not D's research brief; D is pre-gated while A/B/C are not; reused-date D n=3; single LLM/no human labels. See `audit/RESEARCH_V2_RESULTS.md`.
 
 ## A→B actual behavior
 V2 fact-only question for N225 produced downstream `run_ok` false/rejected; A persisted
