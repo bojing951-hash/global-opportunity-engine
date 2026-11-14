@@ -56,6 +56,7 @@ def test_run_scan_produces_report_scan_json_and_exports(store, tmp_path, monkeyp
     scan_payload = json.loads(scan_json.read_text(encoding="utf-8"))
     assert scan_payload["meta"]["as_of"] == END_DATE
     assert scan_payload["meta"]["config_hash"]
+    assert "ingest" in scan_payload["meta"]
     assert "opportunities" in scan_payload
 
     exports = {key: Path(value) for key, value in result.export_paths.items() if key != "tasks"}
@@ -136,3 +137,21 @@ def test_detector_failure_blocks_scan_and_rolls_back(store, tmp_path, monkeypatc
     assert store.scalar("SELECT COUNT(*) FROM opportunities") == 0
     status = store.scalar("SELECT status FROM scan_runs ORDER BY started_at DESC LIMIT 1")
     assert status in ("failed", "rolled_back")
+
+
+def test_failed_scan_removes_files_created_in_this_attempt(store, tmp_path, monkeypatch):
+    import goe.pipeline as pipeline
+
+    out = tmp_path / "reports"
+    out.mkdir()
+    leaked = out / f"report_{END_DATE}.md"
+
+    def fake_write(*a, **k):
+        leaked.write_text("LEAKED PARTIAL REPORT", encoding="utf-8")
+        raise RuntimeError("report failure after write")
+
+    monkeypatch.setattr(pipeline, "write_reports", fake_write)
+    with pytest.raises(RuntimeError):
+        pipeline.run_scan(store, as_of=END_DATE, ingest=False, out_dir=out,
+                          export=False, readiness_min_coverage=0.0)
+    assert not leaked.exists(), "failed scan left a report file that looks valid"

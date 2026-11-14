@@ -210,3 +210,123 @@ def test_small_market_stale_is_warned(store):
     store.conn.commit()
     res = check_data_readiness(store, as_of=END_DATE, min_coverage=0.0)
     assert any("CA" in w for w in res.warnings), res.warnings
+
+
+def test_required_macro_missing_blocks_in_production_mode(store):
+    from goe.readiness import check_data_readiness
+
+    store.conn.execute("DELETE FROM indicators WHERE series_id IN ('US_CPI','US_POLICY_RATE')")
+    store.conn.commit()
+    strict = check_data_readiness(store, as_of=END_DATE, min_coverage=0.8)
+    assert strict.ok is False
+    assert any("核心宏观数据缺失" in c or "核心宏观数据过期" in c for c in strict.critical), strict.critical
+    # Lab mode explicitly disables the strict contract (used only by synthetic tests).
+    relaxed = check_data_readiness(store, as_of=END_DATE, min_coverage=0.0)
+    assert not any("核心宏观数据" in c for c in relaxed.critical)
+
+
+def test_required_curve_fully_missing_blocks(store):
+    from goe.readiness import check_data_readiness
+
+    store.conn.execute("DELETE FROM indicators WHERE series_id LIKE 'UST:%'")
+    store.conn.commit()
+    res = check_data_readiness(store, as_of=END_DATE, min_coverage=0.8)
+    assert res.ok is False
+    assert any("核心收益率曲线缺失" in c or "UST" in c for c in res.critical), res.critical
+
+
+def test_partial_region_coverage_drop_is_warned(store):
+    from goe.config import load_universe
+    from goe.readiness import check_data_readiness
+
+    cn_ids = [iid for iid, spec in load_universe().instruments.items() if spec.region == "CN"]
+    extra = [iid for iid in cn_ids if iid != "CN_EQ_CSI300"][:12]
+    store.upsert_prices(pd.DataFrame([
+        {"instrument_id": iid, "date": END_DATE, "close": 100.0, "adj_close": 100.0,
+         "source_id": "yahoo", "fetched_at": END_DATE + "T22:00:00Z"} for iid in extra]))
+    res = check_data_readiness(store, as_of=END_DATE, min_coverage=0.8)
+    assert any("CN 市场覆盖下降" in w for w in res.warnings), res.warnings
+    assert res.degraded is True
+
+
+def test_l2_only_artifact_cannot_be_ok_valid(tmp_path):
+    _write_report(tmp_path, {
+        "run_ok": True, "evidence_index": [],
+        "layers": {"L1_事实层": {"available": True, "rows": []},
+                   "L2_机构观点层": {"views": {"n": 17}}},
+        "steps": [{"step": "S8_grounded_qa", "semantic_ok": True,
+                   "envelope": {"data": {"status": "answered"}}}]})
+    res = parse_research_artifact(tmp_path)
+    assert res["semantic_status"] == "insufficient_data"
+
+
+def test_stale_report_is_not_reused(tmp_path):
+    from datetime import datetime, timezone
+
+    _write_report(tmp_path, {
+        "run_ok": True, "evidence_index": [{"id": 1}],
+        "layers": {"L1_事实层": {"available": True, "rows": [{"f": 1}]}},
+        "steps": [{"step": "S8_grounded_qa", "semantic_ok": True,
+                   "envelope": {"data": {"status": "answered"}}}]})
+    future = datetime(2030, 1, 1, tzinfo=timezone.utc)
+    res = parse_research_artifact(tmp_path, min_mtime=future)
+    assert res["semantic_status"] == "partial"
+    assert "陈旧" in res["reason"]
+
+
+def test_failed_process_cannot_be_recorded_as_completed(store):
+    from datetime import datetime, timezone
+    from pathlib import Path
+
+    from goe.integration.ia_adapter import IAAdapter
+
+    row = {"opportunity_id": "OPP-0001", "status": "watch"}
+    IAAdapter.persist_result(None, store, row, "q", {
+        "status": "not_ok", "returncode": 17, "semantic_status": "ok_valid",
+        "semantic_reason": "stale artifact"}, Path("/tmp/x"))
+    task = store.conn.execute("SELECT status FROM research_tasks WHERE opportunity_id='OPP-0001'").fetchone()
+    assert task["status"] != "completed"
+    ev = store.conn.execute("SELECT event_type FROM opportunity_events WHERE opportunity_id='OPP-0001'").fetchall()
+    assert all(r["event_type"] != "ia_research_run" for r in ev)
+
+
+def test_provider_updating_only_one_of_many_targets_is_failed(store, monkeypatch):
+    from goe.ingest import IngestStats, Ingestor
+
+    ing = Ingestor(store)
+    monkeypatch.setattr(ing, "register_metadata", lambda: None)
+    monkeypatch.setattr(ing, "ingest_prices",
+                        lambda mode="incremental": IngestStats(kind="prices", mode=mode, rows=1,
+                                                              targets=125,
+                                                              failed_targets=[f"X{i}" for i in range(124)]))
+    monkeypatch.setattr(ing, "ingest_indicators",
+                        lambda mode="incremental": IngestStats(kind="indicators", mode=mode, rows=100,
+                                                              targets=50))
+    out = ing.run(mode="incremental")
+    assert out["status"] == "failed"
+    assert out["price_coverage"] < 0.5
+
+
+def test_intraday_partial_bar_cannot_refresh_a_dead_market(store):
+    """P1-3: readiness must use completed bars, matching the feature guard."""
+    import pandas as pd
+    from goe.readiness import check_data_readiness
+
+    ids = ["US_EQ_SPY", "US_EQ_QQQ", "US_FI_IEF", "US_VOL_VIX"]
+    store.upsert_prices(pd.DataFrame([
+        {"instrument_id": iid, "date": "2025-01-10", "close": 100.0, "adj_close": 100.0,
+         "source_id": "yahoo", "fetched_at": "2025-01-10T10:00:00Z"} for iid in ids]))
+    res = check_data_readiness(store, as_of="2025-01-10", min_coverage=0.0)
+    assert res.last_price_date == "2024-12-31"
+    assert res.age_days_vs_asof == 10
+    assert not res.ok, res.critical
+
+
+def test_missing_key_tenor_blocks_even_if_other_tenors_exist(store):
+    from goe.readiness import check_data_readiness
+
+    store.conn.execute("DELETE FROM indicators WHERE series_id='UST:2Y'")
+    store.conn.commit()
+    res = check_data_readiness(store, as_of=END_DATE, min_coverage=0.8)
+    assert res.ok is False
+    assert any("关键期限" in c and "UST:2Y" in c for c in res.critical), res.critical

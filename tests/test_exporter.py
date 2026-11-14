@@ -82,8 +82,10 @@ def test_research_question_is_self_contained(store):
     assert row["invalidation"] in question            # invalidation
     assert "请完成" in question
     assert "数据缺口" in question
-    assert "不构成投资建议" in question
-    assert "赔率" not in question
+    for banned in ("投资建议", "仓位", "买入", "卖出", "做多", "做空", "开仓", "平仓",
+                   "加仓", "减仓", "保证收益", "赔率"):
+        assert banned not in question, banned
+    assert "仅做事实核对" in question
 
 
 def test_export_all_writes_pipeline_queue_tasks_and_schema(store, tmp_path):
@@ -104,8 +106,9 @@ def test_export_all_writes_pipeline_queue_tasks_and_schema(store, tmp_path):
     assert Path(paths["queue"]) == base / f"research_queue_{END_DATE}.json"
     assert Path(paths["schema"]) == base / "HANDOFF_SCHEMA.json"
     assert all(Path(p).exists() for p in paths["tasks"])
-    assert len(paths["tasks"]) == 3  # excluded records do not get a task
-    assert len(list((base / "research_tasks").glob("RT-*.json"))) == 3
+    # Only deep_research/watch/new get a research task; low_priority/excluded do not.
+    assert len(paths["tasks"]) == 2
+    assert len(list((base / "research_tasks").glob("RT-*.json"))) == 2
 
     pipeline = json.loads(Path(paths["pipeline"]).read_text(encoding="utf-8"))
     assert pipeline["schema_version"] == HANDOFF_SCHEMA_VERSION
@@ -116,9 +119,9 @@ def test_export_all_writes_pipeline_queue_tasks_and_schema(store, tmp_path):
     assert [o["opportunity"]["score"] for o in pipeline["opportunities"]] == [0.9, 0.6, 0.4, 0.2]
 
     queue = json.loads(Path(paths["queue"]).read_text(encoding="utf-8"))["queue"]
-    assert [entry["priority"] for entry in queue] == [1, 2, 3]
-    assert [entry["score"] for entry in queue] == [0.9, 0.6, 0.4]
-    assert [entry["opportunity_id"] for entry in queue] == ["OPP-0001", "OPP-0002", "OPP-0003"]
+    assert [entry["priority"] for entry in queue] == [1, 2]
+    assert [entry["score"] for entry in queue] == [0.9, 0.6]
+    assert [entry["opportunity_id"] for entry in queue] == ["OPP-0001", "OPP-0002"]
 
     schema = json.loads(Path(paths["schema"]).read_text(encoding="utf-8"))
     assert schema == HANDOFF_SCHEMA

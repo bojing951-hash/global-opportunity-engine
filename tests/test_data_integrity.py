@@ -45,9 +45,11 @@ def test_etf_split_is_adjusted_and_index_glitch_is_quarantined():
     cleaned, issues = clean_price_panel(px, universe)
     kinds = {(i["instrument_id"], i["kind"]) for i in issues}
     assert ("US_SEC_XLE", "split_adjusted") in kinds
-    # split adjustment rescales prior prices so returns are continuous
-    pre = cleaned["US_SEC_XLE"].iloc[:4]
-    assert pre.max() < 60 and cleaned["US_SEC_XLE"].pct_change().abs().max() < 0.1
+    # Split adjustment keeps pre-split observations unchanged and rebases
+    # post-split observations to that basis (P1-A historical consistency).
+    assert cleaned["US_SEC_XLE"].iloc[:4].max() < 110
+    assert cleaned["US_SEC_XLE"].iloc[4] == pytest.approx(102.0)
+    assert cleaned["US_SEC_XLE"].pct_change().abs().max() < 0.1
     assert ("US_SEC_XLF", "extreme_move_quarantined") in kinds
     assert np.isnan(cleaned["US_SEC_XLF"].iloc[3])
     # no residual jump on either basis, and index (no split logic) untouched
@@ -197,7 +199,8 @@ def test_incomplete_intraday_bar_is_not_used(tmp_path):
         bd = pd.bdate_range("2023-12-01", periods=260)
         rows = []
         for i, d in enumerate(bd):
-            fetched = "2024-12-31T23:00:00Z" if d != bd[-1] else "2024-12-31T10:00:00Z"
+            fetched = (d.strftime("%Y-%m-%d") + "T10:00:00Z" if d == bd[-1]
+                       else d.strftime("%Y-%m-%d") + "T23:00:00Z")
             rows.append({"instrument_id": "US_EQ_SPY", "date": d.strftime("%Y-%m-%d"),
                          "close": 400 + i, "adj_close": 400 + i, "source_id": "yahoo",
                          "fetched_at": fetched})
@@ -241,3 +244,202 @@ def test_missing_open_interest_makes_net_to_oi_unknown_not_raw(store):
     assert fs.series("POS_GOLD_MM", "net_to_oi").empty or fs.series("POS_GOLD_MM", "net_to_oi").notna().sum() == 0
     # raw net positions remain available and clearly named
     assert fs.series("POS_GOLD_MM", "net_position").notna().sum() > 0
+
+
+def test_historical_backfill_bar_is_not_treated_as_intraday(tmp_path):
+    """P1-A: fetched_at on a later date means complete, regardless of clock hour."""
+    from goe.db import Store
+    from goe.features import FeatureBuilder
+
+    store = Store(tmp_path / "backfill.db")
+    try:
+        bd = pd.bdate_range("2024-06-03", periods=260)
+        rows = []
+        for i, d in enumerate(bd):
+            # US close is 21:00 UTC; backfill at 15:08Z on a LATER date must keep the bar.
+            fetched = "2026-11-13T15:08:41Z" if d == bd[-1] else "2026-11-13T15:08:41Z"
+            rows.append({"instrument_id": "US_EQ_SPY", "date": d.strftime("%Y-%m-%d"),
+                         "close": 400 + i, "adj_close": 400 + i, "source_id": "yahoo",
+                         "fetched_at": fetched})
+        store.upsert_prices(pd.DataFrame(rows))
+        fs = FeatureBuilder(store, as_of=bd[-1].strftime("%Y-%m-%d")).build()
+        assert fs.prices["US_EQ_SPY"].dropna().index.max() == bd[-1]
+    finally:
+        store.close()
+
+
+def test_build_asof_and_later_slice_are_point_in_time_consistent(tmp_path):
+    """P1-A property: build at t == build at T then slice to t (values and presence)."""
+    from goe.db import Store
+    from goe.features import FeatureBuilder
+
+    store = Store(tmp_path / "pit.db")
+    try:
+        bd = pd.bdate_range("2023-01-02", periods=400)
+        rows = []
+        for i, iid in enumerate(["US_EQ_SPY", "US_SEC_XLE", "CM_MET_GC"]):
+            px = 100 * np.exp(0.0003 * (i + 1) * np.arange(len(bd)))
+            rows.append(pd.DataFrame({
+                "instrument_id": iid, "date": bd.strftime("%Y-%m-%d"),
+                "close": px, "adj_close": px, "source_id": "yahoo",
+                "fetched_at": "2026-11-13T15:08:41Z"}))
+        store.upsert_prices(pd.concat(rows, ignore_index=True))
+        t = bd[330].strftime("%Y-%m-%d")
+        T = bd[-1].strftime("%Y-%m-%d")
+        a = FeatureBuilder(store, as_of=t).build()
+        b = FeatureBuilder(store, as_of=T).build().slice_as_of(t)
+        aa = a.long[a.long.date <= t]
+        bb = b.long[b.long.date <= t]
+        assert len(aa) == len(bb), (len(aa), len(bb))
+        ka = aa.set_index(["entity_id", "feature", "window", "date"])["value"].sort_index()
+        kb = bb.set_index(["entity_id", "feature", "window", "date"])["value"].sort_index()
+        assert ka.index.equals(kb.index)
+        assert np.allclose(ka.to_numpy(dtype=float), kb.to_numpy(dtype=float), equal_nan=True)
+    finally:
+        store.close()
+
+
+def test_crypto_weekend_shock_is_not_dropped_by_business_day_panel(tmp_path):
+    """P2-B: BTC/ETH 24/7 sessions must keep weekend returns and anomalies."""
+    from goe.db import Store
+    from goe.features import FeatureBuilder
+    from goe.anomalies import detect_anomalies
+
+    store = Store(tmp_path / "crypto.db")
+    try:
+        bd = pd.bdate_range("2023-01-02", periods=400)
+        spy = 400 * np.exp(0.0002 * np.arange(len(bd)))
+        store.upsert_prices(pd.DataFrame({
+            "instrument_id": "US_EQ_SPY", "date": bd.strftime("%Y-%m-%d"),
+            "close": spy, "adj_close": spy, "source_id": "yahoo",
+            "fetched_at": "2026-11-14T00:00:00Z"}))
+        days = pd.date_range("2023-01-01", "2024-12-31", freq="D")
+        rng = np.random.default_rng(11)
+        btc = 30000 * np.exp(np.cumsum(rng.normal(0.0002, 0.02, len(days))))
+        sat = [d for d in days if d.dayofweek == 5][-20]
+        pos = days.get_loc(sat)
+        btc[pos] = btc[pos - 1] * 0.75  # Saturday crash
+        store.upsert_prices(pd.DataFrame({
+            "instrument_id": "CR_BTC", "date": days.strftime("%Y-%m-%d"),
+            "close": btc, "adj_close": btc, "source_id": "yahoo",
+            "fetched_at": "2026-11-14T00:00:00Z"}))
+        fs = FeatureBuilder(store, as_of="2024-12-31").build()
+        r = fs.series("CR_BTC", "return", "1d")
+        assert any(d.dayofweek >= 5 for d in r.index), "crypto weekend returns missing"
+        z = fs.series("CR_BTC", "return_z_1d_3y", "1d")
+        assert sat in z.index and z.loc[sat] < -3, (sat, z.tail())
+        anoms = detect_anomalies(fs, since="2024-01-01")
+        hit = anoms[(anoms.entity_id == "CR_BTC") & (anoms.detector == "price_return_shock")]
+        assert not hit.empty and pd.Timestamp(hit.date.min()).dayofweek >= 5
+    finally:
+        store.close()
+
+
+def test_future_split_does_not_change_pre_t_features(tmp_path):
+    """P1-A: a split AFTER t must not retroactively change features at t."""
+    from goe.db import Store
+    from goe.features import FeatureBuilder
+
+    store = Store(tmp_path / "split_pit.db")
+    try:
+        bd = pd.bdate_range("2023-01-02", periods=320)
+        px = 100 * np.exp(0.0005 * np.arange(len(bd)))
+        px[250:] /= 2.0  # 2:1 split at index 250, after t (index 240)
+        store.upsert_prices(pd.DataFrame({
+            "instrument_id": "US_EQ_SPY", "date": bd.strftime("%Y-%m-%d"),
+            "close": px, "adj_close": px, "source_id": "yahoo",
+            "fetched_at": "2026-11-13T15:08:41Z"}))
+        t = bd[240].strftime("%Y-%m-%d")
+        T = bd[-1].strftime("%Y-%m-%d")
+        a = FeatureBuilder(store, as_of=t).build()
+        b = FeatureBuilder(store, as_of=T).build().slice_as_of(t)
+        aa = a.long[a.long.date <= t]
+        bb = b.long[b.long.date <= t]
+        ka = aa.set_index(["entity_id", "feature", "window", "date"])["value"].sort_index()
+        kb = bb.set_index(["entity_id", "feature", "window", "date"])["value"].sort_index()
+        assert ka.index.equals(kb.index)
+        assert np.allclose(ka.to_numpy(dtype=float), kb.to_numpy(dtype=float), equal_nan=True)
+    finally:
+        store.close()
+
+
+def test_intraday_guard_is_dst_aware(tmp_path):
+    """US close is 20:00 UTC in summer, 21:00 UTC in winter (plus buffer)."""
+    from goe.db import Store
+    from goe.features import FeatureBuilder
+
+    store = Store(tmp_path / "dst.db")
+    try:
+        bd = pd.bdate_range("2024-01-02", periods=260)
+        rows = []
+        for i, d in enumerate(bd):
+            fetched = d.strftime("%Y-%m-%d") + "T23:00:00Z"
+            if d == pd.Timestamp("2024-07-01"):
+                fetched = "2024-07-01T21:00:00Z"   # after 20:00Z summer close
+            if d == pd.Timestamp("2024-12-02"):
+                fetched = "2024-12-02T21:00:00Z"   # before 21:00Z+30 winter close
+            rows.append({"instrument_id": "US_EQ_SPY", "date": d.strftime("%Y-%m-%d"),
+                         "close": 400 + i, "adj_close": 400 + i, "source_id": "yahoo",
+                         "fetched_at": fetched})
+        store.upsert_prices(pd.DataFrame(rows))
+        summer = FeatureBuilder(store, as_of="2024-07-01").build()
+        assert summer.prices["US_EQ_SPY"].dropna().index.max() == pd.Timestamp("2024-07-01")
+        winter = FeatureBuilder(store, as_of="2024-12-02").build()
+        assert winter.prices["US_EQ_SPY"].dropna().index.max() < pd.Timestamp("2024-12-02")
+    finally:
+        store.close()
+
+
+def test_bad_crypto_price_is_quarantined_on_native_calendar(tmp_path):
+    from goe.db import Store
+    from goe.features import FeatureBuilder
+
+    store = Store(tmp_path / "crypto_bad.db")
+    try:
+        days = pd.date_range("2023-01-01", "2024-12-31", freq="D")
+        rng = np.random.default_rng(3)
+        btc = 30000 * np.exp(np.cumsum(rng.normal(0.0002, 0.02, len(days))))
+        btc[300] *= 10.0  # bad print (not a split)
+        store.upsert_prices(pd.DataFrame({
+            "instrument_id": "CR_BTC", "date": days.strftime("%Y-%m-%d"),
+            "close": btc, "adj_close": btc, "source_id": "yahoo",
+            "fetched_at": "2026-11-14T00:00:00Z"}))
+        fs = FeatureBuilder(store, as_of="2024-12-31").build()
+        r = fs.series("CR_BTC", "return", "1d")
+        assert r.abs().max() < 1.0, r.abs().max()
+        assert any(i["kind"] == "extreme_move_quarantined" for i in fs.meta["price_data_issues"])
+    finally:
+        store.close()
+
+
+def test_crypto_same_day_bar_is_not_a_completed_daily_bar(tmp_path):
+    from goe.db import Store
+    from goe.features import FeatureBuilder
+
+    store = Store(tmp_path / "crypto_partial.db")
+    try:
+        days = pd.date_range("2023-01-01", "2024-12-31", freq="D")
+        rng = np.random.default_rng(5)
+        btc = 30000 * np.exp(np.cumsum(rng.normal(0.0002, 0.02, len(days))))
+        rows = []
+        for d, p in zip(days, btc):
+            fetched = "2026-11-14T00:00:00Z"
+            if d == days[-1]:
+                fetched = d.strftime("%Y-%m-%d") + "T10:00:00Z"  # same-day snapshot
+            rows.append({"instrument_id": "CR_BTC", "date": d.strftime("%Y-%m-%d"),
+                         "close": p, "adj_close": p, "source_id": "yahoo", "fetched_at": fetched})
+        store.upsert_prices(pd.DataFrame(rows))
+        fs = FeatureBuilder(store, as_of=days[-1].strftime("%Y-%m-%d")).build()
+        last = fs.series("CR_BTC", "return", "1d").index.max()
+        assert last < days[-1], (last, days[-1])
+    finally:
+        store.close()
+
+
+def test_data_fingerprint_changes_on_value_revision(store):
+    fp1 = store.data_fingerprint(END_DATE)
+    store.conn.execute("UPDATE prices SET close=close*1.01, adj_close=adj_close*1.01 "
+                       "WHERE instrument_id='US_EQ_SPY' AND date='2024-12-31'")
+    store.conn.commit()
+    fp2 = store.data_fingerprint(END_DATE)
+    assert fp1 != fp2, "a price revision must change the data hash"

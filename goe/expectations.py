@@ -158,12 +158,14 @@ def _driver_returns(fs, instrument_id: str) -> tuple[dict[str, pd.Series], str]:
         "HK": ["HK_EQ_HSI", "HK_EQ_HSCEI", "HK_EQ_2800"],
         "JP": ["JP_EQ_N225", "JP_EQ_TOPIX"],
         "EA": ["EA_EQ_SX5E"],
-        "DE": ["DE_EQ_DAX"],
+        "DE": ["DE_EQ_DAX", "EA_EQ_SX5E"],
         "UK": ["UK_EQ_FTSE"],
-        "FR": ["FR_EQ_CAC"],
+        "FR": ["FR_EQ_CAC", "EA_EQ_SX5E"],
         "US": ["US_EQ_SPY", "US_EQ_RSP", "US_EQ_QQQ"],
     }
     local_fx = {"JP": ("jpy", "GX_FX_USDJPY"), "EA": ("eur", "GX_FX_EURUSD"),
+                "DE": ("eur", "GX_FX_EURUSD"), "FR": ("eur", "GX_FX_EURUSD"),
+                "IT": ("eur", "GX_FX_EURUSD"), "ES": ("eur", "GX_FX_EURUSD"),
                 "UK": ("gbp", "GX_FX_GBPUSD"), "CH": ("chf", "GX_FX_USDCHF"),
                 "AU": ("aud", "GX_FX_AUDUSD"), "KR": ("krw", "GX_FX_USDKRW"),
                 "BR": ("brl", "GX_FX_USDBRL"), "MX": ("mxn", "GX_FX_USDMXN")}

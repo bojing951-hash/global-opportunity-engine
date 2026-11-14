@@ -53,6 +53,29 @@ def _persisted_rows(store: Store, ids: list[str]) -> list[dict[str, Any]]:
     return out
 
 
+def _remove_failed_artifacts(report_dir: Path, export_dir: Path, as_of: str, started: float) -> None:
+    """Delete report/export files created by a failed scan (no stale artifact)."""
+    if report_dir and report_dir.exists():
+        for p in report_dir.glob(f"*{as_of}*"):
+            try:
+                if p.is_file() and p.stat().st_mtime >= started - 1:
+                    p.unlink()
+            except OSError:
+                pass
+    base = Path(export_dir)
+    if not base.exists():
+        return
+    candidates = [base / f"pipeline_{as_of}.json", base / f"research_queue_{as_of}.json",
+                  base / "HANDOFF_SCHEMA.json"]
+    candidates += list((base / "research_tasks").glob("RT-*.json")) if (base / "research_tasks").exists() else []
+    for p in candidates:
+        try:
+            if p.is_file() and p.stat().st_mtime >= started - 1:
+                p.unlink()
+        except OSError:
+            pass
+
+
 def run_scan(store: Store, as_of: str | None = None, *, ingest: bool = False,
              ingest_mode: str = "incremental", out_dir: str | Path | None = None,
              export: bool = True, export_dir: str | Path | None = None,
@@ -66,6 +89,11 @@ def run_scan(store: Store, as_of: str | None = None, *, ingest: bool = False,
     if ingest:
         ingest_stats = Ingestor(store).run(mode=ingest_mode)
         if ingest_stats.get("status") == "failed":
+            blocked_asof = as_of or store.scalar("SELECT MAX(date) FROM prices") or ""
+            blocked_id = store.start_scan(str(blocked_asof), "blocked",
+                                          store.config_fingerprint(),
+                                          store.data_fingerprint(str(blocked_asof)))
+            store.finish_scan(blocked_id, "blocked_data", {"ingest": ingest_stats})
             raise ScanBlockedError(
                 "数据采集失败（价格源不可用）：拒绝在陈旧/缺失数据上生成机会。"
                 f" details={ {k: v for k, v in ingest_stats.items() if k.endswith('_error')} }")
@@ -146,6 +174,7 @@ def run_scan(store: Store, as_of: str | None = None, *, ingest: bool = False,
             out = Path(out_dir) if out_dir else (project_root() / "reports")
             meta = {
                 "scan_id": scan_id, "as_of": fs.as_of, "engine_version": __version__,
+                "ingest": ingest_stats,
                 "feature_version": FEATURE_VERSION, "config_hash": config_hash, "data_hash": data_hash,
                 "generated_at": utc_now(), "data_readiness": readiness.to_dict(), **fs.meta,
             }
@@ -172,6 +201,13 @@ def run_scan(store: Store, as_of: str | None = None, *, ingest: bool = False,
         stats["error"] = f"{type(exc).__name__}: {exc}"
         try:
             store.rollback_scan(scan_id, locals().get("_created_ids", []))
+        except Exception:
+            pass
+        # DB is rolled back, but files written earlier in the transaction would
+        # otherwise look like a valid latest scan. Remove artifacts created by THIS
+        # attempt (mtime >= start), never older/pre-existing files.
+        try:
+            _remove_failed_artifacts(out, export_dir or exports_dir(), str(fs.as_of), t0)
         except Exception:
             pass
         store.finish_scan(scan_id, "failed", stats)

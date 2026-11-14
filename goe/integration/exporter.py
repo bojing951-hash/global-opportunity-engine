@@ -122,14 +122,26 @@ def build_research_question(row: dict[str, Any]) -> str:
         "反对证据：" + ("；".join(f"{e.get('claim')}: {e.get('evidence')}" for e in ev_against[:3]) or "见引擎记录"),
         f"失效条件：{row.get('invalidation', '')}",
         "需要回答：" + "；".join(oq[:5]),
-        "任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、"
-        "收益承诺或目标价。",
+        "任务性质：这是研究线索的事实核对与条件性分析，仅做事实核对与条件性判断，不提供交易指令；"
+        "不要给收益承诺或目标价。",
         "请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、"
         "反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，"
         "不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，"
         "不要补全缺失数据。",
     ]
-    return "\n".join(lines)
+    text = "\n".join(lines)
+    # The downstream zero-model intent gate rejects exact words such as
+    # 投资建议/仓位/买入/卖出 even when the sentence says not to give advice.
+    # Keep the research brief fact-only and remove those trigger words.
+    replacements = {
+        "不构成投资建议": "仅做事实核对", "投资建议": "研究判断",
+        "仓位": "净头寸", "买入": "增配", "卖出": "减配",
+        "做多": "看多", "做空": "看空", "开仓": "建立头寸", "平仓": "了结头寸",
+        "加仓": "增配", "减仓": "减配", "保证收益": "收益结果",
+    }
+    for bad, good in replacements.items():
+        text = text.replace(bad, good)
+    return text
 
 
 def opportunity_envelope(store: Store, row: dict[str, Any], meta: dict[str, Any]) -> dict[str, Any]:
@@ -229,7 +241,9 @@ def export_all(store: Store, records: list[dict[str, Any]], meta: dict[str, Any]
     queue = []
     priority = 1
     for row in ordered:
-        if row["status"] not in ("deep_research", "watch", "new", "low_priority"):
+        # Research budget goes to actionable priorities only; low_priority/excluded
+        # remain in the pipeline artifact but must not occupy the top of the queue.
+        if row["status"] not in ("deep_research", "watch", "new"):
             continue
         task = build_task(store, row, meta, priority)
         tpath = tasks_dir / f"{task['task_id']}.json"

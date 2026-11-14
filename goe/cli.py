@@ -287,7 +287,7 @@ def cmd_handoff(args: argparse.Namespace) -> int:
         print(f"{row['opportunity_id']}: {res.get('status')} rc={res.get('returncode')} "
               f"semantic={res.get('semantic_status')} elapsed={res.get('elapsed_s')} "
               f"out={res.get('out_dir')}")
-        if res.get("semantic_status") != "ok_valid":
+        if res.get("status") != "ok" or res.get("semantic_status") != "ok_valid":
             exit_code = 2
             print((res.get("semantic_reason") or res.get("stderr_tail") or res.get("error") or "")[:1000])
     return exit_code

@@ -158,13 +158,16 @@ def test_macro_release_lag_excludes_unpublished_observations(feature_set):
     assert pd.to_datetime(macro_rows["date"]).max() <= pd.Timestamp(END_DATE)
 
 
-def test_stale_macro_series_is_excluded(feature_set):
-    assert STALE_MACRO_SERIES not in feature_set.macro.columns
+def test_stale_macro_series_is_flagged_but_history_kept(feature_set):
+    # History is kept for T>t consistency; staleness is surfaced through meta and
+    # must prevent CURRENT use (no feature row near the as-of date).
+    assert STALE_MACRO_SERIES in feature_set.macro.columns
     stale = feature_set.meta["stale_macro_series"]
     assert STALE_MACRO_SERIES in stale
     assert stale[STALE_MACRO_SERIES] > STALE_AFTER_DAYS["quarterly"]
-    # No feature row may be emitted from the stale series.
-    assert feature_set.long[feature_set.long.entity_id == STALE_MACRO_SERIES].empty
+    rows = feature_set.long[feature_set.long.entity_id == STALE_MACRO_SERIES]
+    if not rows.empty:
+        assert pd.to_datetime(rows["date"]).max() < pd.Timestamp(END_DATE) - pd.Timedelta(days=120)
 
 
 def test_point_in_time_false_skips_release_lag(shared_store, feature_set, synthetic_market):

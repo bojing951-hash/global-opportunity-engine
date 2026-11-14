@@ -57,7 +57,8 @@ class IngestStats:
     def to_dict(self) -> dict[str, Any]:
         return {
             "kind": self.kind, "mode": self.mode, "run_id": self.run_id, "rows": self.rows,
-            "targets": self.targets, "failed_targets": self.failed_targets[:100],
+            "targets": self.targets, "n_failed": len(self.failed_targets),
+            "failed_targets": self.failed_targets[:100],
             "n_notes": len(self.notes), "elapsed_s": round(self.elapsed_s, 2),
         }
 
@@ -288,20 +289,36 @@ class Ingestor:
         out: dict[str, Any] = {}
         try:
             out["prices"] = self.ingest_prices(mode=mode).to_dict()
-        except IngestError as exc:
-            out["prices_error"] = str(exc)
+        except Exception as exc:  # noqa: BLE001 - provider crashes must block, not traceback
+            out["prices_error"] = f"{type(exc).__name__}: {exc}"
         try:
             out["indicators"] = self.ingest_indicators(mode=mode).to_dict()
-        except IngestError as exc:
-            out["indicators_error"] = str(exc)
-        price_ok = "prices_error" not in out and int((out.get("prices") or {}).get("rows", 0)) > 0
-        ind_ok = "indicators_error" not in out and int((out.get("indicators") or {}).get("rows", 0)) > 0
-        if not price_ok and not ind_ok:
-            out["status"] = "failed"
-        elif not price_ok:
-            out["status"] = "failed"          # prices are critical
-        elif not ind_ok:
-            out["status"] = "partial"         # macro/positioning degraded, disclosed
+        except Exception as exc:  # noqa: BLE001
+            out["indicators_error"] = f"{type(exc).__name__}: {exc}"
+        def _state(key: str) -> tuple[bool, float]:
+            block = out.get(key) or {}
+            if f"{key[:-1]}_error" in out or not block:
+                return False, 0.0
+            rows = int(block.get("rows", 0))
+            targets = max(1, int(block.get("targets", 0)))
+            n_failed = int(block.get("n_failed", len(block.get("failed_targets") or [])))
+            coverage = max(0.0, 1.0 - n_failed / targets)
+            if rows <= 0:
+                return False, coverage
+            # A provider that updates only a tiny fraction of the configured
+            # universe is an outage, not a successful ingest (e.g. 1/125 rows).
+            return coverage >= 0.5, coverage
+
+        price_ok, price_cov = _state("prices")
+        ind_ok, ind_cov = _state("indicators")
+        out["price_coverage"] = round(price_cov, 4)
+        out["indicator_coverage"] = round(ind_cov, 4)
+        if not price_ok:
+            out["status"] = "failed"           # prices are critical
+        elif price_cov < 0.9:
+            out["status"] = "partial"
+        elif not ind_ok or ind_cov < 0.9:
+            out["status"] = "partial"          # macro/positioning degraded, disclosed
         else:
             out["status"] = "ok"
         out["price_ok"] = price_ok

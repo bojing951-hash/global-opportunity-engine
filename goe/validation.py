@@ -87,7 +87,8 @@ def run_case_validation(store: Store, out_dir: str | Path | None = None,
                 "stock_bond": {"US_EQ_SPY", "US_FI_IEF"},
                 "VIX_TERM": {"US_VOL_VIX"},
             }
-            derived = {syn for syn, parents in derived_parents.items() if parents & entities}
+            derived = {syn for syn, parents in derived_parents.items()
+                       if entities and parents <= entities}
             if entities:
                 ent_anoms = window_anoms[window_anoms.entity_id.isin(entities | derived)]
             else:
@@ -216,7 +217,9 @@ def run_case_validation(store: Store, out_dir: str | Path | None = None,
             }
             det_hit = len(exp_det & set(entity_detectors))
             fam_hit = len(exp_fam & set(entity_families))
-            detection_ok = (det_hit > 0) or (fam_hit > 0)
+            # Pass on expected DETECTORS only; families such as "price" are too
+            # broad to prove that the case-specific phenomenon was detected.
+            detection_ok = det_hit > 0
             mech_ok = any(v == "supported" or (v == "mixed" and mech_conf.get(mid, 0) >= 0.30)
                           for mid, v in mech_checks.items()) if mech_checks else True
             mech_evaluated = all(v not in ("not_activated",) for v in mech_checks.values()) if mech_checks else True

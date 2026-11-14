@@ -963,12 +963,17 @@ class OpportunityEngine:
             failed = [e for e in (tx.evidence_against or [])
                       if e.get("test_type") in ("corr", "lead_lag", "conditional_return")]
             substantive = []
+            non_corr = []
             for e in failed:
                 n = (e.get("stats") or {}).get("n_obs") or (e.get("stats") or {}).get("n") or 0
                 if n >= 100 and e.get("reason") in ("符号不符", "相关性过弱", "符号不稳定",
                                                     "lead_lag_weak", "conditional_weak", "不显著"):
                     substantive.append(e)
-            if len(substantive) < 2:
+                    if e.get("test_type") in ("conditional_return", "lead_lag") and n >= 30:
+                        non_corr.append(e)
+            # An unconditional correlation failure is not evidence of structural
+            # change; require at least one conditional/lead-lag failure.
+            if len(substantive) < 2 or not non_corr:
                 continue
             primaries = [a for a in tx.assets if a.get("role") == "primary"] or tx.assets[:1]
             for asset in primaries[:1]:
@@ -1150,16 +1155,23 @@ class OpportunityEngine:
                         "expectation_gap": gap.to_dict(), "mechanism_assets": 1,
                         "data_quality_gaps": ["缺少政策事件的一致预期与期权隐含分布"],
                         "policy_series": sid, "policy_change": change, "theme": self.theme_of(iid),
+                        "policy_date_semantics": "BIS 月频序列可用日，不是央行决议日/发布时间",
+                        "policy_event_age_days": int((pd.Timestamp(self.as_of) - av).days),
                     },
                     mechanism={"id": None,
                                "chain": ["政策利率/操作变化", "流动性/贴现率变化", "风险溢价与估值重估", "资产价格"],
                                "confidence": 0.3, "causal_status": "hypothesis",
                                "conditions": ["政策传导未被提前定价", "信用/流动性渠道畅通"],
                                "identification": "事件研究法无法排除同期其他冲击；相关性不等于因果。"},
-                    evidence_for=ev_for, evidence_against=ev_against,
-                    catalysts=[{"id": f"POLICY_{sid}_{av.date()}", "date": str(av.date()),
-                                "title": f"{spec_meta.name} {a.direction}", "type": "central_bank",
-                                "verified": True, "source": "bis"}],
+                    evidence_for=ev_for, evidence_against=ev_against + [{
+                        "claim": "同期跨资产同步波动，无法区分政策定价与全球风险冲击",
+                        "evidence": "政策利率为月频/BIS 可用日，不是决议时刻；若股票、信用与新兴市场同日同向大跌，"
+                                    "更可能是全球风险冲击。",
+                        "source": "methodology", "tier": "derived", "as_of": self.as_of, "strength": "strong"}],
+                    # The policy print is already observed; it is NOT a forward
+                    # catalyst. Keeping it here made retrospective narratives look
+                    # like upcoming events (round-3 PM audit).
+                    catalysts=[],
                     open_questions=list(OPEN_QUESTIONS["event_revision"]),
                     invalidation="若事件后 20 个交易日内资产未出现显著重定价，或政策被撤回/逆转，则线索失效。",
                     invalidation_checks=[],
@@ -1326,10 +1338,16 @@ class OpportunityEngine:
             # A PAST event is not a forward catalyst. Negative days used to hit
             # the <=10 branch and gave a 28-day-old policy print the maximum score
             # (retrospective narrative).
-            if 0 <= days <= 10:
+            if 1 <= days <= 10:
                 cat = 1.0
+            elif days == 0:
+                # Date-only calendar: an event dated today may already have been
+                # published, so do not award the maximum without a timestamp.
+                cat = 0.6
             elif 0 <= days <= 30:
                 cat = 0.6
+            elif 0 <= days <= 90:
+                cat = 0.2
             else:
                 cat = 0.1
         timing = 1.0 if ARCHETYPE_HORIZON.get(d.archetype) == d.horizon else 0.5
@@ -1393,6 +1411,17 @@ class OpportunityEngine:
             d.status = "excluded"
             d.status_reason = "综合研究价值低于门槛"
 
+        # Event-age and mechanism-breakdown caps apply to watch as well as deep;
+        # otherwise an old policy print stays a top "opportunity" (round-3 PM audit).
+        if (d.archetype == "event_revision"
+                and d.discovery.get("policy_event_age_days") is not None
+                and int(d.discovery["policy_event_age_days"]) > 10
+                and d.status in ("watch", "deep_research")):
+            d.status, d.status_reason = "low_priority", (
+                "政策利率数据已超过事件窗口（BIS 月频可用日非决议日）；作为历史背景而非前瞻事件")
+        elif d.archetype == "mechanism_breakdown" and d.status == "deep_research":
+            d.status, d.status_reason = "watch", "关系失效线索只做观察，不直接升重点研究（需样本外确认）"
+
         # Expectation data insufficiency must not be rewarded: a candidate without a
         # measurable expectation proxy can never be promoted to deep research.
         min_gap = float(gates.get("min_expectation_gap", 0.15))
@@ -1406,8 +1435,6 @@ class OpportunityEngine:
                 d.status, d.status_reason = "watch", f"预期差代理偏弱（{expectation_gap:.2f} < {min_gap}）"
             elif dq < float(gates.get("min_deep_research_data_quality", 0.5)):
                 d.status, d.status_reason = "watch", "数据质量不足以支撑重点研究"
-            elif d.archetype == "mechanism_breakdown" and d.status == "deep_research":
-                d.status, d.status_reason = "watch", "关系失效线索只做观察，不直接升重点研究（需样本外确认）"
             elif d.discovery.get("direction_conflict"):
                 d.status, d.status_reason = "watch", "机制预期方向与资产实际走势相反，不能作为重点研究结论"
             elif gates.get("require_mechanism_or_divergence", True) and not (
@@ -1478,7 +1505,7 @@ def persist_drafts(store: Store, engine: OpportunityEngine, drafts: list[Draft],
             # Auto scoring may promote AND demote. Only an explicit human decision
             # (status_source='manual') or a terminal lifecycle state is protected.
             source = existing.get("status_source") or "auto"
-            terminal = existing["status"] in ("expired", "invalidated", "excluded")
+            terminal = existing["status"] in ("expired", "invalidated")
             if source != "manual" and not terminal and existing["status"] != rec["status"]:
                 store.set_opportunity_status(
                     existing["opportunity_id"], rec["status"],
@@ -1502,7 +1529,7 @@ def apply_lifecycle(store: Store, engine: OpportunityEngine, current: dict[str, 
     if df.empty:
         return {"expired": 0, "invalidated": 0}
     for row in df.itertuples(index=False):
-        if row.status in ("expired", "invalidated", "excluded"):
+        if row.status in ("expired", "invalidated"):
             continue
         if row.fingerprint in current:
             # Being re-detected does not make an opportunity valid: its own

@@ -709,19 +709,34 @@ class Store:
         parts: dict[str, Any] = {}
         root = project_root() / "config"
         for name in ["universe.yaml", "curves.yaml", "macro.yaml", "positioning.yaml",
-                     "thresholds.yaml", "scoring.yaml", "mechanisms.yaml", "events.yaml"]:
+                     "thresholds.yaml", "scoring.yaml", "mechanisms.yaml", "events.yaml",
+                     "themes.yaml", "sources.yaml", "cases.yaml"]:
             p = root / name
             if p.exists():
                 parts[name] = hashlib.sha256(p.read_bytes()).hexdigest()
         return hash_json(parts)
 
     def data_fingerprint(self, as_of: str) -> str:
+        """Content hash of the point-in-time data, not just row counts/dates.
+
+        A vendor revision that changes a price but not the number of rows must change
+        the hash; otherwise the scan is not reproducible/auditable.
+        """
+        h = hashlib.sha256()
         price_stats = self.conn.execute(
             "SELECT COUNT(*) AS n, COALESCE(MAX(date),'') AS last FROM prices WHERE date<=?", (as_of,)
         ).fetchone()
         ind_stats = self.conn.execute(
             "SELECT COUNT(*) AS n, COALESCE(MAX(date),'') AS last FROM indicators WHERE date<=?", (as_of,)
         ).fetchone()
+        for row in self.conn.execute(
+                "SELECT instrument_id,date,close,adj_close,source_id FROM prices "
+                "WHERE date<=? ORDER BY instrument_id,date", (as_of,)):
+            h.update(("|".join("" if v is None else str(v) for v in tuple(row)) + "\n").encode())
+        for row in self.conn.execute(
+                "SELECT series_id,date,value,source_id FROM indicators "
+                "WHERE date<=? ORDER BY series_id,date", (as_of,)):
+            h.update(("|".join("" if v is None else str(v) for v in tuple(row)) + "\n").encode())
         return hash_json({"prices_n": price_stats["n"], "prices_last": price_stats["last"],
                           "indicators_n": ind_stats["n"], "indicators_last": ind_stats["last"],
-                          "as_of": as_of})
+                          "content_sha256": h.hexdigest(), "as_of": as_of})

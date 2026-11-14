@@ -28,7 +28,7 @@ import pandas as pd
 from .config import MacroSeries, load_curves, load_macro, load_positioning, load_universe
 from .db import Store
 
-FEATURE_VERSION = "v1"
+FEATURE_VERSION = "v2"
 
 # Conservative publication lags (calendar days) used only when replaying history.
 # Values are deliberately longer than typical release calendars; the cost is a
@@ -203,9 +203,14 @@ def clean_price_panel(px: pd.DataFrame, universe) -> tuple[pd.DataFrame, list[di
                 hops = np.abs(window[1:] / window[:-1] - 1.0) if len(window) > 1 else np.array([])
                 continuous = bool(len(hops) and np.nanmax(hops) <= threshold)
             if matched is not None and continuous:
-                out.loc[valid.index[:pos], iid] = valid.iloc[:pos].to_numpy() * ratio
+                # Adjust POST-split observations back to the pre-split basis. This
+                # keeps every observation before the split unchanged, so a build at
+                # t and a later build sliced to t agree (P1-A property); scaling the
+                # pre-split history would retroactively change features.
+                out.loc[valid.index[pos:], iid] = valid.iloc[pos:].to_numpy() / ratio
                 issues.append({"instrument_id": iid, "kind": "split_adjusted",
-                               "date": dt.strftime("%Y-%m-%d"), "ratio": round(float(ratio), 6)})
+                               "date": dt.strftime("%Y-%m-%d"), "ratio": round(float(ratio), 6),
+                               "basis": "pre_split"})
                 continue
             # A large upward one-day jump in a fund that persists is a share
             # conversion / non-standard split (e.g. 3.213:1), not a tradable +220%
@@ -215,9 +220,10 @@ def clean_price_panel(px: pd.DataFrame, universe) -> tuple[pd.DataFrame, list[di
                 persists = len(nxt) > 0 and all(
                     0.5 < float(valid.loc[d]) / cur < 2.0 for d in nxt)
                 if persists:
-                    out.loc[valid.index[:pos], iid] = valid.iloc[:pos].to_numpy() * ratio
+                    out.loc[valid.index[pos:], iid] = valid.iloc[pos:].to_numpy() / ratio
                     issues.append({"instrument_id": iid, "kind": "level_rebased",
-                                   "date": dt.strftime("%Y-%m-%d"), "ratio": round(float(ratio), 6)})
+                                   "date": dt.strftime("%Y-%m-%d"), "ratio": round(float(ratio), 6),
+                                   "basis": "pre_conversion"})
                     continue
             # quarantine: from the jump until price is back near the pre-jump level
             reference = prev
@@ -359,6 +365,19 @@ class FeatureBuilder:
         px = self.store.load_prices(ids, end=self.as_of)
         if px.empty:
             raise RuntimeError("price panel empty for as-of date")
+        # Preserve crypto's own 24/7 calendar before re-indexing the cross-asset
+        # panel to business days (P2-B: weekend BTC/ETH moves must not disappear).
+        self._crypto_raw_native = {}
+        for iid, spec in self.universe.instruments.items():
+            if spec.asset_class != "crypto" or iid not in px.columns:
+                continue
+            fetched = {r["date"]: r["fetched_at"] for r in self.store.conn.execute(
+                "SELECT date, fetched_at FROM prices WHERE instrument_id=?", (iid,)).fetchall()}
+            s = px[iid].dropna()
+            s = s[[self.bar_is_complete(spec.region, d, fetched.get(d.strftime("%Y-%m-%d")),
+                                        spec.asset_class) for d in s.index]]
+            if not s.empty:
+                self._crypto_raw_native[iid] = s
         # A union calendar (crypto trades weekends) breaks every row-based rolling
         # window for instruments that do not trade daily: Monday returns become
         # NaN and 200-row MAs are never reached. Restrict the feature panel to a
@@ -373,12 +392,67 @@ class FeatureBuilder:
             px = px.loc[px.index >= pd.Timestamp(self.history_start)]
         return px
 
-    # conservative market close in UTC (hours after midnight) for the last-bar guard
+    # Local close times are converted to UTC per bar date (DST-aware). The old
+    # fixed-hour UTC map misclassified European bars by one hour in summer.
+    _CLOSE_LOCAL = {
+        "US": ("America/New_York", 16, 0), "CA": ("America/Toronto", 16, 0),
+        "BR": ("America/Sao_Paulo", 17, 0), "MX": ("America/Mexico_City", 15, 0),
+        "WORLD": ("America/New_York", 16, 0),
+        "EA": ("Europe/Berlin", 17, 30), "DE": ("Europe/Berlin", 17, 30),
+        "FR": ("Europe/Paris", 17, 30), "IT": ("Europe/Rome", 17, 30),
+        "ES": ("Europe/Madrid", 17, 30), "CH": ("Europe/Zurich", 17, 30),
+        "UK": ("Europe/London", 16, 30),
+        "JP": ("Asia/Tokyo", 15, 0), "KR": ("Asia/Seoul", 15, 30),
+        "TW": ("Asia/Taipei", 13, 30), "CN": ("Asia/Shanghai", 15, 0),
+        "HK": ("Asia/Hong_Kong", 16, 0), "AU": ("Australia/Sydney", 16, 0),
+        "IN": ("Asia/Kolkata", 15, 30),
+    }
+    # fallback only for regions without a timezone mapping
     _CLOSE_UTC = {
         "US": 21.0, "CA": 21.0, "BR": 21.0, "MX": 21.0, "WORLD": 21.0,
         "EA": 16.5, "DE": 16.5, "FR": 16.5, "IT": 16.5, "ES": 16.5, "CH": 16.5, "UK": 16.5,
         "JP": 6.0, "KR": 6.5, "TW": 5.5, "CN": 7.0, "HK": 8.0, "AU": 7.0, "IN": 10.0,
     }
+
+    @staticmethod
+    def bar_is_complete(region: str, bar_date, fetched_at, asset_class: str | None = None) -> bool:
+        """Is this daily bar a completed session at capture time (DST-aware)?"""
+        if not fetched_at:
+            return False
+        # Crypto has no closing auction: a bar captured on its own calendar date
+        # is still forming; only a later-date capture is complete.
+        if asset_class == "fx":
+            return True  # 24h market; the feature layer deliberately exempts FX
+        if asset_class == "crypto":
+            try:
+                ts = pd.Timestamp(fetched_at)
+                f = ts.tz_localize(None) if ts.tzinfo is None else ts.tz_convert("UTC").tz_localize(None)
+                return f.date() > pd.Timestamp(bar_date).date()
+            except Exception:
+                return False
+        spec_close = FeatureBuilder._CLOSE_LOCAL.get(region)
+        close_h = FeatureBuilder._CLOSE_UTC.get(region)
+        if spec_close is None and close_h is None:
+            return True
+        try:
+            ts = pd.Timestamp(fetched_at)
+            fetched_dt = ts.tz_localize(None) if ts.tzinfo is None else ts.tz_convert("UTC").tz_localize(None)
+        except Exception:
+            return False
+        bd = pd.Timestamp(bar_date)
+        if fetched_dt.date() < bd.date():
+            return False
+        if fetched_dt.date() > bd.date():
+            return True  # backfill / later capture is complete
+        if spec_close is not None:
+            from datetime import datetime, timezone
+            from zoneinfo import ZoneInfo
+
+            tzname, hh, mm = spec_close
+            close_utc = datetime(bd.year, bd.month, bd.day, hh, mm,
+                                 tzinfo=ZoneInfo(tzname)).astimezone(timezone.utc).replace(tzinfo=None)
+            return fetched_dt >= close_utc + pd.Timedelta(minutes=30)
+        return fetched_dt.hour + fetched_dt.minute / 60.0 >= close_h + 0.5
 
     def _drop_incomplete_bars(self, px: pd.DataFrame) -> pd.DataFrame:
         """Never use a bar that was still forming when it was downloaded.
@@ -391,26 +465,24 @@ class FeatureBuilder:
         if px.empty:
             return px
         last = px.index.max()
+        start = px.index.min().strftime("%Y-%m-%d")
+        # Completeness must be evaluated for EVERY bar, not only the last one:
+        # otherwise a partial bar at date t is dropped in a build as-of t but
+        # retained when a later build is sliced back to t (P1-A property failure).
         rows = self.store.conn.execute(
-            "SELECT instrument_id, MAX(fetched_at) AS fetched_at FROM prices WHERE date=? GROUP BY instrument_id",
-            (last.strftime("%Y-%m-%d"),)).fetchall()
-        fetched = {r["instrument_id"]: r["fetched_at"] for r in rows}
+            "SELECT instrument_id, date, MAX(fetched_at) AS fetched_at FROM prices "
+            "WHERE date >= ? AND date <= ? GROUP BY instrument_id, date",
+            (start, last.strftime("%Y-%m-%d"))).fetchall()
         out = px.copy()
-        for iid in out.columns:
+        for r in rows:
+            iid, ds, ts = r["instrument_id"], r["date"], r["fetched_at"]
+            if iid not in out.columns:
+                continue
             spec = self.universe.instruments.get(iid)
-            if spec is None or spec.asset_class in ("crypto", "fx"):
+            if spec is None or spec.asset_class == "fx":
                 continue
-            ts = fetched.get(iid)
-            close_h = self._CLOSE_UTC.get(spec.region)
-            if not ts or close_h is None:
-                continue
-            try:
-                fetched_dt = pd.Timestamp(ts).tz_localize(None) if pd.Timestamp(ts).tzinfo is None \
-                    else pd.Timestamp(ts).tz_convert("UTC").tz_localize(None)
-            except Exception:
-                continue
-            if fetched_dt.hour + fetched_dt.minute / 60.0 < close_h + 0.5:
-                out.loc[last, iid] = np.nan
+            if not self.bar_is_complete(spec.region, ds, ts, spec.asset_class):
+                out.loc[pd.Timestamp(ds), iid] = np.nan
         # if every instrument of the last session was incomplete, drop the row
         if out.loc[last].notna().sum() == 0:
             out = out.iloc[:-1]
@@ -442,8 +514,9 @@ class FeatureBuilder:
             freq = self.macro_defs[sid].frequency if sid in self.macro_defs else "monthly"
             age = int((as_of_dt - pd.Timestamp(s.index.max())).days)
             if age > STALE_AFTER_DAYS.get(freq, 110):
+                # Keep the available HISTORY (needed for T>t point-in-time
+                # consistency); mark it stale so current use can be refused.
                 stale[sid] = age
-                continue
             kept[sid] = wide[sid]
         self.stale_macro = stale
         wide = pd.DataFrame(kept) if kept else pd.DataFrame()
@@ -519,6 +592,22 @@ class FeatureBuilder:
     def build(self) -> FeatureSet:
         px = self._load_prices()
         px, self.price_issues = clean_price_panel(px, self.universe)
+        # Clean crypto on its own 24/7 calendar too; otherwise the native weekend
+        # features would bypass the quarantine/split logic (round-3 P2-1).
+        self._crypto_native: dict[str, pd.Series] = {}
+        if getattr(self, "_crypto_raw_native", None):
+            cdf = pd.DataFrame(self._crypto_raw_native)
+            cclean, cissues = clean_price_panel(cdf, self.universe)
+            self._crypto_native = {iid: cclean[iid].dropna() for iid in cclean.columns}
+            # Deduplicate issues that the main panel already recorded for the same
+            # crypto instrument/day (round-3 P3).
+            def _key(it):
+                return (it.get("instrument_id"), it.get("kind"), it.get("date"), tuple(it.get("dates") or []))
+            seen = {_key(it) for it in self.price_issues}
+            for it in cissues:
+                if _key(it) not in seen:
+                    self.price_issues.append(it)
+                    seen.add(_key(it))
         # per-instrument returns over each instrument's own valid observations:
         # a union-calendar pct_change makes every Monday/post-holiday return NaN.
         rets = px.apply(lambda col: col.dropna().pct_change(fill_method=None).reindex(px.index))
@@ -529,6 +618,7 @@ class FeatureBuilder:
 
         rows: list[pd.DataFrame] = []
         rows.append(self._price_features(px, rets))
+        rows.append(self._crypto_features())
         rows.append(self._relative_strength(px, rets))
         rows.append(self._breadth(px))
         rows.append(self._curve_features(curves))
@@ -569,6 +659,8 @@ class FeatureBuilder:
             spec = self.universe.instruments.get(iid)
             if spec is None:
                 continue
+            if spec.asset_class == "crypto":
+                continue  # handled on its native 24/7 calendar below
             p = px[iid].dropna()
             if len(p) < 60:
                 continue
@@ -611,6 +703,52 @@ class FeatureBuilder:
             add("drawdown_pctile_5y", rolling_percentile(drawdown_from_high(p, 252), 1260))
             # realized vol relative to its own long-run median = regime gauge
             add("vol_ratio_1m_12m", ann_vol(r, 21) / ann_vol(r, 252).replace(0, np.nan))
+        return pd.concat(out, ignore_index=True) if out else pd.DataFrame()
+
+    def _crypto_features(self) -> pd.DataFrame:
+        """Features on a 24/7 calendar for crypto (weekends are valid sessions).
+
+        Cross-asset panels stay business-day indexed; only crypto gets its native
+        daily observations so a Saturday/Sunday shock is not silently dropped.
+        """
+        out = []
+        windows = {"1d": 1, "1w": 7, "1m": 30, "3m": 91, "6m": 182, "12m": 365}
+        vol_windows = {"1m": 30, "3m": 91, "12m": 365}
+        for iid, p in getattr(self, "_crypto_native", {}).items():
+            spec = self.universe.instruments.get(iid)
+            if spec is None or len(p) < 60:
+                continue
+            p = p.sort_index()
+            r = p.pct_change(fill_method=None).dropna()
+
+            def add(feature, series, window=""):
+                x = series.replace([np.inf, -np.inf], np.nan).dropna()
+                if x.empty:
+                    return
+                out.append(pd.DataFrame({
+                    "entity_kind": "instrument", "entity_id": iid, "asset_class": spec.asset_class,
+                    "region": spec.region, "feature": feature, "window": window,
+                    "date": x.index, "value": x.values}))
+
+            for wname, w in windows.items():
+                add("return", p.pct_change(w, fill_method=None), wname)
+            for wname, w in vol_windows.items():
+                add("ann_vol", r.rolling(w).std() * np.sqrt(365), wname)
+            add("drawdown_252d", drawdown_from_high(p, 252))
+            add("drawdown_5y", drawdown_from_high(p, 1825))
+            ma50 = p.rolling(50, min_periods=40).mean()
+            ma200 = p.rolling(200, min_periods=150).mean()
+            add("ma_gap_50d", p / ma50 - 1.0)
+            add("ma_gap_200d", p / ma200 - 1.0)
+            add("ma_cross_50_200", (ma50 - ma200) / ma200)
+            add("return_z_3y", robust_z(p.pct_change(30, fill_method=None), 1095), "1m")
+            add("return_pctile_5y", rolling_percentile(p.pct_change(30, fill_method=None), 1825), "1m")
+            add("return_z_1d_3y", robust_z(r, 1095), "1d")
+            vol63 = r.rolling(91).std() * np.sqrt(365)
+            add("vol_z_3y", robust_z(vol63, 1095), "3m")
+            add("vol_pctile_5y", rolling_percentile(vol63, 1825), "3m")
+            add("drawdown_pctile_5y", rolling_percentile(drawdown_from_high(p, 252), 1825))
+            add("vol_ratio_1m_12m", (r.rolling(30).std() / r.rolling(365).std()).replace(0, np.nan))
         return pd.concat(out, ignore_index=True) if out else pd.DataFrame()
 
     def _relative_strength(self, px: pd.DataFrame, rets: pd.DataFrame) -> pd.DataFrame:

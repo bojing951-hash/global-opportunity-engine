@@ -93,6 +93,8 @@ def build_forward_study(store: Store, mapping_path: str | Path = "audit/research
             "beat_spy_rate": _round((sub["excess_3m_vs_spy"] > 0).mean()),
             "mean_excess_3m_vs_class": _round(sub["excess_3m_vs_class"].mean()),
             "beat_class_rate": _round((sub["excess_3m_vs_class"] > 0).mean()),
+            "mean_fwd_3m_ex_top": _round(sub.drop(sub["fwd_3m"].idxmax())["fwd_3m"].mean())
+            if len(sub) > 1 else None,
         }
     per_date = []
     for d in dates:
@@ -120,12 +122,12 @@ def write_forward_report(store: Store, out_path: str | Path = "audit/FORWARD_RET
              "Selection is point-in-time (PIT mapping produced by `goe.evaluation`). Forward returns use",
              "only prices after each as-of date. No costs, no position sizing, no direction adjustment;",
              "the engine is a research-priority tool, not a portfolio. Small n (12 objects/method).", "",
-             "| method | n | mean fwd 1m | mean fwd 3m | mean abs fwd 3m | material move rate | mean excess 3m vs SPY | beat SPY rate | mean excess 3m vs class | beat class rate |",
-             "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+             "| method | n | mean fwd 1m | mean fwd 3m | mean fwd 3m ex-top | mean abs fwd 3m | material move rate | mean excess 3m vs SPY | beat SPY rate | mean excess 3m vs class | beat class rate |",
+             "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
     for m in METHODS:
         s = res["summary"][m]
         lines.append(f"| {m} | {s['n']} | {s['mean_fwd_1m']} | {s['mean_fwd_3m']} | "
-                     f"{s['mean_abs_fwd_3m']} | {s['material_move_rate']} | {s['mean_excess_3m_vs_spy']} | "
+                     f"{s['mean_fwd_3m_ex_top']} | {s['mean_abs_fwd_3m']} | {s['material_move_rate']} | {s['mean_excess_3m_vs_spy']} | "
                      f"{s['beat_spy_rate']} | {s['mean_excess_3m_vs_class']} | {s['beat_class_rate']} |")
     lines += ["", "Per as-of date (mean forward 3m return):", "",
               "| as_of | median abs 3m (universe) | A | B | C |", "|---|---:|---:|---:|---:|"]

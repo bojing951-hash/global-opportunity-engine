@@ -204,8 +204,10 @@ def build_markdown(store: Store, fs: FeatureSet, anomalies: pd.DataFrame,
             if (scan_meta.get('data_readiness') or {}).get('stale_indicators') else "")
          if (scan_meta.get('data_readiness') or {}).get('warnings') else ""),
         (f"> 采集状态：{scan_meta.get('ingest',{}).get('status')}；"
+         f"价格覆盖 {float((scan_meta.get('ingest') or {}).get('price_coverage', 0)):.0%}，"
+         f"指标覆盖 {float((scan_meta.get('ingest') or {}).get('indicator_coverage', 0)):.0%}；"
          f"错误源：{', '.join(k for k,v in (scan_meta.get('ingest') or {}).items() if k.endswith('_error')) or '无'}。"
-         if (scan_meta.get('ingest') or {}).get('status') == 'partial' else ""),
+         if (scan_meta.get('ingest') or {}).get('status') in ('partial', 'failed') else ""),
         "",
         "## 1. 市场状态快照",
         "",
@@ -273,15 +275,17 @@ def build_markdown(store: Store, fs: FeatureSet, anomalies: pd.DataFrame,
     else:
         lines.append("_本次没有机制满足激活条件。_\n")
 
+    study = [r for r in opportunities if r["status"] in ("deep_research", "watch", "new")]
+    archived = [r for r in opportunities if r["status"] not in ("deep_research", "watch", "new")]
     lines += ["## 4. 投资机会候选池", "",
-              f"共 {len(opportunities)} 个候选："
-              + "；".join(f"{s} {n}" for s, n in pd.Series([o["status"] for o in opportunities]).value_counts().items())
+              (f"研究队列 {len(study)} 个；归档/排除 {len(archived)} 个："
+               + "；".join(f"{s} {n}" for s, n in
+                           pd.Series([o["status"] for o in opportunities]).value_counts().items()))
               if opportunities else "_本次扫描未生成候选机会。这本身是一个有效结果：没有组合同时满足异常、机制与证据门槛。_",
               ""]
-    for rec in opportunities:
-        if rec["status"] in ("deep_research", "watch", "new"):
-            lines.append(render_opportunity(rec))
-    others = [r for r in opportunities if r["status"] not in ("deep_research", "watch", "new")]
+    for rec in study:
+        lines.append(render_opportunity(rec))
+    others = archived
     if others:
         lines += ["### 其他记录（暂不研究/已排除）", "", "| 机会 | 评分 | 状态 | 原因 |", "|---|---|---|---|"]
         for r in others[:20]:

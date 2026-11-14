@@ -25,10 +25,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
 from ..db import Store
 
 
-def parse_research_artifact(out_dir: str | Path, stdout: str = "") -> dict[str, Any]:
+def parse_research_artifact(out_dir: str | Path, stdout: str = "",
+                            min_mtime: datetime | None = None) -> dict[str, Any]:
     """Read the downstream RESEARCH semantics, not just the process exit code.
 
     The investment-agent completes with rc=0 even when the research result is
@@ -43,6 +46,15 @@ def parse_research_artifact(out_dir: str | Path, stdout: str = "") -> dict[str, 
     report_path = None
     if reports:
         report_path = reports[0]
+        if min_mtime is not None:
+            try:
+                mt = datetime.fromtimestamp(report_path.stat().st_mtime, tz=timezone.utc)
+                if mt < min_mtime - pd.Timedelta(seconds=2):
+                    return {"semantic_status": "partial", "run_ok": None, "n_evidence_rows": None,
+                            "n_steps_failed": None, "report_path": str(report_path),
+                            "reason": "报告早于本次运行，拒绝复用陈旧 artifact"}
+            except Exception:
+                pass
         try:
             payload = json.loads(report_path.read_text(encoding="utf-8"))
         except Exception:
@@ -80,7 +92,7 @@ def parse_research_artifact(out_dir: str | Path, stdout: str = "") -> dict[str, 
     s8_ok = (s8 or {}).get("semantic_ok")
     if run_ok is False:
         status, reason = "rejected", "下游研究明确返回失败/拒绝（run_ok=false）"
-    elif s8_status in ("out_of_scope", "refused", "rejected"):
+    elif s8_status in ("out_of_scope", "refused", "rejected", "unmapped", "no_registry_identity"):
         # The downstream system REFUSED the question; this is not a partial study.
         status, reason = "refused", f"下游明确拒答/越界（status={s8_status}）"
     elif s8 is None:
@@ -89,10 +101,12 @@ def parse_research_artifact(out_dir: str | Path, stdout: str = "") -> dict[str, 
         status, reason = "partial", "下游 S8 接地问答语义失败"
     elif n_steps_failed:
         status, reason = "partial", f"下游研究有 {n_steps_failed} 个步骤语义失败"
-    elif s8_ok is True and s8_status == "answered" and run_ok is True:
+    elif s8_ok is True and s8_status == "answered" and run_ok is True and (n_evidence or 0) >= 1:
         status, reason = "ok_valid", "下游 S8 已接地作答（answered）"
         if n_l1_rows == 0 and n_l2_views == 0:
             status, reason = "insufficient_data", "S8 声称作答但没有 L1 事实行或 L2 观点行"
+    elif s8_ok is True and s8_status == "answered" and (n_evidence or 0) == 0:
+        status, reason = "insufficient_data", "S8 声称作答但 evidence_index 为空（仅有观点/空结果）"
     elif (n_evidence or 0) == 0:
         status, reason = "insufficient_data", "下游研究完成但证据行数为 0（数据不足）"
     else:
@@ -164,13 +178,17 @@ class IAAdapter:
         if not self.env.has_cli:
             return {"status": "unavailable", "reason": "; ".join(self.env.notes) or "ia_cli.py missing"}
         out_dir = Path(out_dir)
+        # Never reuse a previous run's report in the same out_dir: a crashed run
+        # with rc!=0 could otherwise be judged from an old ok_valid artifact.
+        if out_dir.exists():
+            shutil.rmtree(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
         cmd = self.build_command(question, out_dir, fanout=fanout)
         started = datetime.now(timezone.utc)
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd=str(self.path))
             elapsed = (datetime.now(timezone.utc) - started).total_seconds()
-            semantics = parse_research_artifact(out_dir, proc.stdout or "")
+            semantics = parse_research_artifact(out_dir, proc.stdout or "", min_mtime=started)
             # A zero exit code only proves the process ran. The task is "ok" only
             # when the downstream research artifact is semantically valid.
             overall = "ok" if (proc.returncode == 0 and semantics["semantic_status"] == "ok_valid") else "not_ok"
@@ -199,13 +217,14 @@ class IAAdapter:
                        res: dict[str, Any], target: Path) -> None:
         """Record the research run and its SEMANTIC status for one opportunity."""
         sem = res.get("semantic_status", "unknown")
+        run_ok = res.get("status") == "ok" and sem == "ok_valid"
         existing = store.conn.execute(
             "SELECT task_id FROM research_tasks WHERE opportunity_id=? ORDER BY created_at LIMIT 1",
             (row["opportunity_id"],)).fetchone()
         task_id = existing["task_id"] if existing else f"RT-{row['opportunity_id']}"
         store.add_opportunity_event(
             row["opportunity_id"],
-            "ia_research_run" if sem == "ok_valid" else "ia_research_not_completed",
+            "ia_research_run" if run_ok else "ia_research_not_completed",
             row["status"], row["status"],
             f"investment-agent: {sem} ({res.get('semantic_reason', '')})", run_id=None)
         store.upsert_research_task({
@@ -215,7 +234,7 @@ class IAAdapter:
             "payload": {"question": question, "result": res},
             "exported_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "export_path": str(target),
-            "status": "completed" if sem == "ok_valid" else f"not_completed:{sem}",
+            "status": "completed" if run_ok else f"not_completed:{sem if sem not in ('ok_valid','unknown') else res.get('status','unknown')}",
         })
 
     # -------------------------------------------------------------------- queue

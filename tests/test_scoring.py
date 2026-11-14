@@ -116,6 +116,17 @@ def test_missing_expectation_gap_caps_at_watch():
     assert "预期差" in draft.status_reason
 
 
+def test_same_day_event_without_timestamp_is_not_max_catalyst():
+    engine = _engine(rows=[
+        ("instrument", "US_EQ_SPY", "equity_etf", "US", "ma_gap_200d", "", END_DATE, 0.20),
+        ("instrument", "US_EQ_SPY", "equity_etf", "US", "drawdown_252d", "", END_DATE, -0.25),
+    ])
+    draft = _high_score_draft()
+    draft.catalysts = [{"date": END_DATE, "title": "today", "type": "central_bank"}]
+    engine._score(draft)
+    assert draft.score_components["catalyst"] == pytest.approx(0.6)
+
+
 def test_past_catalyst_is_not_forward_catalyst():
     engine = _engine(rows=[
         ("instrument", "US_EQ_SPY", "equity_etf", "US", "ma_gap_200d", "", END_DATE, 0.20),

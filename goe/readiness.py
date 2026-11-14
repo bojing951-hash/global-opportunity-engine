@@ -22,6 +22,16 @@ from .config import load_curves, load_macro, load_positioning, load_universe
 from .db import Store
 
 
+# Critical Data Dependency Contract (precise, not "all missing = block"):
+# - prices for every market: per-region check below
+# - UST curve system: rates/residual/mechanism core; optional other curves
+# - US_CPI and US_POLICY_RATE: inflation/policy transmission core
+# Optional series (US_CAPE, EA_HICP, CFTC, ...) only warn/degrade.
+REQUIRED_MACRO = ("US_CPI", "US_POLICY_RATE")
+REQUIRED_CURVES = ("UST",)
+REQUIRED_CURVE_TENORS = {"UST": {"2Y", "10Y"}}
+
+
 class ScanBlockedError(RuntimeError):
     """Raised when data is too stale/incomplete to produce a research scan."""
 
@@ -72,8 +82,25 @@ def check_data_readiness(store: Store, as_of: str | None = None, *,
     universe = load_universe()
     n_configured = len(universe.instruments)
     price_rows = int(store.scalar("SELECT COUNT(*) FROM prices") or 0)
-    last = store.scalar("SELECT MAX(date) FROM prices WHERE date <= ?", (as_of,)) if as_of else \
-        store.scalar("SELECT MAX(date) FROM prices")
+    # Freshness must be based on COMPLETED bars, not raw rows: an intraday partial
+    # bar used to reset a dead market to age=0 while features discarded it.
+    from .features import FeatureBuilder
+
+    _limit = as_of or "9999-12-31"
+    _rows = store.conn.execute(
+        "SELECT instrument_id, date, fetched_at FROM prices WHERE date <= ? "
+        "ORDER BY instrument_id, date DESC", (_limit,)).fetchall()
+    _last_complete: dict[str, str] = {}
+    for _r in _rows:
+        _iid = _r["instrument_id"]
+        if _iid in _last_complete:
+            continue
+        _spec = universe.instruments.get(_iid)
+        if _spec is None:
+            continue
+        if FeatureBuilder.bar_is_complete(_spec.region, _r["date"], _r["fetched_at"], _spec.asset_class):
+            _last_complete[_iid] = _r["date"]
+    last = max(_last_complete.values()) if _last_complete else None
     indicator_rows = int(store.scalar("SELECT COUNT(*) FROM indicators") or 0)
     res = ReadinessResult(ok=False, as_of=as_of or "", last_price_date=last or "",
                           n_configured=n_configured, price_rows=price_rows,
@@ -105,10 +132,8 @@ def check_data_readiness(store: Store, as_of: str | None = None, *,
             res.critical.append(f"最新价格距今已 {stale_days} 天（>10），拒绝生成“最新”机会")
 
     window_start = (pd.Timestamp(target) - pd.Timedelta(days=max_age_days)).strftime("%Y-%m-%d")
-    fresh = store.conn.execute(
-        "SELECT COUNT(DISTINCT instrument_id) FROM prices WHERE date >= ? AND date <= ?",
-        (window_start, target)).fetchone()[0]
-    res.n_fresh = int(fresh)
+    res.n_fresh = sum(1 for _d in _last_complete.values()
+                      if window_start <= _d <= target)
     res.coverage = res.n_fresh / n_configured if n_configured else 0.0
     if res.coverage < min_coverage:
         res.critical.append(
@@ -119,10 +144,7 @@ def check_data_readiness(store: Store, as_of: str | None = None, *,
     # so a complete outage is caught by last-date age even when other markets are
     # fresh. Holiday gaps (e.g. China Golden Week) are tolerated to 10 days.
     region_of = {iid: spec.region for iid, spec in universe.instruments.items()}
-    present_rows = store.conn.execute(
-        "SELECT instrument_id, MAX(date) AS last_date FROM prices WHERE date <= ? "
-        "GROUP BY instrument_id", (target,)).fetchall()
-    present_last = {r["instrument_id"]: r["last_date"] for r in present_rows}
+    present_last = dict(_last_complete)
     configured_by_region: dict[str, int] = {}
     for iid in universe.instruments:
         configured_by_region[region_of[iid]] = configured_by_region.get(region_of[iid], 0) + 1
@@ -158,6 +180,11 @@ def check_data_readiness(store: Store, as_of: str | None = None, *,
         elif min_coverage > 0 and len(ids) >= 3 and covered_ratio < 0.5:
             res.critical.append(
                 f"{region} 市场覆盖流失：仅 {len(ids)}/{configured_by_region[region]} 个配置标的有数据")
+        elif min_coverage > 0 and len(ids) >= 3 and covered_ratio < 0.8:
+            res.warnings.append(
+                f"{region} 市场覆盖下降：{len(ids)}/{configured_by_region[region]} 个配置标的有数据"
+                f"（近期 {len(fresh_ids)} 个）")
+            res.degraded = True
         elif len(ids) >= 1 and len(fresh_ids) == 0:
             res.warnings.append(f"{region} 市场没有任何近期更新（最后 {last_region}，{age_region} 天前）")
             res.degraded = True
@@ -252,8 +279,48 @@ def check_data_readiness(store: Store, as_of: str | None = None, *,
         elif present_n and fresh_n < present_n * 0.5:
             res.warnings.append(f"{cid} 曲线多数期限过期：{fresh_n}/{present_n} 个在 15 天内有更新")
             res.degraded = True
+        elif present_n < len(tenors) * 0.5:
+            res.warnings.append(f"{cid} 曲线期限不完整：仅 {present_n}/{len(tenors)} 个期限存在")
+            res.degraded = True
     # Per-system warnings above already cover missing/stale systems; do not add a
     # duplicate aggregate warning here (QA P3).
+    # Required core data contract (enforced in production mode; tests may use
+    # min_coverage=0 as an explicit relaxed/lab mode).
+    if min_coverage <= 0:
+        res.warnings.append("lab mode: critical data dependency contract disabled (min_coverage=0)")
+    if min_coverage > 0:
+        for sid in REQUIRED_MACRO:
+            mdef = macro_defs.get(sid)
+            if mdef is None:
+                continue
+            lag = lag_by_freq.get(mdef.frequency, 45)
+            cutoff_obs = (pd.Timestamp(target) - pd.Timedelta(days=lag)).strftime("%Y-%m-%d")
+            last_sid = store.conn.execute(
+                "SELECT MAX(date) FROM indicators WHERE series_id=? AND date <= ?",
+                (sid, cutoff_obs)).fetchone()[0]
+            if not last_sid:
+                res.critical.append(f"核心宏观数据缺失：{sid}（研究依赖，拒绝发布）")
+                continue
+            age = (pd.Timestamp(target) - (pd.Timestamp(last_sid) + pd.Timedelta(days=lag))).days
+            if age > lag + 90:
+                res.critical.append(f"核心宏观数据过期：{sid} 最后可用 {last_sid}（{age} 天）")
+        for cid in REQUIRED_CURVES:
+            cdef = load_curves().get(cid)
+            if cdef is None:
+                continue
+            present_n = 0
+            for t in cdef.tenors:
+                if store.conn.execute("SELECT 1 FROM indicators WHERE series_id=? LIMIT 1",
+                                      (f"{cid}:{t}",)).fetchone():
+                    present_n += 1
+            if present_n == 0:
+                res.critical.append(f"核心收益率曲线缺失：{cid}（研究依赖，拒绝发布）")
+                continue
+            for tenor in REQUIRED_CURVE_TENORS.get(cid, set()):
+                if not store.conn.execute("SELECT 1 FROM indicators WHERE series_id=? LIMIT 1",
+                                          (f"{cid}:{tenor}",)).fetchone():
+                    res.critical.append(f"核心收益率曲线缺少关键期限：{cid}:{tenor}（研究依赖，拒绝发布）")
+
     pos_ids = list(load_positioning())
     present_pos = store.conn.execute(
         f"SELECT COUNT(DISTINCT series_id) FROM indicators WHERE series_id IN ({','.join('?' for _ in pos_ids)})",

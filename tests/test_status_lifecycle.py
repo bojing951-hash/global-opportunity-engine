@@ -91,3 +91,14 @@ def test_current_candidate_is_invalidated_when_its_own_check_fires(store):
     row = store.conn.execute("SELECT opportunity_id,status FROM opportunities").fetchone()
     assert row["status"] == "invalidated", "a re-detected candidate must still respect invalidation_checks"
     assert store.conn.execute("SELECT COUNT(*) FROM opportunities WHERE status='watch'").fetchone()[0] == 0
+
+
+def test_excluded_candidate_can_be_re_armed(store):
+    d = _draft("excluded", 0.30)
+    persist_drafts(store, StubEngine(d), [d])
+    row = store.conn.execute("SELECT opportunity_id,status FROM opportunities").fetchone()
+    assert row["status"] == "excluded"
+    d2 = _draft("watch", 0.60)
+    persist_drafts(store, StubEngine(d2), [d2])
+    row = store.conn.execute("SELECT status,status_source FROM opportunities").fetchone()
+    assert row["status"] == "watch", "excluded was treated as terminal and could never recover"
