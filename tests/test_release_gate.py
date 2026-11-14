@@ -271,3 +271,17 @@ def test_export_ignore_cannot_hide_a_failing_test(small_repo):
     _git(small_repo, "commit", "-qm", "hidden failure")
     with pytest.raises(rel.ReleaseError, match="not clean|did not pass"):
         rel.run_test_proof(cwd=small_repo)
+
+
+def test_committed_collect_ignore_cannot_hide_a_failing_test(small_repo):
+    """P2 round 4: a committed conftest must not exclude a committed failing test."""
+    (small_repo / "tests" / "test_zz_fail.py").write_text(
+        "def test_must_fail():\n    assert False\n", encoding="utf-8"
+    )
+    (small_repo / "tests" / "conftest.py").write_text(
+        "collect_ignore = ['test_zz_fail.py']\n", encoding="utf-8"
+    )
+    _git(small_repo, "add", "-A")
+    _git(small_repo, "commit", "-qm", "hidden via conftest")
+    with pytest.raises(rel.ReleaseError, match="no collected tests|not clean"):
+        rel.run_test_proof(cwd=small_repo)

@@ -59,7 +59,7 @@ CATEGORY_MARKERS: dict[str, str] = {
 }
 DEFAULT_CATEGORY = "offline"
 RELEASE_CATEGORY = "offline"
-MIN_REQUIRED: dict[str, int] = {"offline": 199, "network": 9, "realdata": 1}
+MIN_REQUIRED: dict[str, int] = {"offline": 200, "network": 9, "realdata": 1}
 
 _HARDENED_ENV = (
     "PYTHONOPTIMIZE",
@@ -222,7 +222,9 @@ def _export_tree(root: Path, commit: str) -> Path:
             f"cannot materialise tree for {commit[:10]}: {proc.stderr.strip()[:200]}"
         )
     try:
-        entries = _git("-C", str(root), "ls-tree", "-r", commit).splitlines()
+        entries = _git(
+            "-c", "core.quotePath=false", "-C", str(root), "ls-tree", "-r", commit
+        ).splitlines()
         expected: dict[str, str] = {}
         for line in entries:
             meta, path = line.split("\t", 1)
@@ -291,6 +293,22 @@ def _collect_in(tree: Path, category: str = DEFAULT_CATEGORY) -> list[str]:
     if not ids:
         raise ReleaseError("test collection produced no node ids")
     return sorted(set(ids))
+
+
+def _assert_no_test_file_is_hidden(tree: Path, expected: list[str]) -> None:
+    """A committed tests/test_*.py may not vanish through collect_ignore / conftest tricks."""
+    represented = {nid.split("::", 1)[0] for nid in expected}
+    files = {
+        p.relative_to(tree).as_posix()
+        for p in (tree / "tests").rglob("test_*.py")
+        if ".git" not in p.parts
+    }
+    hidden = sorted(files - represented)
+    if hidden:
+        raise ReleaseError(
+            f"committed test files produced no collected tests: {hidden[:5]} "
+            "(collect_ignore or conftest filtering is not allowed in a release)"
+        )
 
 
 def collect_node_ids(cwd: str | Path = ".", category: str = DEFAULT_CATEGORY) -> list[str]:
@@ -401,6 +419,7 @@ def run_test_proof(
                 f"{category} suite collected {len(expected)} tests, "
                 f"below the required floor of {MIN_REQUIRED[category]}"
             )
+        _assert_no_test_file_is_hidden(tree, expected)
 
         tmpdir = Path(tempfile.mkdtemp(prefix="goe-junit-"))
         junit_tmp = tmpdir / "junit.xml"
@@ -575,6 +594,7 @@ def _verify_in_tree(
             f"{category} suite collected {len(expected)} tests, "
             f"below the required floor of {MIN_REQUIRED[category]}"
         )
+    _assert_no_test_file_is_hidden(tree, expected)
     replay_required = _required_set(expected)
     recorded = proof.get("required")
     if not isinstance(recorded, dict):
