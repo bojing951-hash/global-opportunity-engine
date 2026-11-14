@@ -2,7 +2,7 @@
 
 ## Freeze protocol
 1. Requirements → architecture contract → acceptance tests → implementation.
-2. Freeze a commit; record code hash, config_hash, data_hash, scan_id, test count and artifacts.
+2. Freeze a commit; record code hash, config_hash, data_hash, scan_id, a machine-verifiable test proof (exit code, passed/failed counts, log SHA-256, commit) and artifact hashes. Caller-supplied test counts are not accepted.
 3. Independent QA reviews the frozen commit/data snapshot only; it may not edit the audited tree.
 4. Findings require a failing reproduction; fixes go to a new commit; re-freeze and re-QA.
 5. At least two independent QA passes with new fault inputs and no new P0/P1 for engineering sign-off.

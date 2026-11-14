@@ -55,8 +55,8 @@ def run_test_proof(command: list[str] | None = None, *, cwd: str | Path = ".",
         raise ReleaseError("test proof requires a clean worktree")
     if not commit:
         raise ReleaseError("cannot establish git commit for test proof")
-    command = command or [sys.executable, "-m", "pytest", "tests", "-q",
-                          "-m", "not network and not realdata"]
+    command = command or [sys.executable, "-m", "pytest", "tests", "-o", "addopts=",
+                          "-q", "-m", "not network and not realdata"]
     started = datetime.now(timezone.utc)
     proc = subprocess.run(command, cwd=str(cwd), capture_output=True, text=True, timeout=timeout)
     ended = datetime.now(timezone.utc)

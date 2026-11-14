@@ -12,6 +12,7 @@
 Commands:
 ```bash
 pytest tests -q                         # required offline suite, clean checkout
+pytest tests -o addopts="" -q           # same, with explicit summary count
 pytest tests -q -m network              # only network tests (needs connectivity)
 GOE_SLOW=1 pytest tests -q -m realdata  # prepared real DB/artifacts
 ```
