@@ -56,3 +56,40 @@ real suite. Four attacks succeeded. Round 2 (implementer) closed them; see the f
   `tests/test_contracts.py` release cases.
 - Portable proof: `audit/test_evidence/*.proof.json`; replay with
   `python -m goe.cli verify-release --proof <path>`.
+
+---
+
+# Round 2 — red team on the v3 gate (2026-11-15)
+
+- Baseline `047918f`; findings reproduced in `/tmp/rt3`; the audited tree was not modified.
+- Verdict: **FAIL for local-tree attacks** (pure proof forgery was already closed).
+- New: 4 × P1, 2 × P2, 3 × P3.
+
+| ID | Sev | Attack | Root cause | Fix (v4) |
+|---|---|---|---|---|
+| B1 | **P1** | Host has an installed `goe` (`.pth`); a broken clone still got a manifest with `passed=198` | launcher appended the tree *after* site-packages, so `import goe` resolved to the installed copy | `import pytest` first, then `sys.path.insert(0, cwd)` |
+| B2 | **P1** | corrupt index + modified test (`assert False`) + root conftest forcing pass → manifest, `git_dirty=false` | `_git()` returned `""` on failure, so a failed `git status` looked clean | strict `_git`; any git failure raises `ReleaseError` |
+| B3 | **P1** | dirty worktree accepted by `verify-release` (rerun ran the edited test) | verify only checked commit ancestry | verify rejects a dirty worktree |
+| B4 | **P1** | untracked root `conftest.py` hidden by `.git/info/exclude` forces a failing test to pass; rerun still accepted | execution used the working tree, which can contain files git cannot see | collect/run/replay in `git archive HEAD` (pristine tree) |
+| B5 | **P1** | docs-only commit (`PROJECT_STATE.md`) made the current proof unreplayable | allow-list of post-proof paths did not include root project docs | root project docs allowed; code dirs still rejected |
+| B6 | **P2** | `core.worktree` pointing at an ancestor tree: `_git_root(inner)` returned the outer root | only required root to *contain* cwd | release paths require `root == cwd` |
+| B7 | **P2** | `PYTHONHOME` not cleared | `_clean_env` cleared `PYTHONPATH` only | `PYTHONHOME` cleared too |
+| B8 | **P3** | non-integer JUnit attribute → `ValueError`; stderr swallowed on collection failure; `--no-rerun` accepts forged JUnit | robustness | `ReleaseError` with context; `--no-rerun` documented as structural-only |
+| B9 | **P3** | nested `<testsuite>` could double-count | summed every nested element | counts from top-level testsuites only |
+
+## Confirmed still fixed
+
+- Round-1 A1 (root `pytest.py`) and A4 (`GIT_DIR`/`GIT_WORK_TREE`) no longer reproduce.
+- assume-unchanged / skip-worktree are still rejected as dirty.
+- Pure proof forgery (fake counts, duplicate/empty testcases, non-ancestor commits) does not pass.
+
+## Residual
+
+- `--no-rerun` is structural only and must not be used for release.
+- Host-level tampering (a plugin installed into site-packages, `PYTHONSTARTUP`) remains outside
+  the threat model; the gate trusts the interpreter it is launched with.
+- Test *quality* (weakened assertions keeping the same count) is still not detectable.
+
+## Round 3
+
+Running against `6edc430` (v4). Outcome appended when complete.
