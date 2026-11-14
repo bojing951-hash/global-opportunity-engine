@@ -78,7 +78,8 @@ CREATE TABLE IF NOT EXISTS quality_issues (
 CREATE INDEX IF NOT EXISTS idx_qi_target ON quality_issues(target, created_at);
 
 CREATE TABLE IF NOT EXISTS anomalies (
-  anomaly_id TEXT PRIMARY KEY, as_of TEXT NOT NULL, detector TEXT NOT NULL,
+  anomaly_id TEXT PRIMARY KEY, as_of TEXT NOT NULL, available_date TEXT,
+  detector TEXT NOT NULL,
   family TEXT NOT NULL, instrument_id TEXT, direction TEXT, magnitude REAL,
   score REAL, percentile REAL, window TEXT, evidence_json TEXT, fingerprint TEXT NOT NULL,
   run_id TEXT, created_at TEXT
@@ -98,7 +99,8 @@ CREATE TABLE IF NOT EXISTS opportunities (
   opportunity_id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL UNIQUE,
   as_of TEXT NOT NULL, first_seen TEXT NOT NULL, last_seen TEXT NOT NULL,
   archetype TEXT, title TEXT, market TEXT, asset_class TEXT, instruments_json TEXT,
-  horizon TEXT, status TEXT NOT NULL, status_reason TEXT, score REAL, score_json TEXT,
+  horizon TEXT, status TEXT NOT NULL, status_source TEXT DEFAULT 'auto',
+  status_reason TEXT, score REAL, score_json TEXT,
   discovery_json TEXT, mechanism_json TEXT, evidence_for_json TEXT,
   evidence_against_json TEXT, catalysts_json TEXT, open_questions_json TEXT,
   invalidation TEXT, data_quality TEXT, lifecycle_json TEXT, run_id TEXT,
@@ -158,6 +160,13 @@ class Store:
         self.conn.executescript(DDL)
         cur = self.conn.execute("SELECT value FROM schema_meta WHERE key='schema_version'")
         row = cur.fetchone()
+        # lightweight migrations for existing databases
+        opp_cols = {r[1] for r in self.conn.execute("PRAGMA table_info(opportunities)").fetchall()}
+        if opp_cols and "status_source" not in opp_cols:
+            self.conn.execute("ALTER TABLE opportunities ADD COLUMN status_source TEXT DEFAULT 'auto'")
+        cols = {r[1] for r in self.conn.execute("PRAGMA table_info(anomalies)").fetchall()}
+        if "available_date" not in cols:
+            self.conn.execute("ALTER TABLE anomalies ADD COLUMN available_date TEXT")
         if row is None:
             self.conn.execute(
                 "INSERT INTO schema_meta(key,value) VALUES('schema_version',?)", (SCHEMA_VERSION,)
@@ -440,16 +449,17 @@ class Store:
         now = utc_now()
         for a in anomalies:
             rows.append((
-                a["anomaly_id"], a["as_of"], a["detector"], a["family"], a.get("instrument_id"),
+                a["anomaly_id"], a["as_of"], a.get("available_date") or a["as_of"],
+                a["detector"], a["family"], a.get("instrument_id"),
                 a.get("direction"), a.get("magnitude"), a.get("score"), a.get("percentile"),
                 a.get("window"), json.dumps(a.get("evidence", {}), ensure_ascii=False, default=str),
                 a["fingerprint"], run_id, now,
             ))
         with self.transaction() as c:
             c.executemany(
-                """INSERT INTO anomalies(anomaly_id,as_of,detector,family,instrument_id,direction,
+                """INSERT INTO anomalies(anomaly_id,as_of,available_date,detector,family,instrument_id,direction,
                      magnitude,score,percentile,window,evidence_json,fingerprint,run_id,created_at)
-                   VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                   VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                    ON CONFLICT(anomaly_id) DO UPDATE SET
                      magnitude=excluded.magnitude, score=excluded.score, percentile=excluded.percentile,
                      evidence_json=excluded.evidence_json, run_id=excluded.run_id, created_at=excluded.created_at""",
@@ -526,16 +536,17 @@ class Store:
             with self.transaction() as c:
                 c.execute(
                     """INSERT INTO opportunities(opportunity_id,fingerprint,as_of,first_seen,last_seen,
-                         archetype,title,market,asset_class,instruments_json,horizon,status,status_reason,
-                         score,score_json,discovery_json,mechanism_json,evidence_for_json,
+                         archetype,title,market,asset_class,instruments_json,horizon,status,status_source,
+                         status_reason,score,score_json,discovery_json,mechanism_json,evidence_for_json,
                          evidence_against_json,catalysts_json,open_questions_json,invalidation,
                          data_quality,lifecycle_json,run_id,created_at,updated_at)
-                       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                     (
                         oid, opp["fingerprint"], opp["as_of"], opp["as_of"], opp["as_of"],
                         opp.get("archetype"), opp.get("title"), opp.get("market"),
                         opp.get("asset_class"), json.dumps(opp.get("instruments", []), ensure_ascii=False),
-                        opp.get("horizon"), opp.get("status", "new"), opp.get("status_reason"),
+                        opp.get("horizon"), opp.get("status", "new"),
+                        opp.get("status_source", "auto"), opp.get("status_reason"),
                         opp.get("score"), json.dumps(opp.get("score_breakdown", {}), ensure_ascii=False),
                         json.dumps(opp.get("discovery", {}), ensure_ascii=False, default=str),
                         json.dumps(opp.get("mechanism", {}), ensure_ascii=False, default=str),
@@ -585,7 +596,7 @@ class Store:
             )
 
     def set_opportunity_status(self, opportunity_id: str, status: str, reason: str,
-                               run_id: str | None = None) -> bool:
+                               run_id: str | None = None, source: str = "auto") -> bool:
         row = self.conn.execute(
             "SELECT status, lifecycle_json FROM opportunities WHERE opportunity_id=?", (opportunity_id,)
         ).fetchone()
@@ -598,9 +609,10 @@ class Store:
         lifecycle.append({"at": utc_now(), "from": old, "to": status, "reason": reason})
         with self.transaction() as c:
             c.execute(
-                "UPDATE opportunities SET status=?, status_reason=?, lifecycle_json=?, updated_at=? "
-                "WHERE opportunity_id=?",
-                (status, reason, json.dumps(lifecycle, ensure_ascii=False), utc_now(), opportunity_id),
+                "UPDATE opportunities SET status=?, status_source=?, status_reason=?, lifecycle_json=?, "
+                "updated_at=? WHERE opportunity_id=?",
+                (status, source, reason, json.dumps(lifecycle, ensure_ascii=False), utc_now(),
+                 opportunity_id),
             )
         self.add_opportunity_event(opportunity_id, "status_change", old, status, reason, run_id)
         return True
@@ -633,6 +645,16 @@ class Store:
                 (scan_id, as_of, mode, utc_now(), "running", config_hash, data_hash),
             )
         return scan_id
+
+    def rollback_scan(self, scan_id: str, created_opportunity_ids: Sequence[str] = ()) -> None:
+        """Remove artifacts written by a failed scan (no half-finished records)."""
+        with self.transaction() as c:
+            c.execute("DELETE FROM anomalies WHERE run_id=?", (scan_id,))
+            c.execute("DELETE FROM transmissions WHERE run_id=?", (scan_id,))
+            for oid in created_opportunity_ids:
+                c.execute("DELETE FROM opportunity_events WHERE opportunity_id=?", (oid,))
+                c.execute("DELETE FROM opportunities WHERE opportunity_id=?", (oid,))
+            c.execute("UPDATE scan_runs SET status='rolled_back' WHERE scan_id=?", (scan_id,))
 
     def finish_scan(self, scan_id: str, status: str, stats: dict[str, Any]) -> None:
         with self.transaction() as c:

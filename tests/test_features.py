@@ -143,19 +143,19 @@ def test_curve_slope_features_exist_when_2y_and_10y_present(feature_set, synthet
 # --------------------------------------------------------------------- macro
 def test_macro_release_lag_excludes_unpublished_observations(feature_set):
     lag = RELEASE_LAG_DAYS["monthly"]
-    cutoff = pd.Timestamp(END_DATE) - pd.Timedelta(days=lag)
 
     assert not feature_set.macro.empty
-    # Nothing published after the as-of date may leak into the snapshot.
-    assert feature_set.macro.index.max() <= cutoff
-    assert pd.Timestamp("2024-11-01") in feature_set.macro.index
-    assert pd.Timestamp("2024-12-01") not in feature_set.macro.index
+    # Macro panels are indexed by AVAILABILITY date: nothing published after the
+    # as-of date may appear, and a print is dated observation + lag.
+    assert feature_set.macro.index.max() <= pd.Timestamp(END_DATE)
+    assert pd.Timestamp("2024-11-01") + pd.Timedelta(days=lag) in feature_set.macro.index
+    assert pd.Timestamp("2024-12-01") + pd.Timedelta(days=lag) not in feature_set.macro.index
 
     macro_rows = feature_set.long[
         (feature_set.long.entity_kind == "macro") & (feature_set.long.entity_id == "US_CPI")
     ]
     assert not macro_rows.empty
-    assert pd.to_datetime(macro_rows["date"]).max() <= cutoff
+    assert pd.to_datetime(macro_rows["date"]).max() <= pd.Timestamp(END_DATE)
 
 
 def test_stale_macro_series_is_excluded(feature_set):
@@ -173,7 +173,8 @@ def test_point_in_time_false_skips_release_lag(shared_store, feature_set, synthe
     assert "US_CPI" in no_pit.macro.columns
     # The 2024-12-01 print is visible without the lag, but not with it.
     assert no_pit.macro.index.max() == pd.Timestamp("2024-12-01")
-    assert feature_set.macro.index.max() == pd.Timestamp("2024-11-01")
+    assert feature_set.macro.index.max() == pd.Timestamp("2024-11-01") + pd.Timedelta(
+        days=RELEASE_LAG_DAYS["monthly"])
 
     indicators = synthetic_market["indicators"]
     last_cpi = indicators[indicators.series_id == "US_CPI"].iloc[-1]

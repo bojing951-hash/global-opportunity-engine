@@ -131,7 +131,11 @@ def drawdown_from_high(px: pd.Series, window: int) -> pd.Series:
 
 
 def safe_pct_change(s: pd.Series, periods: int) -> pd.Series:
-    return s.pct_change(periods, fill_method=None)
+    """Return over `periods` VALID observations (holidays do not consume a slot)."""
+    valid = s.dropna()
+    if len(valid) <= periods:
+        return pd.Series(np.nan, index=s.index, name=s.name)
+    return valid.pct_change(periods, fill_method=None).reindex(s.index)
 
 
 def _last_valid(s: pd.Series) -> float:
@@ -203,6 +207,18 @@ def clean_price_panel(px: pd.DataFrame, universe) -> tuple[pd.DataFrame, list[di
                 issues.append({"instrument_id": iid, "kind": "split_adjusted",
                                "date": dt.strftime("%Y-%m-%d"), "ratio": round(float(ratio), 6)})
                 continue
+            # A large upward one-day jump in a fund that persists is a share
+            # conversion / non-standard split (e.g. 3.213:1), not a tradable +220%
+            # move. Rebase history instead of quarantining the entire tail.
+            if asset_class in ("equity_etf", "sector_equity") and ratio > 2.5:
+                nxt = valid.index[pos + 1:pos + 4]
+                persists = len(nxt) > 0 and all(
+                    0.5 < float(valid.loc[d]) / cur < 2.0 for d in nxt)
+                if persists:
+                    out.loc[valid.index[:pos], iid] = valid.iloc[:pos].to_numpy() * ratio
+                    issues.append({"instrument_id": iid, "kind": "level_rebased",
+                                   "date": dt.strftime("%Y-%m-%d"), "ratio": round(float(ratio), 6)})
+                    continue
             # quarantine: from the jump until price is back near the pre-jump level
             reference = prev
             bad_dates = [valid.index[pos]]
@@ -249,6 +265,38 @@ class FeatureSet:
                 idx[(entity, feature, window)] = (sub["date"].to_numpy(), sub["value"].to_numpy())
             self._index = idx
         return self._index
+
+    def macro_available(self, series_id: str, obs_date: str) -> str:
+        """Availability date for a macro observation (obs + configured release lag)."""
+        from .config import load_macro
+
+        mdefs = load_macro()
+        spec = mdefs.get(series_id)
+        freq = spec.frequency if spec else "monthly"
+        lag = RELEASE_LAG_DAYS.get(freq, 45)
+        return (pd.Timestamp(obs_date) + pd.Timedelta(days=lag)).strftime("%Y-%m-%d")
+
+    def slice_as_of(self, as_of: str) -> "FeatureSet":
+        """Point-in-time view of an already-computed FeatureSet.
+
+        Feature values use trailing windows only, so truncating every panel to
+        ``as_of`` yields exactly the information set available at that date. This
+        is used by the historical replay: one build per case is sliced to each
+        evaluation date instead of re-building the whole feature layer (and
+        without reusing end-of-window data).
+        """
+        cutoff = pd.Timestamp(as_of)
+        long = self.long[pd.to_datetime(self.long["date"]) <= cutoff]
+        prices = self.prices.loc[self.prices.index <= cutoff] if not self.prices.empty else self.prices
+        returns = self.returns.loc[self.returns.index <= cutoff] if not self.returns.empty else self.returns
+        pos = self.positioning.loc[self.positioning.index <= cutoff] if not self.positioning.empty else self.positioning
+        # Macro rows are ALREADY indexed by availability date (see
+        # `_macro_availability_frame`), so a plain truncation is point-in-time
+        # correct; no second lag may be applied here.
+        macro = self.macro.loc[self.macro.index <= cutoff] if not self.macro.empty else self.macro
+        curve = {k: v.loc[v.index <= cutoff] for k, v in self.curve.items()}
+        return FeatureSet(as_of=as_of, long=long, prices=prices, returns=returns, curve=curve,
+                          macro=macro, positioning=pos, meta={**self.meta, "sliced_as_of": as_of})
 
     def frame(self) -> pd.DataFrame:
         return self.long
@@ -311,11 +359,62 @@ class FeatureBuilder:
         px = self.store.load_prices(ids, end=self.as_of)
         if px.empty:
             raise RuntimeError("price panel empty for as-of date")
-        # keep instruments with at least the minimum useful history
+        # A union calendar (crypto trades weekends) breaks every row-based rolling
+        # window for instruments that do not trade daily: Monday returns become
+        # NaN and 200-row MAs are never reached. Restrict the feature panel to a
+        # global business-day calendar; per-instrument returns are computed on each
+        # instrument's own valid observations below.
+        if not px.empty:
+            bd = pd.bdate_range(px.index.min(), px.index.max())
+            px = px.reindex(bd)
+        px = self._drop_incomplete_bars(px)
         px = px.loc[:, px.notna().sum() >= min(self.min_history, 120)]
         if self.history_start:
             px = px.loc[px.index >= pd.Timestamp(self.history_start)]
         return px
+
+    # conservative market close in UTC (hours after midnight) for the last-bar guard
+    _CLOSE_UTC = {
+        "US": 21.0, "CA": 21.0, "BR": 21.0, "MX": 21.0, "WORLD": 21.0,
+        "EA": 16.5, "DE": 16.5, "FR": 16.5, "IT": 16.5, "ES": 16.5, "CH": 16.5, "UK": 16.5,
+        "JP": 6.0, "KR": 6.5, "TW": 5.5, "CN": 7.0, "HK": 8.0, "AU": 7.0, "IN": 10.0,
+    }
+
+    def _drop_incomplete_bars(self, px: pd.DataFrame) -> pd.DataFrame:
+        """Never use a bar that was still forming when it was downloaded.
+
+        Yahoo returns the current session's partial bar intraday. A feature set
+        built at 10:05 ET must not treat that bar as a close. Rows whose
+        ``fetched_at`` precedes the regional close (+30 min buffer) are dropped.
+        Crypto/FX (24h markets) are exempt.
+        """
+        if px.empty:
+            return px
+        last = px.index.max()
+        rows = self.store.conn.execute(
+            "SELECT instrument_id, MAX(fetched_at) AS fetched_at FROM prices WHERE date=? GROUP BY instrument_id",
+            (last.strftime("%Y-%m-%d"),)).fetchall()
+        fetched = {r["instrument_id"]: r["fetched_at"] for r in rows}
+        out = px.copy()
+        for iid in out.columns:
+            spec = self.universe.instruments.get(iid)
+            if spec is None or spec.asset_class in ("crypto", "fx"):
+                continue
+            ts = fetched.get(iid)
+            close_h = self._CLOSE_UTC.get(spec.region)
+            if not ts or close_h is None:
+                continue
+            try:
+                fetched_dt = pd.Timestamp(ts).tz_localize(None) if pd.Timestamp(ts).tzinfo is None \
+                    else pd.Timestamp(ts).tz_convert("UTC").tz_localize(None)
+            except Exception:
+                continue
+            if fetched_dt.hour + fetched_dt.minute / 60.0 < close_h + 0.5:
+                out.loc[last, iid] = np.nan
+        # if every instrument of the last session was incomplete, drop the row
+        if out.loc[last].notna().sum() == 0:
+            out = out.iloc[:-1]
+        return out
 
     def _load_curves(self) -> dict[str, pd.DataFrame]:
         out: dict[str, pd.DataFrame] = {}
@@ -371,23 +470,61 @@ class FeatureBuilder:
             adjusted[sid] = pd.Series(s.values[visible], index=obs_dates[visible])
         return pd.DataFrame(adjusted) if adjusted else pd.DataFrame()
 
+    def _macro_availability_frame(self, macro_obs: pd.DataFrame) -> pd.DataFrame:
+        """Re-index macro observations to their AVAILABILITY date.
+
+        Downstream panels, correlations and anomalies must be anchored on the
+        date the number could be known, not the reference period. Spacing is
+        preserved because the lag is constant per series.
+        """
+        from .config import load_macro
+
+        if not self.point_in_time:
+            return macro_obs
+        mdefs = load_macro()
+        out: dict[str, pd.Series] = {}
+        for sid in macro_obs.columns:
+            freq = mdefs[sid].frequency if sid in mdefs else "monthly"
+            lag = RELEASE_LAG_DAYS.get(freq, 45)
+            s = macro_obs[sid].dropna()
+            if s.empty:
+                continue
+            idx = pd.to_datetime(s.index) + pd.Timedelta(days=lag)
+            out[sid] = pd.Series(s.values, index=idx)
+        if not out:
+            return pd.DataFrame()
+        frame = pd.DataFrame(out)
+        return frame[frame.index <= pd.Timestamp(self.as_of)]
+
     def _load_positioning(self) -> pd.DataFrame:
-        ids = [f"{pid}" for pid in self.positioning_defs]
+        # Net positions AND open interest are required: net-to-OI is the
+        # normalised crowding measure; without :oi the ratio silently became the
+        # raw contract count (P1-04).
+        ids: list[str] = []
+        for pid in self.positioning_defs:
+            ids.extend([pid, f"{pid}:oi"])
         wide = self.store.load_indicators_wide(ids, end=self.as_of)
         if wide.empty:
             return wide
         if self.point_in_time:
-            # COT is as-of Tuesday, published Friday: 4 calendar day lag
+            # COT is as-of Tuesday close and published on Friday. Apply the lag
+            # FIRST and truncate to the as-of date SECOND: filtering before the
+            # shift lets a Friday print appear in a Wednesday research snapshot
+            # (P1-03 look-ahead).
             wide.index = pd.to_datetime(wide.index) + pd.Timedelta(days=4)
+            wide = wide[wide.index <= pd.Timestamp(self.as_of)]
         return wide
 
     # -------------------------------------------------------------------- build
     def build(self) -> FeatureSet:
         px = self._load_prices()
         px, self.price_issues = clean_price_panel(px, self.universe)
-        rets = px.pct_change(fill_method=None)
+        # per-instrument returns over each instrument's own valid observations:
+        # a union-calendar pct_change makes every Monday/post-holiday return NaN.
+        rets = px.apply(lambda col: col.dropna().pct_change(fill_method=None).reindex(px.index))
         curves = self._load_curves()
-        macro = self._load_macro()
+        macro_obs = self._load_macro()
+        macro = self._macro_availability_frame(macro_obs)
         pos = self._load_positioning()
 
         rows: list[pd.DataFrame] = []
@@ -396,10 +533,10 @@ class FeatureBuilder:
         rows.append(self._breadth(px))
         rows.append(self._curve_features(curves))
         rows.append(self._indicator_features(curves, macro, pos))
-        rows.append(self._cross_asset_features(px, rets, curves))
+        rows.append(self._cross_asset_features(px, rets, curves, macro))
         rows.append(self._valuation_features(macro))
         rows.append(self._positioning_features(pos))
-        rows.append(self._macro_features(macro))
+        rows.append(self._macro_features(macro_obs))
         rows.append(self._risk_features(px, rets))
 
         long = pd.concat([r for r in rows if r is not None and not r.empty], ignore_index=True)
@@ -420,6 +557,7 @@ class FeatureBuilder:
                 "n_positioning_series": int(pos.shape[1]) if not pos.empty else 0,
                 "feature_version": FEATURE_VERSION,
                 "stale_macro_series": getattr(self, "stale_macro", {}),
+                "macro_dates_are_availability": bool(self.point_in_time),
                 "price_data_issues": getattr(self, "price_issues", []),
             },
         )
@@ -611,7 +749,7 @@ class FeatureBuilder:
 
     # ------------------------------------------------------ cross-asset features
     def _cross_asset_features(self, px: pd.DataFrame, rets: pd.DataFrame,
-                              curves: dict[str, pd.DataFrame]) -> pd.DataFrame:
+                              curves: dict[str, pd.DataFrame], macro: pd.DataFrame | None = None) -> pd.DataFrame:
         out = []
 
         def add(entity_id: str, feature: str, series: pd.Series, window: str = "", region: str = "WORLD"):
@@ -667,9 +805,11 @@ class FeatureBuilder:
             add("copper_gold_ratio", "z_3y", robust_z(ratio, 756))
 
         # equity risk premium: S&P earnings yield minus 10y (using trailing P/E proxy)
-        pe = self.store.load_indicator("VALUATION:SP500_PE", end=self.as_of)
-        if pe.empty:
-            pe = self.store.load_indicator("US_CAPE", end=self.as_of)
+        # Use the PIT-filtered macro frame (release lag + staleness enforced);
+        # reading the raw indicator series here bypassed both guards (audit finding).
+        pe = pd.Series(dtype=float)
+        if macro is not None and "US_CAPE" in getattr(macro, "columns", []):
+            pe = macro["US_CAPE"].dropna()
         if not pe.empty and ust is not None and "10Y" in ust.columns:
             ey = (100.0 / pe).dropna()
             y10 = ust["10Y"].dropna()
@@ -760,10 +900,13 @@ class FeatureBuilder:
                 "z_3y": robust_z(value, win),
                 "pctile_5y": rolling_percentile(value, pct_win),
             }
+            lag = RELEASE_LAG_DAYS.get(spec.frequency, 45)
             for feat, series in features.items():
                 x = series.replace([np.inf, -np.inf], np.nan).dropna()
                 if x.empty:
                     continue
+                if self.point_in_time:
+                    x.index = pd.to_datetime(x.index) + pd.Timedelta(days=lag)
                 out.append(pd.DataFrame({
                     "entity_kind": "macro", "entity_id": sid, "asset_class": "macro",
                     "region": spec.region, "feature": feat, "window": spec.frequency,

@@ -99,20 +99,29 @@ def run_case_validation(store: Store, out_dir: str | Path | None = None,
             # Evaluate at up to six points in the window with ONE evaluator, so that
             # resolved series are cached across evaluations (an episode can be
             # activated and decay before as_of).
-            n_eval = 10
+            n_eval = 8
             eval_dates = [d.strftime("%Y-%m-%d") for d in
                           pd.date_range(start, end, periods=n_eval)] if end > str(start) else [as_of]
             if eval_dates[-1] != as_of:
                 eval_dates.append(as_of)
-            evaluator = MechanismEvaluator(fs, mech_cfg)
+            def _avail_dates(frame: pd.DataFrame) -> pd.Series:
+                if frame is None or frame.empty:
+                    return pd.Series(dtype="datetime64[ns]")
+                col = "available_date" if "available_date" in frame.columns else "date"
+                return pd.to_datetime(frame[col])
+
             mech_union: dict[str, list[dict[str, Any]]] = {}
             episode_drafts: list[Any] = []
             for ed in eval_dates:
-                _recent = anomalies[pd.to_datetime(anomalies.date) >= (
-                    pd.Timestamp(ed) - pd.Timedelta(days=10))] if not anomalies.empty else anomalies
-                _recent = _recent[pd.to_datetime(_recent.date) <= pd.Timestamp(ed)]
+                # Each evaluation date gets its own point-in-time view: prices,
+                # macro and positioning truncated to what was known at ed, and
+                # anomalies filtered by AVAILABILITY (not observation date).
+                fs_ed = fs.slice_as_of(ed)
+                _avail = _avail_dates(anomalies)
+                _recent = anomalies[(_avail >= pd.Timestamp(ed) - pd.Timedelta(days=10))
+                                   & (_avail <= pd.Timestamp(ed))] if not anomalies.empty else anomalies
                 try:
-                    _mechs = evaluator.evaluate(_recent)
+                    _mechs = MechanismEvaluator(fs_ed, mech_cfg).evaluate(_recent)
                 except Exception:
                     _mechs = []
                 for m in _mechs:
@@ -122,7 +131,7 @@ def run_case_validation(store: Store, out_dir: str | Path | None = None,
                 # measures whether the phenomenon surfaced DURING the episode, not
                 # only on the final as-of date after the anomaly had decayed.
                 try:
-                    _eng = OpportunityEngine(fs, _recent, _mechs, events, scoring, max_candidates=25)
+                    _eng = OpportunityEngine(fs_ed, _recent, _mechs, events, scoring, max_candidates=25)
                     _eng.generate()
                     episode_drafts.extend(getattr(_eng, "all_scored", []))
                 except Exception:
@@ -144,11 +153,15 @@ def run_case_validation(store: Store, out_dir: str | Path | None = None,
                     mech_checks[mid] = "insufficient_data"
                 else:
                     mech_checks[mid] = statuses[-1]
-            last_recent = anomalies[pd.to_datetime(anomalies.date) >= (
-                pd.Timestamp(as_of) - pd.Timedelta(days=10))] if not anomalies.empty else anomalies
-            mech_results = evaluator.evaluate(last_recent)
+            _avail_all = _avail_dates(anomalies)
+            last_recent = anomalies[(_avail_all >= pd.Timestamp(as_of) - pd.Timedelta(days=10))
+                                    & (_avail_all <= pd.Timestamp(as_of))] if not anomalies.empty else anomalies
+            fs_end = fs.slice_as_of(as_of)
+            mech_results = MechanismEvaluator(fs_end, mech_cfg).evaluate(last_recent)
             # opportunity generation (not persisted)
-            engine = OpportunityEngine(fs, anomalies, mech_results, events, scoring, max_candidates=25)
+            engine = OpportunityEngine(fs_end, anomalies[(_avail_all <= pd.Timestamp(as_of))]
+                                       if not anomalies.empty else anomalies,
+                                       mech_results, events, scoring, max_candidates=25)
             drafts = engine.generate()
             # union of the as-of drafts and all episode drafts, best score per fingerprint
             _by_fp: dict[str, Any] = {}

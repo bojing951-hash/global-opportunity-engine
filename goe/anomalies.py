@@ -134,6 +134,43 @@ class DetectorContext:
         self._cache[key] = out
         return out
 
+    def availability(self, entity_kind: str, entity_id: str, date: pd.Timestamp) -> str:
+        """Date on which the observation could actually be known.
+
+        Macro observations are dated by reference period and only published after
+        a lag; the anomaly must be screened against its *availability* date, or a
+        fresh release can never enter the recent-window opportunity logic (P1-02).
+        Market prices, curves and positioning (already publication-dated) are
+        available on their own date.
+        """
+        from .features import RELEASE_LAG_DAYS
+
+        if getattr(self.fs, "meta", {}).get("macro_dates_are_availability"):
+            return pd.Timestamp(date).strftime("%Y-%m-%d")
+        lag = 0
+        try:
+            macro = load_macro()
+            if entity_id in macro:
+                lag = RELEASE_LAG_DAYS.get(macro[entity_id].frequency, 0)
+            elif entity_kind == "valuation" and entity_id == "US_CAPE":
+                lag = RELEASE_LAG_DAYS["monthly"]
+        except Exception:
+            lag = 0
+        return (pd.Timestamp(date) + pd.Timedelta(days=lag)).strftime("%Y-%m-%d")
+
+    def observation_date(self, entity_kind: str, entity_id: str, date: pd.Timestamp) -> str:
+        """Reference-period date for macro observations (date minus release lag)."""
+        from .features import RELEASE_LAG_DAYS
+
+        lag = 0
+        try:
+            macro = load_macro()
+            if entity_id in macro:
+                lag = RELEASE_LAG_DAYS.get(macro[entity_id].frequency, 0)
+        except Exception:
+            lag = 0
+        return (pd.Timestamp(date) - pd.Timedelta(days=lag)).strftime("%Y-%m-%d")
+
     def value_at(self, kind: str, feature: str, entity_id: str, date: pd.Timestamp,
                  window: str | None = None) -> float:
         """Latest-cached lookup into the wide feature matrix (avoids O(n^2) scans)."""
@@ -202,18 +239,24 @@ def emit_rows(
         if percentile is not None and not percentile.empty and date in percentile.index:
             if entity_id in percentile.columns:
                 pct_val = _safe_float(percentile.at[date, entity_id])
+        avail = ctx.availability(entity_kind, entity_id, pd.Timestamp(date))
         evidence = evidence_fn(entity_id, date, _safe_float(val))
+        _tier = (src or {}).get("tier", "derived")
+        _dq = {"official": 1.0, "exchange": 0.9, "aggregator": 0.7, "proxy": 0.5}.get(_tier, 0.6)
         evidence.update({
             "detector": detector,
             "measure": measure_name,
             "measure_value": _safe_float(val),
             "entity_kind": entity_kind,
+            "available_date": avail,
             "asset_class": meta.get("asset_class"),
             "region": meta.get("region"),
             "source": src,
+            "data_quality": _dq,
         })
         records.append({
             "date": pd.Timestamp(date).strftime("%Y-%m-%d"),
+            "available_date": avail,
             "detector": detector,
             "family": family,
             "entity_id": entity_id,
@@ -343,10 +386,21 @@ class TrendBreak(Detector):
         gap = self.ctx.wide("instrument", "ma_gap_200d")
         if cross.empty:
             return pd.DataFrame()
-        sign = np.sign(cross.fillna(0.0))
         lookback = int(cfg.get("lookback_days", 10))
-        flipped = (sign != sign.shift(lookback)) & (sign != 0)
-        mask = flipped & (gap.reindex_like(cross).abs() >= cfg.get("min_abs_gap", 0.01))
+        # Evaluate each instrument on its own valid observations: a global row
+        # shift(10) turns "market was closed 10 rows ago" into a fake cross.
+        mask = pd.DataFrame(False, index=cross.index, columns=cross.columns)
+        gap_aligned = gap.reindex_like(cross)
+        for col in cross.columns:
+            s = cross[col].dropna()
+            if len(s) < lookback + 2:
+                continue
+            sign = np.sign(s)
+            flipped = (sign != sign.shift(lookback)) & (sign != 0)
+            for dt in s.index[flipped.fillna(False)]:
+                g = gap_aligned.at[dt, col] if col in gap_aligned.columns else np.nan
+                if np.isfinite(g) and abs(g) >= cfg.get("min_abs_gap", 0.01):
+                    mask.at[dt, col] = True
         return emit_rows(
             self.ctx, cross, mask, detector=self.name, family=self.family, entity_kind="instrument",
             window=f"{lookback}d", direction=lambda v: "golden_cross" if v > 0 else "death_cross",
@@ -722,8 +776,8 @@ class PolicyRateChange(Detector):
             if s.empty:
                 continue
             chg = s.diff(int(cfg.get("lookback_days", 45)) // 30 or 1)
-            mask = chg.abs() >= float(cfg.get("min_change_pp", 0.05))
             vals = chg.to_frame(mid)
+            mask = (vals.abs() >= float(cfg.get("min_change_pp", 0.05)))
             out.append(emit_rows(
                 self.ctx, vals, mask, detector=self.name, family=self.family,
                 entity_kind="macro", window="policy_action",

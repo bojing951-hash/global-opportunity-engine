@@ -222,7 +222,11 @@ class Ingestor:
             if spec["kind"] == "curve":
                 return f"{spec.get('start_year', 2014)}-01-01"
             return BACKFILL_START
-        return (datetime.strptime(last, "%Y-%m-%d").date() - timedelta(days=OVERLAP_DAYS)).isoformat()
+        # revisions matter for statistical releases: refetch a longer overlap for
+        # lower-frequency series so a revised prior print is not missed.
+        lookback = {"daily": 10, "weekly": 45, "monthly": 150, "quarterly": 420,
+                    "annual": 540}.get(spec.get("frequency", "daily"), 10)
+        return (datetime.strptime(last, "%Y-%m-%d").date() - timedelta(days=lookback)).isoformat()
 
     def ingest_indicators(self, mode: str = "incremental",
                           providers: Sequence[str] | None = None) -> IngestStats:
@@ -274,6 +278,12 @@ class Ingestor:
 
     # --------------------------------------------------------------------- run
     def run(self, mode: str = "daily") -> dict[str, Any]:
+        """Run price + indicator ingestion and return an explicit status.
+
+        ``status`` is ``ok`` / ``partial`` / ``failed``. A failed price ingest is
+        NEVER downgraded to a warning: the pipeline uses this status to block
+        scans on stale data (P1-07).
+        """
         self.register_metadata()
         out: dict[str, Any] = {}
         try:
@@ -284,4 +294,16 @@ class Ingestor:
             out["indicators"] = self.ingest_indicators(mode=mode).to_dict()
         except IngestError as exc:
             out["indicators_error"] = str(exc)
+        price_ok = "prices_error" not in out and int((out.get("prices") or {}).get("rows", 0)) > 0
+        ind_ok = "indicators_error" not in out and int((out.get("indicators") or {}).get("rows", 0)) > 0
+        if not price_ok and not ind_ok:
+            out["status"] = "failed"
+        elif not price_ok:
+            out["status"] = "failed"          # prices are critical
+        elif not ind_ok:
+            out["status"] = "partial"         # macro/positioning degraded, disclosed
+        else:
+            out["status"] = "ok"
+        out["price_ok"] = price_ok
+        out["indicator_ok"] = ind_ok
         return out
