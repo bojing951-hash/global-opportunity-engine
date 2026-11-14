@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Global Opportunity Engine handoff envelope",
+  "version": "1.0",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "engine",
+    "provenance",
+    "opportunity"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "engine": {
+      "type": "object",
+      "required": [
+        "name",
+        "version",
+        "scan_id",
+        "as_of",
+        "generated_at"
+      ],
+      "properties": {
+        "name": {
+          "const": "global-opportunity-engine"
+        },
+        "version": {
+          "type": "string"
+        },
+        "scan_id": {
+          "type": "string"
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date"
+        },
+        "generated_at": {
+          "type": "string"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "config_hash": {
+          "type": "string"
+        },
+        "data_hash": {
+          "type": "string"
+        },
+        "db_path": {
+          "type": "string"
+        },
+        "disclaimer": {
+          "type": "string"
+        }
+      }
+    },
+    "opportunity": {
+      "type": "object",
+      "required": [
+        "opportunity_id",
+        "fingerprint",
+        "status",
+        "score",
+        "title",
+        "instruments",
+        "discovery",
+        "evidence_for",
+        "evidence_against",
+        "open_questions",
+        "invalidation",
+        "research_question"
+      ],
+      "properties": {
+        "opportunity_id": {
+          "type": "string"
+        },
+        "fingerprint": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "new",
+            "watch",
+            "deep_research",
+            "low_priority",
+            "excluded",
+            "expired",
+            "invalidated",
+            "archived"
+          ]
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "score_breakdown": {
+          "type": "object"
+        },
+        "archetype": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "market": {
+          "type": "string"
+        },
+        "asset_class": {
+          "type": "string"
+        },
+        "horizon": {
+          "type": "string"
+        },
+        "instruments": {
+          "type": "array"
+        },
+        "discovery": {
+          "type": "object"
+        },
+        "mechanism": {
+          "type": "object"
+        },
+        "evidence_for": {
+          "type": "array"
+        },
+        "evidence_against": {
+          "type": "array"
+        },
+        "catalysts": {
+          "type": "array"
+        },
+        "open_questions": {
+          "type": "array"
+        },
+        "invalidation": {
+          "type": "string"
+        },
+        "data_quality": {
+          "type": "object"
+        },
+        "research_question": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

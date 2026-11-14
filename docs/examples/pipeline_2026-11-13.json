@@ -3,25 +3,27 @@
   "engine": {
     "name": "global-opportunity-engine",
     "version": "0.1.0",
-    "scan_id": "scan-20261113T153026Z-557681",
+    "scan_id": "scan-20261114T064041Z-5f4fdf",
     "as_of": "2026-11-13",
-    "generated_at": "2026-11-13T15:30:35Z"
+    "generated_at": "2026-11-14T06:42:51Z"
   },
   "provenance": {
-    "config_hash": "ebd1d09abef9fc0296a9e9715168964a4b3e1d2f55a104c75abc3851f0bcdf57",
+    "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
     "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6"
   },
   "summary": {
-    "n_opportunities": 15,
+    "n_opportunities": 11,
     "by_status": {
-      "deep_research": 2,
+      "excluded": 5,
+      "invalidated": 1,
       "low_priority": 2,
-      "watch": 11
+      "watch": 3
     },
     "by_archetype": {
       "event_revision": 4,
+      "mechanism_breakdown": 1,
       "price_fundamental_divergence": 5,
-      "regime_repricing": 6
+      "regime_repricing": 1
     }
   },
   "opportunities": [
@@ -30,78 +32,1139 @@
       "engine": {
         "name": "global-opportunity-engine",
         "version": "0.1.0",
-        "scan_id": "scan-20261113T153026Z-557681",
+        "scan_id": "scan-20261114T064041Z-5f4fdf",
         "as_of": "2026-11-13",
-        "generated_at": "2026-11-13T15:30:35Z"
+        "generated_at": "2026-11-14T06:42:51Z"
       },
       "provenance": {
-        "config_hash": "ebd1d09abef9fc0296a9e9715168964a4b3e1d2f55a104c75abc3851f0bcdf57",
+        "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
         "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
-        "db_path": "<repo>/data/goe.db",
+        "db_path": "data/goe.db",
         "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
       },
       "opportunity": {
         "opportunity_id": "OPP-0001",
-        "fingerprint": "FP-4f4f72215ec88aad",
-        "status": "deep_research",
-        "score": 0.7042,
+        "fingerprint": "FP-1e324ab4ec183c84",
+        "status": "watch",
+        "score": 0.6056,
         "score_breakdown": {
-          "anomaly_strength": 1.0,
-          "economic_impact": 0.7333,
-          "expectation_gap": 0.336,
-          "repricing_potential": 0.9133,
+          "anomaly_strength": 0.9205,
+          "economic_impact": 0.68,
+          "expectation_gap": 0.4074,
+          "repricing_potential": 0.2573,
           "catalyst": 0.1,
           "timing_window": 1.0,
           "risk_liquidity": 1.0,
-          "evidence_quality": 0.7568
+          "evidence_quality": 0.6392
         },
-        "archetype": "regime_repricing",
-        "title": "实际利率—美元—全球配置 Real rates, the dollar and global allocation：COMEX Gold front month 可能处于重定价窗口",
-        "market": "WORLD",
-        "asset_class": "commodity",
-        "horizon": "3-12m",
+        "archetype": "event_revision",
+        "title": "美国 政策变化后的重定价：SPDR S&P 500 ETF（US_POLICY_RATE hike）",
+        "market": "US",
+        "asset_class": "equity_etf",
+        "horizon": "1w-1m",
         "instruments": [
           {
-            "id": "CM_MET_GC",
-            "name": "COMEX Gold front month",
-            "symbol": "GC=F",
-            "asset_class": "commodity",
-            "region": "WORLD",
+            "id": "US_EQ_SPY",
+            "name": "SPDR S&P 500 ETF",
+            "symbol": "SPY",
+            "asset_class": "equity_etf",
+            "region": "US",
             "role": "primary",
             "importance": 1.0,
             "liquidity": "very_high"
           }
         ],
         "discovery": {
-          "what": "宏观机制 M01_REAL_RATES_USD_ALLOCATION（实际利率—美元—全球配置 Real rates, the dollar and global allocation）的触发变量出现异常，COMEX Gold front month 是被机制映射的受影响资产。",
-          "why_now": "机制置信度 0.56，状态 mixed；资产 1 个月收益 -6.5%。",
-          "hypothesis": "实际利率—美元—全球配置 Real rates, the dollar and global allocation 若继续演进，COMEX Gold front month 的定价假设需要重新检验。",
+          "what": "US policy rate (Fed funds target mid-point) 出现 hike（+0.25），同期 SPDR S&P 500 ETF 近 1 个月收益 -1.6% 并出现异常。",
+          "why_now": "政策操作可用日 2026-10-16；区域内股权资产在随后窗口出现异常。",
+          "hypothesis": "若政策变化未被充分定价，相关资产存在重新定价空间；若已被提前定价或基本面未响应，该假设不成立。",
           "anomalies": [
             {
-              "id": "AN-17d530b0339ad0",
-              "detector": "drawdown_extreme",
-              "direction": "deep_drawdown",
-              "score": 1.0,
-              "role": "asset"
-            },
-            {
-              "id": "AN-668d5acaa09ac9",
+              "id": "AN-97d161d8217662",
               "detector": "price_return_shock",
               "direction": "down",
-              "score": 0.1894040029486096,
-              "role": "asset"
-            },
+              "score": 0.9204992539944108
+            }
+          ],
+          "expectation_gap": {
+            "value": 0.4074,
+            "confidence": 0.75,
+            "available": [
+              "positioning",
+              "residual_divergence"
+            ],
+            "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+            "components": {
+              "positioning": {
+                "name": "positioning",
+                "value": 0.3977,
+                "weight": 0.35,
+                "source": "cftc",
+                "reason": null,
+                "evidence": {
+                  "positioning_series": "POS_SP500_LEV",
+                  "net_pctile_5y": 0.3012,
+                  "as_of_report": "2026-11-07",
+                  "meaning": "净头寸相对 5 年分布的单边程度"
+                }
+              },
+              "valuation": {
+                "name": "valuation",
+                "value": null,
+                "weight": 0.25,
+                "source": "shiller",
+                "reason": "CAPE 数据过期或不可用（不向前填充）",
+                "evidence": {}
+              },
+              "residual_divergence": {
+                "name": "residual_divergence",
+                "value": 0.6705,
+                "weight": 0.4,
+                "source": "derived",
+                "reason": null,
+                "evidence": {
+                  "kind": "equity",
+                  "drivers": [
+                    "market",
+                    "dollar",
+                    "rates"
+                  ],
+                  "r2": 0.7394,
+                  "n_obs": 74,
+                  "residual_z": -2.506,
+                  "residual": -0.0532,
+                  "actual_return": -0.0162,
+                  "predicted_return": 0.037,
+                  "sign_consistent": true,
+                  "as_of_return_date": "2026-11-12",
+                  "lag_days": 1,
+                  "history_start": "2020-06-11",
+                  "meaning": "1 个月实际收益中无法由市场/美元/利率解释的部分（同向且 |z|>=1.5 才计分）"
+                }
+              }
+            }
+          },
+          "mechanism_assets": 1,
+          "data_quality_gaps": [
+            "缺少政策事件的一致预期与期权隐含分布"
+          ],
+          "policy_series": "US_POLICY_RATE",
+          "policy_change": 0.25,
+          "theme": "us_equity_broad",
+          "expectation_gap_used": {
+            "value": 0.4074,
+            "confidence": 0.75,
+            "available": "True"
+          },
+          "invalidation_checks": []
+        },
+        "mechanism": {
+          "id": null,
+          "chain": [
+            "政策利率/操作变化",
+            "流动性/贴现率变化",
+            "风险溢价与估值重估",
+            "资产价格"
+          ],
+          "confidence": 0.3,
+          "causal_status": "hypothesis",
+          "conditions": [
+            "政策传导未被提前定价",
+            "信用/流动性渠道畅通"
+          ],
+          "identification": "事件研究法无法排除同期其他冲击；相关性不等于因果。"
+        },
+        "evidence_for": [
+          {
+            "claim": "观测到政策利率/操作变化：US policy rate (Fed funds target mid-point)",
+            "evidence": "US_POLICY_RATE 变动 +0.25（方向 hike），可用日 2026-10-16；来源 BIS 政策利率序列",
+            "source": "bis",
+            "tier": "official",
+            "as_of": "2026-10-16",
+            "strength": "strong"
+          },
+          {
+            "claim": "政策变化窗口内资产异常：price_return_shock",
+            "evidence": "down，强度 0.92，可用日 2026-11-05",
+            "source": "engine",
+            "tier": "derived",
+            "as_of": "2026-11-05",
+            "strength": "moderate"
+          }
+        ],
+        "evidence_against": [
+          {
+            "claim": "政策变化可能已被提前定价",
+            "evidence": "缺少期权隐含分布与一致预期；若市场已提前计入，事件本身不构成新信息。",
+            "source": "data_gap",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          }
+        ],
+        "catalysts": [
+          {
+            "id": "POLICY_US_POLICY_RATE_2026-10-16",
+            "date": "2026-10-16",
+            "title": "US policy rate (Fed funds target mid-point) hike",
+            "type": "central_bank",
+            "verified": true,
+            "source": "bis"
+          }
+        ],
+        "open_questions": [
+          "市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。",
+          "事件前是否已出现抢跑定价（价格/仓位提前移动）？",
+          "若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？"
+        ],
+        "invalidation": "若事件后 20 个交易日内资产未出现显著重定价，或政策被撤回/逆转，则线索失效。",
+        "data_quality": {
+          "score": 0.7,
+          "gaps": [
+            "缺少事件一致预期与期权隐含分布"
+          ]
+        },
+        "research_question": "【全球机会引擎研究任务】OPP-0001（event_revision，US，equity_etf，研究周期 1w-1m）\n研究对象：SPDR S&P 500 ETF(SPY)\n现象：US policy rate (Fed funds target mid-point) 出现 hike（+0.25），同期 SPDR S&P 500 ETF 近 1 个月收益 -1.6% 并出现异常。\n待检验假设：若政策变化未被充分定价，相关资产存在重新定价空间；若已被提前定价或基本面未响应，该假设不成立。\n初步传导逻辑：政策利率/操作变化 → 流动性/贴现率变化 → 风险溢价与估值重估 → 资产价格（置信度 0.30，条件：政策传导未被提前定价；信用/流动性渠道畅通）\n支持证据：观测到政策利率/操作变化：US policy rate (Fed funds target mid-point): US_POLICY_RATE 变动 +0.25（方向 hike），可用日 2026-10-16；来源 BIS 政策利率序列；政策变化窗口内资产异常：price_return_shock: down，强度 0.92，可用日 2026-11-05\n反对证据：政策变化可能已被提前定价: 缺少期权隐含分布与一致预期；若市场已提前计入，事件本身不构成新信息。\n失效条件：若事件后 20 个交易日内资产未出现显著重定价，或政策被撤回/逆转，则线索失效。\n需要回答：市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。；事件前是否已出现抢跑定价（价格/仓位提前移动）？；若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "engine": {
+        "name": "global-opportunity-engine",
+        "version": "0.1.0",
+        "scan_id": "scan-20261114T064041Z-5f4fdf",
+        "as_of": "2026-11-13",
+        "generated_at": "2026-11-14T06:42:51Z"
+      },
+      "provenance": {
+        "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
+        "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+        "db_path": "data/goe.db",
+        "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+      },
+      "opportunity": {
+        "opportunity_id": "OPP-0002",
+        "fingerprint": "FP-b761ac3cb002fc60",
+        "status": "watch",
+        "score": 0.5927,
+        "score_breakdown": {
+          "anomaly_strength": 0.867,
+          "economic_impact": 0.68,
+          "expectation_gap": 0.1748,
+          "repricing_potential": 0.2192,
+          "catalyst": 0.6,
+          "timing_window": 1.0,
+          "risk_liquidity": 1.0,
+          "evidence_quality": 0.6392
+        },
+        "archetype": "event_revision",
+        "title": "ICE US Dollar Index (DXY spot)：临近「US Employment Situation (November 2026)」，已出现异常变化（事件驱动的预期修正线索）",
+        "market": "US",
+        "asset_class": "fx",
+        "horizon": "1w-1m",
+        "instruments": [
+          {
+            "id": "US_FX_DXY",
+            "name": "ICE US Dollar Index (DXY spot)",
+            "symbol": "DX-Y.NYB",
+            "asset_class": "fx",
+            "region": "US",
+            "role": "primary",
+            "importance": 1.0,
+            "liquidity": "very_high"
+          }
+        ],
+        "discovery": {
+          "what": "ICE US Dollar Index (DXY spot) 在事件「US Employment Situation (November 2026)」（2026-12-04）前出现 2 项异常。",
+          "why_now": "事件可能迫使市场重新评估政策路径或数据结果，从而修正预期。",
+          "hypothesis": "若事件结果与当前定价隐含预期不一致，可能出现快速重定价；事件前异常是关注线索而非方向判断。",
+          "expectation_gap": {
+            "value": 0.1748,
+            "confidence": 0.4667,
+            "available": [
+              "positioning"
+            ],
+            "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+            "components": {
+              "positioning": {
+                "name": "positioning",
+                "value": 0.3745,
+                "weight": 0.35,
+                "source": "cftc",
+                "reason": null,
+                "evidence": {
+                  "positioning_series": "POS_USD_LEV",
+                  "net_pctile_5y": 0.6873,
+                  "as_of_report": "2026-11-07",
+                  "meaning": "净头寸相对 5 年分布的单边程度"
+                }
+              },
+              "valuation": {
+                "name": "valuation",
+                "value": null,
+                "weight": 0.25,
+                "source": "shiller",
+                "reason": "该资产没有可比的估值序列（仅覆盖美国宽基）",
+                "evidence": {
+                  "theme": "usd"
+                }
+              },
+              "residual_divergence": {
+                "name": "residual_divergence",
+                "value": null,
+                "weight": 0.4,
+                "source": "derived",
+                "reason": "没有可用的解释变量",
+                "evidence": {
+                  "kind": "unsupported"
+                }
+              }
+            }
+          },
+          "mechanism_assets": 1,
+          "data_quality_gaps": [],
+          "theme": "usd",
+          "anomalies": [
             {
               "id": "AN-1666451f83e571",
               "detector": "drawdown_extreme",
               "direction": "near_high",
-              "score": 0.8669579030976967,
+              "score": 0.8669579030976967
+            },
+            {
+              "id": "AN-c97be1cddbd9a9",
+              "detector": "relative_strength_extreme",
+              "direction": "outperform",
+              "score": 0.03632867893773003
+            }
+          ],
+          "expectation_gap_used": {
+            "value": 0.1748,
+            "confidence": 0.4667,
+            "available": "True"
+          },
+          "invalidation_checks": []
+        },
+        "mechanism": {
+          "id": null,
+          "chain": [
+            "事件结果",
+            "预期修正",
+            "资产重定价"
+          ],
+          "confidence": 0.3,
+          "causal_status": "hypothesis",
+          "conditions": [
+            "事件结果存在不确定性",
+            "市场已提前定价部分结果"
+          ],
+          "identification": "事件研究法的标准识别问题：无法区分事件效应与其他同时发生的冲击。"
+        },
+        "evidence_for": [
+          {
+            "claim": "事件临近：US Employment Situation (November 2026)（2026-12-04）",
+            "evidence": "事件类型 labour，影响资产包含 US_FX_DXY；来源 已核验。",
+            "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+            "tier": "official",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "事件前已出现 drawdown_extreme 异常",
+            "evidence": "near_high，强度 0.87，发生于 2026-11-11",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-11",
+            "strength": "moderate"
+          },
+          {
+            "claim": "事件前已出现 relative_strength_extreme 异常",
+            "evidence": "outperform，强度 0.04，发生于 2026-11-12",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-12",
+            "strength": "moderate"
+          }
+        ],
+        "evidence_against": [
+          {
+            "claim": "事件可能已被充分定价",
+            "evidence": "缺少期权隐含分布与一致预期数据，无法判断预期差大小。",
+            "source": "data_gap",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          }
+        ],
+        "catalysts": [
+          {
+            "id": "US_EMPSIT_2026_12_04",
+            "date": "2026-12-04",
+            "type": "labour",
+            "title": "US Employment Situation (November 2026)",
+            "verified": true,
+            "source": "https://www.bls.gov/schedule/news_release/empsit.htm"
+          }
+        ],
+        "open_questions": [
+          "市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。",
+          "事件前是否已出现抢跑定价（价格/仓位提前移动）？",
+          "若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？"
+        ],
+        "invalidation": "若事件日期已过且无显著价格/波动反应，或事件被取消/推迟，则线索失效。",
+        "data_quality": {
+          "score": 0.7,
+          "gaps": [
+            "缺少期权隐含分布与事件一致预期"
+          ]
+        },
+        "research_question": "【全球机会引擎研究任务】OPP-0002（event_revision，US，fx，研究周期 1w-1m）\n研究对象：ICE US Dollar Index (DXY spot)(DX-Y.NYB)\n现象：ICE US Dollar Index (DXY spot) 在事件「US Employment Situation (November 2026)」（2026-12-04）前出现 2 项异常。\n待检验假设：若事件结果与当前定价隐含预期不一致，可能出现快速重定价；事件前异常是关注线索而非方向判断。\n初步传导逻辑：事件结果 → 预期修正 → 资产重定价（置信度 0.30，条件：事件结果存在不确定性；市场已提前定价部分结果）\n支持证据：事件临近：US Employment Situation (November 2026)（2026-12-04）: 事件类型 labour，影响资产包含 US_FX_DXY；来源 已核验。；事件前已出现 drawdown_extreme 异常: near_high，强度 0.87，发生于 2026-11-11；事件前已出现 relative_strength_extreme 异常: outperform，强度 0.04，发生于 2026-11-12\n反对证据：事件可能已被充分定价: 缺少期权隐含分布与一致预期数据，无法判断预期差大小。\n失效条件：若事件日期已过且无显著价格/波动反应，或事件被取消/推迟，则线索失效。\n需要回答：市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。；事件前是否已出现抢跑定价（价格/仓位提前移动）？；若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "engine": {
+        "name": "global-opportunity-engine",
+        "version": "0.1.0",
+        "scan_id": "scan-20261114T064041Z-5f4fdf",
+        "as_of": "2026-11-13",
+        "generated_at": "2026-11-14T06:42:51Z"
+      },
+      "provenance": {
+        "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
+        "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+        "db_path": "data/goe.db",
+        "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+      },
+      "opportunity": {
+        "opportunity_id": "OPP-0003",
+        "fingerprint": "FP-87e0f21b6e2d152d",
+        "status": "watch",
+        "score": 0.5477,
+        "score_breakdown": {
+          "anomaly_strength": 0.9841,
+          "economic_impact": 0.56,
+          "expectation_gap": 0.3143,
+          "repricing_potential": 0.1058,
+          "catalyst": 0.1,
+          "timing_window": 1.0,
+          "risk_liquidity": 0.775,
+          "evidence_quality": 0.6392
+        },
+        "archetype": "event_revision",
+        "title": "日本 政策变化后的重定价：Nikkei 225（JP_POLICY_RATE hike）",
+        "market": "JP",
+        "asset_class": "equity_index",
+        "horizon": "1w-1m",
+        "instruments": [
+          {
+            "id": "JP_EQ_N225",
+            "name": "Nikkei 225",
+            "symbol": "^N225",
+            "asset_class": "equity_index",
+            "region": "JP",
+            "role": "primary",
+            "importance": 0.8,
+            "liquidity": "high"
+          }
+        ],
+        "discovery": {
+          "what": "Bank of Japan policy rate 出现 hike（+0.25），同期 Nikkei 225 近 1 个月收益 -9.7% 并出现异常。",
+          "why_now": "政策操作可用日 2026-10-16；区域内股权资产在随后窗口出现异常。",
+          "hypothesis": "若政策变化未被充分定价，相关资产存在重新定价空间；若已被提前定价或基本面未响应，该假设不成立。",
+          "anomalies": [
+            {
+              "id": "AN-226370fa9730a8",
+              "detector": "drawdown_extreme",
+              "direction": "deep_drawdown",
+              "score": 0.9841143764892772
+            },
+            {
+              "id": "AN-cf3d8c6bde63f8",
+              "detector": "price_return_shock",
+              "direction": "down",
+              "score": 0.28706435480543324
+            },
+            {
+              "id": "AN-567779a658bb87",
+              "detector": "price_return_shock",
+              "direction": "down",
+              "score": 0.537079997039705
+            }
+          ],
+          "expectation_gap": {
+            "value": 0.3143,
+            "confidence": 0.4,
+            "available": [
+              "residual_divergence"
+            ],
+            "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+            "components": {
+              "positioning": {
+                "name": "positioning",
+                "value": null,
+                "weight": 0.35,
+                "source": "cftc",
+                "reason": "该资产无映射的 CFTC 持仓市场",
+                "evidence": {}
+              },
+              "valuation": {
+                "name": "valuation",
+                "value": null,
+                "weight": 0.25,
+                "source": "shiller",
+                "reason": "该资产没有可比的估值序列（仅覆盖美国宽基）",
+                "evidence": {
+                  "theme": "japan_equity"
+                }
+              },
+              "residual_divergence": {
+                "name": "residual_divergence",
+                "value": 0.7857,
+                "weight": 0.4,
+                "source": "derived",
+                "reason": null,
+                "evidence": {
+                  "kind": "equity",
+                  "drivers": [
+                    "market",
+                    "dollar",
+                    "rates",
+                    "jpy"
+                  ],
+                  "r2": 0.7928,
+                  "n_obs": 65,
+                  "residual_z": -2.679,
+                  "residual": -0.0623,
+                  "actual_return": -0.1022,
+                  "predicted_return": -0.0399,
+                  "sign_consistent": true,
+                  "as_of_return_date": "2026-11-12",
+                  "lag_days": 1,
+                  "history_start": "2020-06-11",
+                  "meaning": "1 个月实际收益中无法由市场/美元/利率解释的部分（同向且 |z|>=1.5 才计分）"
+                }
+              }
+            }
+          },
+          "mechanism_assets": 1,
+          "data_quality_gaps": [
+            "缺少政策事件的一致预期与期权隐含分布"
+          ],
+          "policy_series": "JP_POLICY_RATE",
+          "policy_change": 0.25,
+          "theme": "japan_equity",
+          "expectation_gap_used": {
+            "value": 0.3143,
+            "confidence": 0.4,
+            "available": "True"
+          },
+          "invalidation_checks": []
+        },
+        "mechanism": {
+          "id": null,
+          "chain": [
+            "政策利率/操作变化",
+            "流动性/贴现率变化",
+            "风险溢价与估值重估",
+            "资产价格"
+          ],
+          "confidence": 0.3,
+          "causal_status": "hypothesis",
+          "conditions": [
+            "政策传导未被提前定价",
+            "信用/流动性渠道畅通"
+          ],
+          "identification": "事件研究法无法排除同期其他冲击；相关性不等于因果。"
+        },
+        "evidence_for": [
+          {
+            "claim": "观测到政策利率/操作变化：Bank of Japan policy rate",
+            "evidence": "JP_POLICY_RATE 变动 +0.25（方向 hike），可用日 2026-10-16；来源 BIS 政策利率序列",
+            "source": "bis",
+            "tier": "official",
+            "as_of": "2026-10-16",
+            "strength": "strong"
+          },
+          {
+            "claim": "政策变化窗口内资产异常：price_return_shock",
+            "evidence": "down，强度 0.29，可用日 2026-10-15",
+            "source": "engine",
+            "tier": "derived",
+            "as_of": "2026-10-15",
+            "strength": "moderate"
+          },
+          {
+            "claim": "政策变化窗口内资产异常：price_return_shock",
+            "evidence": "down，强度 0.54，可用日 2026-11-06",
+            "source": "engine",
+            "tier": "derived",
+            "as_of": "2026-11-06",
+            "strength": "moderate"
+          }
+        ],
+        "evidence_against": [
+          {
+            "claim": "政策变化可能已被提前定价",
+            "evidence": "缺少期权隐含分布与一致预期；若市场已提前计入，事件本身不构成新信息。",
+            "source": "data_gap",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          }
+        ],
+        "catalysts": [
+          {
+            "id": "POLICY_JP_POLICY_RATE_2026-10-16",
+            "date": "2026-10-16",
+            "title": "Bank of Japan policy rate hike",
+            "type": "central_bank",
+            "verified": true,
+            "source": "bis"
+          }
+        ],
+        "open_questions": [
+          "市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。",
+          "事件前是否已出现抢跑定价（价格/仓位提前移动）？",
+          "若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？"
+        ],
+        "invalidation": "若事件后 20 个交易日内资产未出现显著重定价，或政策被撤回/逆转，则线索失效。",
+        "data_quality": {
+          "score": 0.6999999999999998,
+          "gaps": [
+            "缺少事件一致预期与期权隐含分布"
+          ]
+        },
+        "research_question": "【全球机会引擎研究任务】OPP-0003（event_revision，JP，equity_index，研究周期 1w-1m）\n研究对象：Nikkei 225(^N225)\n现象：Bank of Japan policy rate 出现 hike（+0.25），同期 Nikkei 225 近 1 个月收益 -9.7% 并出现异常。\n待检验假设：若政策变化未被充分定价，相关资产存在重新定价空间；若已被提前定价或基本面未响应，该假设不成立。\n初步传导逻辑：政策利率/操作变化 → 流动性/贴现率变化 → 风险溢价与估值重估 → 资产价格（置信度 0.30，条件：政策传导未被提前定价；信用/流动性渠道畅通）\n支持证据：观测到政策利率/操作变化：Bank of Japan policy rate: JP_POLICY_RATE 变动 +0.25（方向 hike），可用日 2026-10-16；来源 BIS 政策利率序列；政策变化窗口内资产异常：price_return_shock: down，强度 0.29，可用日 2026-10-15；政策变化窗口内资产异常：price_return_shock: down，强度 0.54，可用日 2026-11-06\n反对证据：政策变化可能已被提前定价: 缺少期权隐含分布与一致预期；若市场已提前计入，事件本身不构成新信息。\n失效条件：若事件后 20 个交易日内资产未出现显著重定价，或政策被撤回/逆转，则线索失效。\n需要回答：市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。；事件前是否已出现抢跑定价（价格/仓位提前移动）？；若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "engine": {
+        "name": "global-opportunity-engine",
+        "version": "0.1.0",
+        "scan_id": "scan-20261114T064041Z-5f4fdf",
+        "as_of": "2026-11-13",
+        "generated_at": "2026-11-14T06:42:51Z"
+      },
+      "provenance": {
+        "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
+        "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+        "db_path": "data/goe.db",
+        "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+      },
+      "opportunity": {
+        "opportunity_id": "OPP-0004",
+        "fingerprint": "FP-0e92266752488523",
+        "status": "low_priority",
+        "score": 0.5194,
+        "score_breakdown": {
+          "anomaly_strength": 0.7617,
+          "economic_impact": 0.5,
+          "expectation_gap": 0.2452,
+          "repricing_potential": 0.4831,
+          "catalyst": 0.1,
+          "timing_window": 1.0,
+          "risk_liquidity": 0.775,
+          "evidence_quality": 0.6392
+        },
+        "archetype": "event_revision",
+        "title": "DAX 40：临近「ECB Governing Council rate decision (December 2026)」，已出现异常变化（事件驱动的预期修正线索）",
+        "market": "DE",
+        "asset_class": "equity_index",
+        "horizon": "1w-1m",
+        "instruments": [
+          {
+            "id": "DE_EQ_DAX",
+            "name": "DAX 40",
+            "symbol": "^GDAXI",
+            "asset_class": "equity_index",
+            "region": "DE",
+            "role": "primary",
+            "importance": 0.7,
+            "liquidity": "high"
+          }
+        ],
+        "discovery": {
+          "what": "DAX 40 在事件「ECB Governing Council rate decision (December 2026)」（2026-12-17）前出现 1 项异常。",
+          "why_now": "事件可能迫使市场重新评估政策路径或数据结果，从而修正预期。",
+          "hypothesis": "若事件结果与当前定价隐含预期不一致，可能出现快速重定价；事件前异常是关注线索而非方向判断。",
+          "expectation_gap": {
+            "value": 0.2452,
+            "confidence": 0.4,
+            "available": [
+              "residual_divergence"
+            ],
+            "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+            "components": {
+              "positioning": {
+                "name": "positioning",
+                "value": null,
+                "weight": 0.35,
+                "source": "cftc",
+                "reason": "该资产无映射的 CFTC 持仓市场",
+                "evidence": {}
+              },
+              "valuation": {
+                "name": "valuation",
+                "value": null,
+                "weight": 0.25,
+                "source": "shiller",
+                "reason": "该资产没有可比的估值序列（仅覆盖美国宽基）",
+                "evidence": {
+                  "theme": "germany_equity"
+                }
+              },
+              "residual_divergence": {
+                "name": "residual_divergence",
+                "value": 0.6129,
+                "weight": 0.4,
+                "source": "derived",
+                "reason": null,
+                "evidence": {
+                  "kind": "equity",
+                  "drivers": [
+                    "market",
+                    "dollar",
+                    "rates"
+                  ],
+                  "r2": 0.5301,
+                  "n_obs": 72,
+                  "residual_z": 2.419,
+                  "residual": 0.0735,
+                  "actual_return": 0.0582,
+                  "predicted_return": -0.0152,
+                  "sign_consistent": true,
+                  "as_of_return_date": "2026-11-12",
+                  "lag_days": 1,
+                  "history_start": "2020-06-11",
+                  "meaning": "1 个月实际收益中无法由市场/美元/利率解释的部分（同向且 |z|>=1.5 才计分）"
+                }
+              }
+            }
+          },
+          "mechanism_assets": 1,
+          "data_quality_gaps": [],
+          "theme": "germany_equity",
+          "anomalies": [
+            {
+              "id": "AN-d92e2cbedecc68",
+              "detector": "drawdown_extreme",
+              "direction": "near_high",
+              "score": 0.7617156473391581
+            }
+          ],
+          "expectation_gap_used": {
+            "value": 0.2452,
+            "confidence": 0.4,
+            "available": "True"
+          },
+          "invalidation_checks": []
+        },
+        "mechanism": {
+          "id": null,
+          "chain": [
+            "事件结果",
+            "预期修正",
+            "资产重定价"
+          ],
+          "confidence": 0.3,
+          "causal_status": "hypothesis",
+          "conditions": [
+            "事件结果存在不确定性",
+            "市场已提前定价部分结果"
+          ],
+          "identification": "事件研究法的标准识别问题：无法区分事件效应与其他同时发生的冲击。"
+        },
+        "evidence_for": [
+          {
+            "claim": "事件临近：ECB Governing Council rate decision (December 2026)（2026-12-17）",
+            "evidence": "事件类型 central_bank，影响资产包含 DE_EQ_DAX；来源 已核验。",
+            "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+            "tier": "official",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "事件前已出现 drawdown_extreme 异常",
+            "evidence": "near_high，强度 0.76，发生于 2026-11-11",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-11",
+            "strength": "moderate"
+          }
+        ],
+        "evidence_against": [
+          {
+            "claim": "事件可能已被充分定价",
+            "evidence": "缺少期权隐含分布与一致预期数据，无法判断预期差大小。",
+            "source": "data_gap",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          }
+        ],
+        "catalysts": [
+          {
+            "id": "ECB_2026_12_17",
+            "date": "2026-12-17",
+            "type": "central_bank",
+            "title": "ECB Governing Council rate decision (December 2026)",
+            "verified": true,
+            "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html"
+          }
+        ],
+        "open_questions": [
+          "市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。",
+          "事件前是否已出现抢跑定价（价格/仓位提前移动）？",
+          "若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？"
+        ],
+        "invalidation": "若事件日期已过且无显著价格/波动反应，或事件被取消/推迟，则线索失效。",
+        "data_quality": {
+          "score": 0.7,
+          "gaps": [
+            "缺少期权隐含分布与事件一致预期"
+          ]
+        },
+        "research_question": "【全球机会引擎研究任务】OPP-0004（event_revision，DE，equity_index，研究周期 1w-1m）\n研究对象：DAX 40(^GDAXI)\n现象：DAX 40 在事件「ECB Governing Council rate decision (December 2026)」（2026-12-17）前出现 1 项异常。\n待检验假设：若事件结果与当前定价隐含预期不一致，可能出现快速重定价；事件前异常是关注线索而非方向判断。\n初步传导逻辑：事件结果 → 预期修正 → 资产重定价（置信度 0.30，条件：事件结果存在不确定性；市场已提前定价部分结果）\n支持证据：事件临近：ECB Governing Council rate decision (December 2026)（2026-12-17）: 事件类型 central_bank，影响资产包含 DE_EQ_DAX；来源 已核验。；事件前已出现 drawdown_extreme 异常: near_high，强度 0.76，发生于 2026-11-11\n反对证据：事件可能已被充分定价: 缺少期权隐含分布与一致预期数据，无法判断预期差大小。\n失效条件：若事件日期已过且无显著价格/波动反应，或事件被取消/推迟，则线索失效。\n需要回答：市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。；事件前是否已出现抢跑定价（价格/仓位提前移动）？；若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "engine": {
+        "name": "global-opportunity-engine",
+        "version": "0.1.0",
+        "scan_id": "scan-20261114T064041Z-5f4fdf",
+        "as_of": "2026-11-13",
+        "generated_at": "2026-11-14T06:42:51Z"
+      },
+      "provenance": {
+        "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
+        "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+        "db_path": "data/goe.db",
+        "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+      },
+      "opportunity": {
+        "opportunity_id": "OPP-0005",
+        "fingerprint": "FP-52dcbbe0b6e89d27",
+        "status": "low_priority",
+        "score": 0.4775,
+        "score_breakdown": {
+          "anomaly_strength": 0.6575,
+          "economic_impact": 0.5444,
+          "expectation_gap": 0.3261,
+          "repricing_potential": 0.048,
+          "catalyst": 0.1,
+          "timing_window": 1.0,
+          "risk_liquidity": 1.0,
+          "evidence_quality": 0.5642
+        },
+        "archetype": "mechanism_breakdown",
+        "title": "日元套息交易与全球去杠杆 Japan carry trade and global deleveraging：历史传导关系失效（USD/JPY）",
+        "market": "JP",
+        "asset_class": "fx",
+        "horizon": "1-6m",
+        "instruments": [
+          {
+            "id": "GX_FX_USDJPY",
+            "name": "USD/JPY",
+            "symbol": "USDJPY=X",
+            "asset_class": "fx",
+            "region": "JP",
+            "role": "primary",
+            "importance": 0.85,
+            "liquidity": "very_high"
+          }
+        ],
+        "discovery": {
+          "what": "机制 M14_JAPAN_CARRY_UNWIND 的核心检验失败（3 项），而其映射资产 USD/JPY 同期变动 +1.2%。",
+          "why_now": "2026-11-13 可用数据下机制状态为 unsupported（confidence 0.05）。",
+          "hypothesis": "若历史传导关系发生结构性变化，旧的定价/对冲框架可能失效，值得研究新的驱动。",
+          "anomalies": [
+            {
+              "id": "AN-e2290b1ebfe2e8",
+              "detector": "relative_strength_extreme",
+              "direction": "outperform",
+              "score": 0.6574799449038601
+            }
+          ],
+          "expectation_gap": {
+            "value": 0.3261,
+            "confidence": 0.4667,
+            "available": [
+              "positioning"
+            ],
+            "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+            "components": {
+              "positioning": {
+                "name": "positioning",
+                "value": 0.6988,
+                "weight": 0.35,
+                "source": "cftc",
+                "reason": null,
+                "evidence": {
+                  "positioning_series": "POS_JPY_LEV",
+                  "net_pctile_5y": 0.8494,
+                  "as_of_report": "2026-11-07",
+                  "meaning": "净头寸相对 5 年分布的单边程度"
+                }
+              },
+              "valuation": {
+                "name": "valuation",
+                "value": null,
+                "weight": 0.25,
+                "source": "shiller",
+                "reason": "该资产没有可比的估值序列（仅覆盖美国宽基）",
+                "evidence": {
+                  "theme": "usdjpy"
+                }
+              },
+              "residual_divergence": {
+                "name": "residual_divergence",
+                "value": null,
+                "weight": 0.4,
+                "source": "derived",
+                "reason": "没有可用的解释变量",
+                "evidence": {
+                  "kind": "unsupported"
+                }
+              }
+            }
+          },
+          "mechanism_assets": 1,
+          "data_quality_gaps": [],
+          "theme": "usdjpy",
+          "mechanism_failed": true,
+          "expectation_gap_used": {
+            "value": 0.3261,
+            "confidence": 0.4667,
+            "available": "True"
+          },
+          "invalidation_checks": []
+        },
+        "mechanism": {
+          "id": "M14_JAPAN_CARRY_UNWIND",
+          "chain": [
+            "历史关系",
+            "检验失败",
+            "结构性变化待验证"
+          ],
+          "confidence": 0.05,
+          "causal_status": "hypothesis",
+          "conditions": [
+            "关系失效不是短期噪声",
+            "存在可识别的结构性原因"
+          ],
+          "identification": "negative test only; 不能由检验失败反推因果。"
+        },
+        "evidence_for": [
+          {
+            "claim": "机制 M14_JAPAN_CARRY_UNWIND 在历史检验中被证伪/不支持",
+            "evidence": "最大互相关出现在滞后 0 期（+0.16，p=1.000），领先关系不明显、不显著或方向相反。（不显著）；GX_FX_USDJPY 与 US_EQ_SPY 的滚动相关为 +0.04（期望符号 +1），近端窗口符号一致率 45%，样本 1693。（相关性过弱）；GX_FX_USDJPY 与 US_VOL_VIX 的滚动相关为 -0.06（期望符号 -1），近端窗口符号一致率 61%，样本 1693。（相关性过弱）",
+            "source": "mechanism_stats",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          },
+          {
+            "claim": "USD/JPY 近 1 个月出现可观察变化",
+            "evidence": "1 个月收益 +1.2%；当前异常 1 条",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          }
+        ],
+        "evidence_against": [
+          {
+            "claim": "关系失效可能是样本/方法假象",
+            "evidence": "滚动相关受重叠样本、制度变化与多重检验影响；本系统未做因果识别，失效不等于可交易。",
+            "source": "methodology",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          },
+          {
+            "claim": "关系可能只是暂时失效",
+            "evidence": "历史机制在压力期常出现短期脱钩，随后恢复；需要样本外确认。",
+            "source": "methodology",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          }
+        ],
+        "catalysts": [
+          {
+            "id": "BOJ_2026_12_18",
+            "date": "2026-12-18",
+            "type": "central_bank",
+            "title": "BoJ Monetary Policy Meeting decision (December 2026)",
+            "verified": true,
+            "source": "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm"
+          }
+        ],
+        "open_questions": [
+          "历史关系失效是结构性变化、样本期偶然，还是检验方法（重叠样本/多重检验）造成？",
+          "关系失效从哪一环开始：触发器、传导变量还是目标资产？",
+          "若关系恢复，恢复的条件是什么（政策制度、供给约束、市场结构）？"
+        ],
+        "invalidation": "若该机制的核心滚动相关在后续 60 个交易日内恢复原符号并达到阈值，则失效线索作废。",
+        "data_quality": {
+          "score": 0.7,
+          "gaps": [
+            "机制检验为描述性统计",
+            "无法识别结构断点"
+          ]
+        },
+        "research_question": "【全球机会引擎研究任务】OPP-0005（mechanism_breakdown，JP，fx，研究周期 1-6m）\n研究对象：USD/JPY(USDJPY=X)\n现象：机制 M14_JAPAN_CARRY_UNWIND 的核心检验失败（3 项），而其映射资产 USD/JPY 同期变动 +1.2%。\n待检验假设：若历史传导关系发生结构性变化，旧的定价/对冲框架可能失效，值得研究新的驱动。\n初步传导逻辑：历史关系 → 检验失败 → 结构性变化待验证（置信度 0.05，条件：关系失效不是短期噪声；存在可识别的结构性原因）\n支持证据：机制 M14_JAPAN_CARRY_UNWIND 在历史检验中被证伪/不支持: 最大互相关出现在滞后 0 期（+0.16，p=1.000），领先关系不明显、不显著或方向相反。（不显著）；GX_FX_USDJPY 与 US_EQ_SPY 的滚动相关为 +0.04（期望符号 +1），近端窗口符号一致率 45%，样本 1693。（相关性过弱）；GX_FX_USDJPY 与 US_VOL_VIX 的滚动相关为 -0.06（期望符号 -1），近端窗口符号一致率 61%，样本 1693。（相关性过弱）；USD/JPY 近 1 个月出现可观察变化: 1 个月收益 +1.2%；当前异常 1 条\n反对证据：关系失效可能是样本/方法假象: 滚动相关受重叠样本、制度变化与多重检验影响；本系统未做因果识别，失效不等于可交易。；关系可能只是暂时失效: 历史机制在压力期常出现短期脱钩，随后恢复；需要样本外确认。\n失效条件：若该机制的核心滚动相关在后续 60 个交易日内恢复原符号并达到阈值，则失效线索作废。\n需要回答：历史关系失效是结构性变化、样本期偶然，还是检验方法（重叠样本/多重检验）造成？；关系失效从哪一环开始：触发器、传导变量还是目标资产？；若关系恢复，恢复的条件是什么（政策制度、供给约束、市场结构）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "engine": {
+        "name": "global-opportunity-engine",
+        "version": "0.1.0",
+        "scan_id": "scan-20261114T064041Z-5f4fdf",
+        "as_of": "2026-11-13",
+        "generated_at": "2026-11-14T06:42:51Z"
+      },
+      "provenance": {
+        "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
+        "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+        "db_path": "data/goe.db",
+        "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+      },
+      "opportunity": {
+        "opportunity_id": "OPP-0006",
+        "fingerprint": "FP-cf20319a3039f693",
+        "status": "invalidated",
+        "score": 0.4387,
+        "score_breakdown": {
+          "anomaly_strength": 0.4907,
+          "economic_impact": 0.592,
+          "expectation_gap": 0.1228,
+          "repricing_potential": 0.2791,
+          "catalyst": 0.1,
+          "timing_window": 1.0,
+          "risk_liquidity": 1.0,
+          "evidence_quality": 0.6017
+        },
+        "archetype": "regime_repricing",
+        "title": "VIX 期限结构与波动状态 VIX term structure and volatility regime：iShares MSCI Emerging Markets 可能处于重定价窗口",
+        "market": "WORLD",
+        "asset_class": "equity_etf",
+        "horizon": "3-12m",
+        "instruments": [
+          {
+            "id": "WORLD_EQ_EEM",
+            "name": "iShares MSCI Emerging Markets",
+            "symbol": "EEM",
+            "asset_class": "equity_etf",
+            "region": "WORLD",
+            "role": "primary",
+            "importance": 0.5,
+            "liquidity": "very_high"
+          }
+        ],
+        "discovery": {
+          "what": "宏观机制 M12_VIX_TERM_STRUCTURE（VIX 期限结构与波动状态 VIX term structure and volatility regime）的触发变量出现异常，iShares MSCI Emerging Markets 是被机制映射的受影响资产。",
+          "why_now": "机制置信度 0.55，状态 mixed；资产 1 个月收益 -5.0%。",
+          "hypothesis": "VIX 期限结构与波动状态 VIX term structure and volatility regime 若继续演进，iShares MSCI Emerging Markets 的定价假设需要重新检验。",
+          "expectation_gap": {
+            "value": 0.1228,
+            "confidence": 0.4,
+            "available": [
+              "residual_divergence"
+            ],
+            "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+            "components": {
+              "positioning": {
+                "name": "positioning",
+                "value": null,
+                "weight": 0.35,
+                "source": "cftc",
+                "reason": "该资产无映射的 CFTC 持仓市场",
+                "evidence": {}
+              },
+              "valuation": {
+                "name": "valuation",
+                "value": null,
+                "weight": 0.25,
+                "source": "shiller",
+                "reason": "该资产没有可比的估值序列（仅覆盖美国宽基）",
+                "evidence": {
+                  "theme": "em_equity_broad"
+                }
+              },
+              "residual_divergence": {
+                "name": "residual_divergence",
+                "value": 0.3069,
+                "weight": 0.4,
+                "source": "derived",
+                "reason": null,
+                "evidence": {
+                  "kind": "equity",
+                  "drivers": [
+                    "market",
+                    "dollar",
+                    "rates"
+                  ],
+                  "r2": 0.6732,
+                  "n_obs": 74,
+                  "residual_z": -1.96,
+                  "residual": -0.0598,
+                  "actual_return": -0.0505,
+                  "predicted_return": 0.0094,
+                  "sign_consistent": true,
+                  "as_of_return_date": "2026-11-12",
+                  "lag_days": 1,
+                  "history_start": "2020-06-11",
+                  "meaning": "1 个月实际收益中无法由市场/美元/利率解释的部分（同向且 |z|>=1.5 才计分）"
+                }
+              }
+            }
+          },
+          "mechanism_assets": 5,
+          "direction_conflict": false,
+          "data_quality_gaps": [],
+          "anomalies": [
+            {
+              "id": "AN-d0783ad08c0ab7",
+              "detector": "vol_regime_shift",
+              "direction": "expansion",
+              "score": 0.3271983444756881,
+              "role": "asset"
+            },
+            {
+              "id": "AN-31c658e96a876d",
+              "detector": "price_return_shock",
+              "direction": "down",
+              "score": 0.48045076869656866,
+              "role": "trigger"
+            },
+            {
+              "id": "AN-c8b251ab191cbd",
+              "detector": "vol_regime_shift",
+              "direction": "expansion",
+              "score": 0.4907290708133344,
+              "role": "trigger"
+            },
+            {
+              "id": "AN-e8b7343f9625ac",
+              "detector": "relative_strength_extreme",
+              "direction": "outperform",
+              "score": 0.026437125578340954,
               "role": "trigger"
             }
           ],
+          "expectation_gap_used": {
+            "value": 0.1228,
+            "confidence": 0.4,
+            "available": "True"
+          },
           "invalidation_checks": [
             {
-              "entity": "US_FX_DXY",
+              "entity": "US_VOL_VIX3M",
               "feature": "return_z_3y",
               "window": "1m",
               "op": "between",
@@ -114,62 +1177,65 @@
           ]
         },
         "mechanism": {
-          "id": "M01_REAL_RATES_USD_ALLOCATION",
+          "id": "M12_VIX_TERM_STRUCTURE",
           "chain": [
-            "美国实际利率上升（名义收益率上行且通胀预期相对稳定，或以 TIPS 价格下跌代理）",
-            "美元指数走强，离岸美元融资条件收紧",
-            "全球金融条件收紧，风险预算与杠杆下降",
-            "跨境配置从 EM、长久期成长与黄金转向美元现金与短久期资产",
-            "高久期资产估值倍数压缩，价格调整幅度大于现金流变化"
+            "冲击发生，近月隐含波动率跳升",
+            "VIX 高于 VIX3M，期限结构倒挂",
+            "做市商与波动率卖方对冲需求上升，流动性变薄",
+            "风险资产相关性上升、成交放大，短期继续承压",
+            "波动回落后期限结构恢复 contango，风险偏好修复"
           ],
-          "confidence": 0.5599999999999999,
+          "confidence": 0.5499999999999999,
           "causal_status": "hypothesis",
           "conditions": [
-            "美国实际利率是边际定价因子，且通胀预期相对稳定",
-            "全球风险偏好正常，美元不因避险需求而脱离利差逻辑",
-            "目标资产存在外币负债或长久期现金流",
-            "资本账户开放、汇率浮动或爬行盯住的经济体传导更顺畅"
+            "波动冲击来自供给（gamma 对冲）而非基本面缓慢恶化",
+            "做市商库存与波动率卖方仓位可观测（当前不可得）",
+            "流动性未完全冻结，价格仍可交易"
           ],
           "identification": "correlation_only; 因果链条需条件成立，且可能被政策/结构因素打断。"
         },
         "evidence_for": [
           {
-            "claim": "传导机制 M01_REAL_RATES_USD_ALLOCATION 被激活：实际利率—美元—全球配置 Real rates, the dollar and global allocation",
-            "evidence": "UST:10Y 与 US_EQ_QQQ 的滚动相关为 -0.17（期望符号 -1），近端窗口符号一致率 59%，样本 1639。；US_FX_DXY 与 WORLD_EQ_EEM 的滚动相关为 -0.37（期望符号 -1），近端窗口符号一致率 100%，样本 1637。",
+            "claim": "传导机制 M12_VIX_TERM_STRUCTURE 被激活：VIX 期限结构与波动状态 VIX term structure and volatility regime",
+            "evidence": "最大互相关出现在滞后 0 期（-0.75，p=0.000），领先关系与假设一致。；US_VOL_VIX 与 US_EQ_SPY 的滚动相关为 -0.84（期望符号 -1），近端窗口符号一致率 100%，样本 1636。",
             "source": "mechanism",
             "tier": "derived",
             "as_of": "2026-11-13",
             "strength": "moderate"
           },
           {
-            "claim": "corr 检验通过",
-            "evidence": "UST:10Y 与 US_EQ_QQQ 的滚动相关为 -0.17（期望符号 -1），近端窗口符号一致率 59%，样本 1639。",
+            "claim": "lead_lag 检验通过",
+            "evidence": "最大互相关出现在滞后 0 期（-0.75，p=0.000），领先关系与假设一致。",
             "source": "mechanism_stats",
             "tier": "derived",
             "as_of": "2026-11-13",
+            "p_adjusted": 0.0,
+            "n_effective": 77.9,
             "strength": "moderate"
           },
           {
             "claim": "corr 检验通过",
-            "evidence": "US_FX_DXY 与 WORLD_EQ_EEM 的滚动相关为 -0.37（期望符号 -1），近端窗口符号一致率 100%，样本 1637。",
+            "evidence": "US_VOL_VIX 与 US_EQ_SPY 的滚动相关为 -0.84（期望符号 -1），近端窗口符号一致率 100%，样本 1636。",
             "source": "mechanism_stats",
             "tier": "derived",
             "as_of": "2026-11-13",
+            "p_adjusted": 0.027035,
+            "n_effective": 6.54,
             "strength": "moderate"
           }
         ],
         "evidence_against": [
           {
-            "claim": "机制 M01_REAL_RATES_USD_ALLOCATION 的检验存在失败/不稳定项",
-            "evidence": "US_FI_TIP 与 CM_MET_GC 的滚动相关为 +0.15（期望符号 +1），近端窗口符号一致率 100%，样本 1638。（相关性过弱）",
+            "claim": "机制 M12_VIX_TERM_STRUCTURE 的检验存在失败/不稳定项",
+            "evidence": "US_VOL_VIX 与 US_CR_HYG 的滚动相关为 -0.60（期望符号 -1），近端窗口符号一致率 100%，样本 1636。（不显著）",
             "source": "mechanism_stats",
             "tier": "derived",
             "as_of": "2026-11-13",
             "strength": "moderate"
           },
           {
-            "claim": "机制 M01_REAL_RATES_USD_ALLOCATION 的检验存在失败/不稳定项",
-            "evidence": "历史上 UST:10Y > 4.25 的 436 个样本中，US_EQ_QQQ 其后约 63 个交易日平均收益 +6.5%，符号命中率 21%。（conditional_weak）",
+            "claim": "机制 M12_VIX_TERM_STRUCTURE 的检验存在失败/不稳定项",
+            "evidence": "历史上 US_VOL_VIX > 25.0 的 29 个样本中，US_EQ_SPY 其后约 21 个交易日平均收益 +2.5%，符号命中率 28%。（conditional_weak）",
             "source": "mechanism_stats",
             "tier": "derived",
             "as_of": "2026-11-13",
@@ -190,15 +1256,15 @@
           "本次宏观变化是水平冲击还是斜率/预期变化？两者对不同久期资产影响不同。",
           "传导链条中哪一环最可能断裂（政策干预、供给约束、汇率制度）？"
         ],
-        "invalidation": "若机制触发变量回到常态（|z|<1），或 COMEX Gold front month 对触发变量的滚动敏感度符号翻转，则重定价假设失效。反证条件：实际利率上行期间黄金连续 6 个月以上上涨，且 TIP 与黄金的滚动相关转负; QQQ 与 10Y 日变化的相关在多数滚动窗口为正，且美元不随实际利率走强",
+        "invalidation": "若机制触发变量回到常态（|z|<1），或 iShares MSCI Emerging Markets 对触发变量的滚动敏感度符号翻转，则重定价假设失效。反证条件：VIX 倒挂期间股票继续上涨、相关性下降; VIX 高企后 1 个月股票收益显著为正（均值回归主导）",
         "data_quality": {
-          "score": 0.65,
+          "score": 0.7,
           "gaps": [
             "机制统计基于历史共动，无法识别因果",
             "月度宏观数据存在发布滞后"
           ]
         },
-        "research_question": "【全球机会引擎研究任务】OPP-0001（regime_repricing，WORLD，commodity，研究周期 3-12m）\n研究对象：COMEX Gold front month(GC=F)\n现象：宏观机制 M01_REAL_RATES_USD_ALLOCATION（实际利率—美元—全球配置 Real rates, the dollar and global allocation）的触发变量出现异常，COMEX Gold front month 是被机制映射的受影响资产。\n待检验假设：实际利率—美元—全球配置 Real rates, the dollar and global allocation 若继续演进，COMEX Gold front month 的定价假设需要重新检验。\n初步传导逻辑：美国实际利率上升（名义收益率上行且通胀预期相对稳定，或以 TIPS 价格下跌代理） → 美元指数走强，离岸美元融资条件收紧 → 全球金融条件收紧，风险预算与杠杆下降 → 跨境配置从 EM、长久期成长与黄金转向美元现金与短久期资产 → 高久期资产估值倍数压缩，价格调整幅度大于现金流变化（置信度 0.56，条件：美国实际利率是边际定价因子，且通胀预期相对稳定；全球风险偏好正常，美元不因避险需求而脱离利差逻辑；目标资产存在外币负债或长久期现金流；资本账户开放、汇率浮动或爬行盯住的经济体传导更顺畅）\n支持证据：传导机制 M01_REAL_RATES_USD_ALLOCATION 被激活：实际利率—美元—全球配置 Real rates, the dollar and global allocation: UST:10Y 与 US_EQ_QQQ 的滚动相关为 -0.17（期望符号 -1），近端窗口符号一致率 59%，样本 1639。；US_FX_DXY 与 WORLD_EQ_EEM 的滚动相关为 -0.37（期望符号 -1），近端窗口符号一致率 100%，样本 1637。；corr 检验通过: UST:10Y 与 US_EQ_QQQ 的滚动相关为 -0.17（期望符号 -1），近端窗口符号一致率 59%，样本 1639。；corr 检验通过: US_FX_DXY 与 WORLD_EQ_EEM 的滚动相关为 -0.37（期望符号 -1），近端窗口符号一致率 100%，样本 1637。\n反对证据：机制 M01_REAL_RATES_USD_ALLOCATION 的检验存在失败/不稳定项: US_FI_TIP 与 CM_MET_GC 的滚动相关为 +0.15（期望符号 +1），近端窗口符号一致率 100%，样本 1638。（相关性过弱）；机制 M01_REAL_RATES_USD_ALLOCATION 的检验存在失败/不稳定项: 历史上 UST:10Y > 4.25 的 436 个样本中，US_EQ_QQQ 其后约 63 个交易日平均收益 +6.5%，符号命中率 21%。（conditional_weak）；相关关系不等于因果关系: 滚动相关与条件统计只能说明历史共动，无法识别因果；机制成立依赖所列条件。\n失效条件：若机制触发变量回到常态（|z|<1），或 COMEX Gold front month 对触发变量的滚动敏感度符号翻转，则重定价假设失效。反证条件：实际利率上行期间黄金连续 6 个月以上上涨，且 TIP 与黄金的滚动相关转负; QQQ 与 10Y 日变化的相关在多数滚动窗口为正，且美元不随实际利率走强\n需要回答：该资产对触发变量的历史敏感度是否稳定？滚动回归系数是否发生结构性变化？；本次宏观变化是水平冲击还是斜率/预期变化？两者对不同久期资产影响不同。；传导链条中哪一环最可能断裂（政策干预、供给约束、汇率制度）？\n请完成：宏观与政策背景 → 行业/中观结构 → 公司或资产微观证据 → 情景分析 → 估值与赔率 → 明确列出支持与反对证据、关键数据缺口，以及使结论失效的条件。若证据不足，请直接说明，不要补全缺失数据。"
+        "research_question": "【全球机会引擎研究任务】OPP-0006（regime_repricing，WORLD，equity_etf，研究周期 3-12m）\n研究对象：iShares MSCI Emerging Markets(EEM)\n现象：宏观机制 M12_VIX_TERM_STRUCTURE（VIX 期限结构与波动状态 VIX term structure and volatility regime）的触发变量出现异常，iShares MSCI Emerging Markets 是被机制映射的受影响资产。\n待检验假设：VIX 期限结构与波动状态 VIX term structure and volatility regime 若继续演进，iShares MSCI Emerging Markets 的定价假设需要重新检验。\n初步传导逻辑：冲击发生，近月隐含波动率跳升 → VIX 高于 VIX3M，期限结构倒挂 → 做市商与波动率卖方对冲需求上升，流动性变薄 → 风险资产相关性上升、成交放大，短期继续承压 → 波动回落后期限结构恢复 contango，风险偏好修复（置信度 0.55，条件：波动冲击来自供给（gamma 对冲）而非基本面缓慢恶化；做市商库存与波动率卖方仓位可观测（当前不可得）；流动性未完全冻结，价格仍可交易）\n支持证据：传导机制 M12_VIX_TERM_STRUCTURE 被激活：VIX 期限结构与波动状态 VIX term structure and volatility regime: 最大互相关出现在滞后 0 期（-0.75，p=0.000），领先关系与假设一致。；US_VOL_VIX 与 US_EQ_SPY 的滚动相关为 -0.84（期望符号 -1），近端窗口符号一致率 100%，样本 1636。；lead_lag 检验通过: 最大互相关出现在滞后 0 期（-0.75，p=0.000），领先关系与假设一致。；corr 检验通过: US_VOL_VIX 与 US_EQ_SPY 的滚动相关为 -0.84（期望符号 -1），近端窗口符号一致率 100%，样本 1636。\n反对证据：机制 M12_VIX_TERM_STRUCTURE 的检验存在失败/不稳定项: US_VOL_VIX 与 US_CR_HYG 的滚动相关为 -0.60（期望符号 -1），近端窗口符号一致率 100%，样本 1636。（不显著）；机制 M12_VIX_TERM_STRUCTURE 的检验存在失败/不稳定项: 历史上 US_VOL_VIX > 25.0 的 29 个样本中，US_EQ_SPY 其后约 21 个交易日平均收益 +2.5%，符号命中率 28%。（conditional_weak）；相关关系不等于因果关系: 滚动相关与条件统计只能说明历史共动，无法识别因果；机制成立依赖所列条件。\n失效条件：若机制触发变量回到常态（|z|<1），或 iShares MSCI Emerging Markets 对触发变量的滚动敏感度符号翻转，则重定价假设失效。反证条件：VIX 倒挂期间股票继续上涨、相关性下降; VIX 高企后 1 个月股票收益显著为正（均值回归主导）\n需要回答：该资产对触发变量的历史敏感度是否稳定？滚动回归系数是否发生结构性变化？；本次宏观变化是水平冲击还是斜率/预期变化？两者对不同久期资产影响不同。；传导链条中哪一环最可能断裂（政策干预、供给约束、汇率制度）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
       }
     },
     {
@@ -206,86 +1272,130 @@
       "engine": {
         "name": "global-opportunity-engine",
         "version": "0.1.0",
-        "scan_id": "scan-20261113T153026Z-557681",
+        "scan_id": "scan-20261114T064041Z-5f4fdf",
         "as_of": "2026-11-13",
-        "generated_at": "2026-11-13T15:30:35Z"
+        "generated_at": "2026-11-14T06:42:51Z"
       },
       "provenance": {
-        "config_hash": "ebd1d09abef9fc0296a9e9715168964a4b3e1d2f55a104c75abc3851f0bcdf57",
+        "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
         "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
-        "db_path": "<repo>/data/goe.db",
+        "db_path": "data/goe.db",
         "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
       },
       "opportunity": {
-        "opportunity_id": "OPP-0002",
-        "fingerprint": "FP-5a76ccf535c97abb",
-        "status": "deep_research",
-        "score": 0.6828,
+        "opportunity_id": "OPP-0007",
+        "fingerprint": "FP-749b771ddccfaa59",
+        "status": "excluded",
+        "score": 0.3792,
         "score_breakdown": {
-          "anomaly_strength": 0.9841,
-          "economic_impact": 0.6133,
-          "expectation_gap": 0.7,
-          "repricing_potential": 0.3737,
-          "catalyst": 0.2,
+          "anomaly_strength": 0.3377,
+          "economic_impact": 0.38,
+          "expectation_gap": 0.2505,
+          "repricing_potential": 0.3781,
+          "catalyst": 0.1,
           "timing_window": 1.0,
-          "risk_liquidity": 0.775,
-          "evidence_quality": 0.7418
+          "risk_liquidity": 0.55,
+          "evidence_quality": 0.6346
         },
         "archetype": "price_fundamental_divergence",
-        "title": "日本 Nikkei 225：价格下行与全球信用/风险偏好/广度信号不一致（待检验的超跌假设）",
-        "market": "JP",
+        "title": "中国台湾 TAIEX：价格下行与全球信用/风险偏好/广度信号不一致（待检验的超跌假设）",
+        "market": "TW",
         "asset_class": "equity_index",
         "horizon": "1-3m",
         "instruments": [
           {
-            "id": "JP_EQ_N225",
-            "name": "Nikkei 225",
-            "symbol": "^N225",
+            "id": "TW_EQ_TAIEX",
+            "name": "TAIEX",
+            "symbol": "^TWII",
             "asset_class": "equity_index",
-            "region": "JP",
+            "region": "TW",
             "role": "primary",
-            "importance": 0.8,
-            "liquidity": "high"
+            "importance": 0.5,
+            "liquidity": "medium"
           }
         ],
         "discovery": {
-          "what": "Nikkei 225 出现价格异常下跌（1 个月收益 -9.7%，回撤 -15.5%）；信用代理与宏观序列未显示同等程度的恶化。",
-          "why_now": "1 个月收益 -9.7%、距 1 年高点 -15.5%（5 年分位 3%）；信用代理 z=+0.89；宏观解释判定：信用市场未确认风险厌恶。",
-          "hypothesis": "价格已计入悲观情形，而基本面与信用条件尚未验证该悲观程度；若后续数据不恶化，存在重新定价空间。",
+          "what": "TAIEX 出现价格异常下跌（1 个月收益 -9.7%，回撤 -12.3%）；信用代理与宏观序列未显示同等程度的恶化。",
+          "why_now": "1 个月收益 -9.7%、距 1 年高点 -12.3%（5 年分位 20%）；信用代理 z=-0.55；宏观解释判定：信用信号中性，宏观驱动不明确。",
+          "hypothesis": "若市场已计入比基本面更悲观的情形，价格存在重新定价空间；若盈利预期同步下修，该假设不成立。",
           "anomalies": [
             {
-              "id": "AN-6a1e5558e23c3a",
+              "id": "AN-923312f2997304",
               "detector": "price_return_shock",
-              "direction": "down",
-              "score": 0.6223333890429097
-            },
-            {
-              "id": "AN-226370fa9730a8",
-              "detector": "drawdown_extreme",
-              "direction": "deep_drawdown",
-              "score": 0.9841143764892772
-            },
-            {
-              "id": "AN-4237cbea28fea7",
-              "detector": "trend_break",
-              "direction": "golden_cross",
-              "score": 0.5
-            },
-            {
-              "id": "AN-f45627915491d0",
-              "detector": "vol_regime_shift",
-              "direction": "expansion",
-              "score": 0.5464752627091466
+              "direction": "up",
+              "score": 0.3376526226347474
             }
           ],
           "cape_pctile": NaN,
-          "erp_level": -0.9344017447812067,
-          "context_verdict": "conflict",
-          "context_note": "信用市场未确认风险厌恶",
-          "theme": "japan_equity",
+          "erp_level": NaN,
+          "context_verdict": "ambiguous",
+          "context_note": "信用信号中性，宏观驱动不明确",
+          "theme": "taiwan_equity",
+          "expectation_gap": {
+            "value": 0.2505,
+            "confidence": 0.4,
+            "available": [
+              "residual_divergence"
+            ],
+            "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+            "components": {
+              "positioning": {
+                "name": "positioning",
+                "value": null,
+                "weight": 0.35,
+                "source": "cftc",
+                "reason": "该资产无映射的 CFTC 持仓市场",
+                "evidence": {}
+              },
+              "valuation": {
+                "name": "valuation",
+                "value": null,
+                "weight": 0.25,
+                "source": "shiller",
+                "reason": "该资产没有可比的估值序列（仅覆盖美国宽基）",
+                "evidence": {
+                  "theme": "taiwan_equity"
+                }
+              },
+              "residual_divergence": {
+                "name": "residual_divergence",
+                "value": 0.6262,
+                "weight": 0.4,
+                "source": "derived",
+                "reason": null,
+                "evidence": {
+                  "kind": "equity",
+                  "drivers": [
+                    "market",
+                    "dollar",
+                    "rates"
+                  ],
+                  "r2": 0.5283,
+                  "n_obs": 65,
+                  "residual_z": -2.439,
+                  "residual": -0.0942,
+                  "actual_return": -0.1138,
+                  "predicted_return": -0.0196,
+                  "sign_consistent": true,
+                  "as_of_return_date": "2026-11-12",
+                  "lag_days": 1,
+                  "history_start": "2020-06-11",
+                  "meaning": "1 个月实际收益中无法由市场/美元/利率解释的部分（同向且 |z|>=1.5 才计分）"
+                }
+              }
+            }
+          },
+          "data_quality_gaps": [
+            "分析师盈利预期与修正数据未接入"
+          ],
+          "expectation_gap_used": {
+            "value": 0.2505,
+            "confidence": 0.4,
+            "available": "True"
+          },
           "invalidation_checks": [
             {
-              "entity": "JP_EQ_N225",
+              "entity": "TW_EQ_TAIEX",
               "feature": "rel_strength_vs_benchmark",
               "window": "1m",
               "op": "<",
@@ -320,42 +1430,18 @@
         },
         "evidence_for": [
           {
-            "claim": "price_return_shock 触发（down）",
-            "evidence": "度量 return_z_1d_3y=-5.489，异常强度 0.62；return_1d=-6.0%",
+            "claim": "price_return_shock 触发（up）",
+            "evidence": "度量 return_z_1d_3y=4.351，异常强度 0.34；return_1d=+4.9%",
             "source": "yahoo",
             "tier": "aggregator",
-            "as_of": "2026-11-06",
+            "as_of": "2026-11-09",
             "strength": "moderate"
           },
           {
-            "claim": "drawdown_extreme 触发（deep_drawdown）",
-            "evidence": "度量 drawdown_pctile_5y=0.003，异常强度 0.98；drawdown_252d=-20.6%",
-            "source": "yahoo",
-            "tier": "aggregator",
-            "as_of": "2026-11-06",
-            "strength": "strong"
-          },
-          {
-            "claim": "trend_break 触发（golden_cross）",
-            "evidence": "度量 ma_cross_50_200=0.049，异常强度 0.50；ma_cross_50_200=+0.049, ma_gap_200d=-0.025",
-            "source": "yahoo",
-            "tier": "aggregator",
-            "as_of": "2026-11-10",
-            "strength": "moderate"
-          },
-          {
-            "claim": "vol_regime_shift 触发（expansion）",
-            "evidence": "度量 vol_z_3y=2.866，异常强度 0.55；vol_pctile_5y=+0.936",
-            "source": "yahoo",
-            "tier": "aggregator",
-            "as_of": "2026-11-10",
-            "strength": "moderate"
-          },
-          {
-            "claim": "价格已显著回撤",
-            "evidence": "距 1 年高点回撤 -15.5%",
-            "source": "yahoo",
-            "tier": "aggregator",
+            "claim": "价格走势无法由标准驱动解释（残差背离）",
+            "evidence": "残差 z=-2.439，R²=0.5283，驱动=['market', 'dollar', 'rates']",
+            "source": "derived",
+            "tier": "derived",
             "as_of": "2026-11-13",
             "strength": "moderate"
           },
@@ -377,7 +1463,7 @@
           },
           {
             "claim": "信用代理未确认风险厌恶",
-            "evidence": "HY/国债相对表现 z=+0.89",
+            "evidence": "HY/国债相对表现 z=-0.55",
             "source": "yahoo_proxy",
             "tier": "proxy",
             "as_of": "2026-11-13",
@@ -394,22 +1480,280 @@
             "strength": "strong"
           },
           {
-            "claim": "波动率处于高位",
-            "evidence": "波动率 5 年分位 92%，高波动期价格信号噪声更大。",
+            "claim": "下跌可能与宏观驱动一致",
+            "evidence": "信用信号中性，宏观驱动不明确；因此'超跌'判断证据不足，需先验证驱动因素。",
+            "source": "methodology",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          }
+        ],
+        "catalysts": [],
+        "open_questions": [
+          "该资产的盈利/现金流预期是否已经同步下修？本系统未接入分析师一致预期，需要在 investment-agent 中核验。",
+          "下跌是风险溢价上升还是现金流预期下降？两者对后续定价含义不同。",
+          "同行业/同国家其他资产是否出现一致的定价变化（行业性 vs 个股/个券性）？"
+        ],
+        "invalidation": "若 TAIEX 相对基准再下跌 8% 以上，或 HY/国债相对表现跌至 -2σ（约 -3%），或出现明确的盈利下修/信用事件，则'超跌'假设失效。",
+        "data_quality": {
+          "score": 0.588,
+          "gaps": [
+            "分析师盈利预期与修正数据未接入",
+            "信用利差使用 HYG/IEF 代理，非 OAS 直接数据"
+          ]
+        },
+        "research_question": "【全球机会引擎研究任务】OPP-0007（price_fundamental_divergence，TW，equity_index，研究周期 1-3m）\n研究对象：TAIEX(^TWII)\n现象：TAIEX 出现价格异常下跌（1 个月收益 -9.7%，回撤 -12.3%）；信用代理与宏观序列未显示同等程度的恶化。\n待检验假设：若市场已计入比基本面更悲观的情形，价格存在重新定价空间；若盈利预期同步下修，该假设不成立。\n初步传导逻辑：增长/流动性预期 → 风险溢价与盈利预期 → 估值 → 价格（置信度 0.39，条件：信用利差未持续走阔；宏观增长数据未显著下修；无重大资产特有负面事件）\n支持证据：price_return_shock 触发（up）: 度量 return_z_1d_3y=4.351，异常强度 0.34；return_1d=+4.9%；价格走势无法由标准驱动解释（残差背离）: 残差 z=-2.439，R²=0.5283，驱动=['market', 'dollar', 'rates']；美元 1 个月变化: DXY +1.1%；美国 10Y 收益率 1 个月变化: -11bp\n反对证据：价格下跌可能反映基本面恶化而非错误定价: 本系统未接入盈利一致预期与修正数据；若 EPS 预期同步下修，'超跌'假设不成立。；下跌可能与宏观驱动一致: 信用信号中性，宏观驱动不明确；因此'超跌'判断证据不足，需先验证驱动因素。\n失效条件：若 TAIEX 相对基准再下跌 8% 以上，或 HY/国债相对表现跌至 -2σ（约 -3%），或出现明确的盈利下修/信用事件，则'超跌'假设失效。\n需要回答：该资产的盈利/现金流预期是否已经同步下修？本系统未接入分析师一致预期，需要在 investment-agent 中核验。；下跌是风险溢价上升还是现金流预期下降？两者对后续定价含义不同。；同行业/同国家其他资产是否出现一致的定价变化（行业性 vs 个股/个券性）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "engine": {
+        "name": "global-opportunity-engine",
+        "version": "0.1.0",
+        "scan_id": "scan-20261114T064041Z-5f4fdf",
+        "as_of": "2026-11-13",
+        "generated_at": "2026-11-14T06:42:51Z"
+      },
+      "provenance": {
+        "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
+        "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+        "db_path": "data/goe.db",
+        "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+      },
+      "opportunity": {
+        "opportunity_id": "OPP-0008",
+        "fingerprint": "FP-91b3f17e77420368",
+        "status": "excluded",
+        "score": 0.3738,
+        "score_breakdown": {
+          "anomaly_strength": 0.1254,
+          "economic_impact": 0.65,
+          "expectation_gap": 0.0131,
+          "repricing_potential": 0.0708,
+          "catalyst": 0.6,
+          "timing_window": 1.0,
+          "risk_liquidity": 1.0,
+          "evidence_quality": 0.6346
+        },
+        "archetype": "price_fundamental_divergence",
+        "title": "美国 Invesco QQQ (Nasdaq 100)：价格下行与估值/信用/风险溢价信号不一致（待检验的超跌假设）",
+        "market": "US",
+        "asset_class": "equity_etf",
+        "horizon": "1-3m",
+        "instruments": [
+          {
+            "id": "US_EQ_QQQ",
+            "name": "Invesco QQQ (Nasdaq 100)",
+            "symbol": "QQQ",
+            "asset_class": "equity_etf",
+            "region": "US",
+            "role": "primary",
+            "importance": 0.95,
+            "liquidity": "very_high"
+          }
+        ],
+        "discovery": {
+          "what": "Invesco QQQ (Nasdaq 100) 出现价格异常下跌（1 个月收益 -5.6%，回撤 -9.4%）；信用代理与宏观序列未显示同等程度的恶化。",
+          "why_now": "1 个月收益 -5.6%、距 1 年高点 -9.4%（5 年分位 29%）；信用代理 z=-0.55；宏观解释判定：信用信号中性，宏观驱动不明确。",
+          "hypothesis": "若市场已计入比基本面更悲观的情形，价格存在重新定价空间；若盈利预期同步下修，该假设不成立。",
+          "anomalies": [
+            {
+              "id": "AN-19105bb5c5dc43",
+              "detector": "price_return_shock",
+              "direction": "up",
+              "score": 0.12537393433190536
+            },
+            {
+              "id": "AN-21ed62e733f5d4",
+              "detector": "vol_regime_shift",
+              "direction": "expansion",
+              "score": 0.03772165693564746
+            }
+          ],
+          "cape_pctile": NaN,
+          "erp_level": NaN,
+          "context_verdict": "ambiguous",
+          "context_note": "信用信号中性，宏观驱动不明确",
+          "theme": "us_equity_growth",
+          "expectation_gap": {
+            "value": 0.0131,
+            "confidence": 0.4,
+            "available": [
+              "residual_divergence"
+            ],
+            "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+            "components": {
+              "positioning": {
+                "name": "positioning",
+                "value": null,
+                "weight": 0.35,
+                "source": "cftc",
+                "reason": "该资产无映射的 CFTC 持仓市场",
+                "evidence": {}
+              },
+              "valuation": {
+                "name": "valuation",
+                "value": null,
+                "weight": 0.25,
+                "source": "shiller",
+                "reason": "CAPE 数据过期或不可用（不向前填充）",
+                "evidence": {}
+              },
+              "residual_divergence": {
+                "name": "residual_divergence",
+                "value": 0.0326,
+                "weight": 0.4,
+                "source": "derived",
+                "reason": null,
+                "evidence": {
+                  "kind": "equity",
+                  "drivers": [
+                    "market",
+                    "dollar",
+                    "rates"
+                  ],
+                  "r2": 0.8564,
+                  "n_obs": 74,
+                  "residual_z": -1.549,
+                  "residual": -0.0337,
+                  "actual_return": -0.0559,
+                  "predicted_return": -0.0222,
+                  "sign_consistent": true,
+                  "as_of_return_date": "2026-11-12",
+                  "lag_days": 1,
+                  "history_start": "2020-06-11",
+                  "meaning": "1 个月实际收益中无法由市场/美元/利率解释的部分（同向且 |z|>=1.5 才计分）"
+                }
+              }
+            }
+          },
+          "data_quality_gaps": [
+            "分析师盈利预期与修正数据未接入"
+          ],
+          "expectation_gap_used": {
+            "value": 0.0131,
+            "confidence": 0.4,
+            "available": "True"
+          },
+          "invalidation_checks": [
+            {
+              "entity": "US_EQ_QQQ",
+              "feature": "rel_strength_vs_benchmark",
+              "window": "1m",
+              "op": "<",
+              "value": -0.08,
+              "note": "相对基准继续大幅跑输"
+            },
+            {
+              "entity": "CREDIT_RISK",
+              "feature": "hy_minus_treasury_z_3y",
+              "op": "<",
+              "value": -2.0,
+              "note": "信用利差代理恶化"
+            }
+          ]
+        },
+        "mechanism": {
+          "id": null,
+          "chain": [
+            "增长/流动性预期",
+            "风险溢价与盈利预期",
+            "估值",
+            "价格"
+          ],
+          "confidence": 0.42,
+          "causal_status": "hypothesis",
+          "conditions": [
+            "信用利差未持续走阔",
+            "宏观增长数据未显著下修",
+            "无重大资产特有负面事件"
+          ],
+          "identification": "该链条是待检验假设；价格与基本面代理之间的相关性不等于因果。"
+        },
+        "evidence_for": [
+          {
+            "claim": "price_return_shock 触发（up）",
+            "evidence": "度量 return_z_1d_3y=3.501，异常强度 0.13；return_1d=+3.5%",
             "source": "yahoo",
             "tier": "aggregator",
+            "as_of": "2026-11-09",
+            "strength": "moderate"
+          },
+          {
+            "claim": "vol_regime_shift 触发（expansion）",
+            "evidence": "度量 vol_z_3y=1.594，异常强度 0.04；vol_pctile_5y=+0.678",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-11",
+            "strength": "moderate"
+          },
+          {
+            "claim": "价格走势无法由标准驱动解释（残差背离）",
+            "evidence": "残差 z=-1.549，R²=0.8564，驱动=['market', 'dollar', 'rates']",
+            "source": "derived",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "美元 1 个月变化",
+            "evidence": "DXY +1.1%",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-13",
+            "strength": "weak"
+          },
+          {
+            "claim": "美国 10Y 收益率 1 个月变化",
+            "evidence": "-11bp",
+            "source": "treasury_us",
+            "tier": "official",
+            "as_of": "2026-11-13",
+            "strength": "weak"
+          },
+          {
+            "claim": "信用代理未确认风险厌恶",
+            "evidence": "HY/国债相对表现 z=-0.55",
+            "source": "yahoo_proxy",
+            "tier": "proxy",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "市场广度",
+            "evidence": "美国 广度 z=-2.02",
+            "source": "derived",
+            "tier": "derived",
             "as_of": "2026-11-13",
             "strength": "moderate"
           }
         ],
+        "evidence_against": [
+          {
+            "claim": "价格下跌可能反映基本面恶化而非错误定价",
+            "evidence": "本系统未接入盈利一致预期与修正数据；若 EPS 预期同步下修，'超跌'假设不成立。",
+            "source": "data_gap",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          },
+          {
+            "claim": "下跌可能与宏观驱动一致",
+            "evidence": "信用信号中性，宏观驱动不明确；因此'超跌'判断证据不足，需先验证驱动因素。",
+            "source": "methodology",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          }
+        ],
         "catalysts": [
           {
-            "id": "BOJ_2026_12_18",
-            "date": "2026-12-18",
+            "id": "FOMC_2026_12_09",
+            "date": "2026-12-09",
             "type": "central_bank",
-            "title": "BoJ Monetary Policy Meeting decision (December 2026)",
+            "title": "FOMC rate decision (December 2026 meeting)",
             "verified": true,
-            "source": "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm"
+            "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
           }
         ],
         "open_questions": [
@@ -417,17 +1761,714 @@
           "下跌是风险溢价上升还是现金流预期下降？两者对后续定价含义不同。",
           "同行业/同国家其他资产是否出现一致的定价变化（行业性 vs 个股/个券性）？"
         ],
-        "invalidation": "若 Nikkei 225 相对基准再下跌 8% 以上，或 HY/国债相对表现跌至 -2σ（约 -3%），或出现明确的盈利下修/信用事件，则'超跌'假设失效。",
+        "invalidation": "若 Invesco QQQ (Nasdaq 100) 相对基准再下跌 8% 以上，或 HY/国债相对表现跌至 -2σ（约 -3%），或出现明确的盈利下修/信用事件，则'超跌'假设失效。",
         "data_quality": {
-          "score": 0.7,
+          "score": 0.588,
           "gaps": [
             "分析师盈利预期与修正数据未接入",
             "信用利差使用 HYG/IEF 代理，非 OAS 直接数据"
           ]
         },
-        "research_question": "【全球机会引擎研究任务】OPP-0002（price_fundamental_divergence，JP，equity_index，研究周期 1-3m）\n研究对象：Nikkei 225(^N225)\n现象：Nikkei 225 出现价格异常下跌（1 个月收益 -9.7%，回撤 -15.5%）；信用代理与宏观序列未显示同等程度的恶化。\n待检验假设：价格已计入悲观情形，而基本面与信用条件尚未验证该悲观程度；若后续数据不恶化，存在重新定价空间。\n初步传导逻辑：增长/流动性预期 → 风险溢价与盈利预期 → 估值 → 价格（置信度 0.39，条件：信用利差未持续走阔；宏观增长数据未显著下修；无重大资产特有负面事件）\n支持证据：price_return_shock 触发（down）: 度量 return_z_1d_3y=-5.489，异常强度 0.62；return_1d=-6.0%；drawdown_extreme 触发（deep_drawdown）: 度量 drawdown_pctile_5y=0.003，异常强度 0.98；drawdown_252d=-20.6%；trend_break 触发（golden_cross）: 度量 ma_cross_50_200=0.049，异常强度 0.50；ma_cross_50_200=+0.049, ma_gap_200d=-0.025；vol_regime_shift 触发（expansion）: 度量 vol_z_3y=2.866，异常强度 0.55；vol_pctile_5y=+0.936\n反对证据：价格下跌可能反映基本面恶化而非错误定价: 本系统未接入盈利一致预期与修正数据；若 EPS 预期同步下修，'超跌'假设不成立。；波动率处于高位: 波动率 5 年分位 92%，高波动期价格信号噪声更大。\n失效条件：若 Nikkei 225 相对基准再下跌 8% 以上，或 HY/国债相对表现跌至 -2σ（约 -3%），或出现明确的盈利下修/信用事件，则'超跌'假设失效。\n需要回答：该资产的盈利/现金流预期是否已经同步下修？本系统未接入分析师一致预期，需要在 investment-agent 中核验。；下跌是风险溢价上升还是现金流预期下降？两者对后续定价含义不同。；同行业/同国家其他资产是否出现一致的定价变化（行业性 vs 个股/个券性）？\n请完成：宏观与政策背景 → 行业/中观结构 → 公司或资产微观证据 → 情景分析 → 估值与赔率 → 明确列出支持与反对证据、关键数据缺口，以及使结论失效的条件。若证据不足，请直接说明，不要补全缺失数据。"
+        "research_question": "【全球机会引擎研究任务】OPP-0008（price_fundamental_divergence，US，equity_etf，研究周期 1-3m）\n研究对象：Invesco QQQ (Nasdaq 100)(QQQ)\n现象：Invesco QQQ (Nasdaq 100) 出现价格异常下跌（1 个月收益 -5.6%，回撤 -9.4%）；信用代理与宏观序列未显示同等程度的恶化。\n待检验假设：若市场已计入比基本面更悲观的情形，价格存在重新定价空间；若盈利预期同步下修，该假设不成立。\n初步传导逻辑：增长/流动性预期 → 风险溢价与盈利预期 → 估值 → 价格（置信度 0.42，条件：信用利差未持续走阔；宏观增长数据未显著下修；无重大资产特有负面事件）\n支持证据：price_return_shock 触发（up）: 度量 return_z_1d_3y=3.501，异常强度 0.13；return_1d=+3.5%；vol_regime_shift 触发（expansion）: 度量 vol_z_3y=1.594，异常强度 0.04；vol_pctile_5y=+0.678；价格走势无法由标准驱动解释（残差背离）: 残差 z=-1.549，R²=0.8564，驱动=['market', 'dollar', 'rates']；美元 1 个月变化: DXY +1.1%\n反对证据：价格下跌可能反映基本面恶化而非错误定价: 本系统未接入盈利一致预期与修正数据；若 EPS 预期同步下修，'超跌'假设不成立。；下跌可能与宏观驱动一致: 信用信号中性，宏观驱动不明确；因此'超跌'判断证据不足，需先验证驱动因素。\n失效条件：若 Invesco QQQ (Nasdaq 100) 相对基准再下跌 8% 以上，或 HY/国债相对表现跌至 -2σ（约 -3%），或出现明确的盈利下修/信用事件，则'超跌'假设失效。\n需要回答：该资产的盈利/现金流预期是否已经同步下修？本系统未接入分析师一致预期，需要在 investment-agent 中核验。；下跌是风险溢价上升还是现金流预期下降？两者对后续定价含义不同。；同行业/同国家其他资产是否出现一致的定价变化（行业性 vs 个股/个券性）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "engine": {
+        "name": "global-opportunity-engine",
+        "version": "0.1.0",
+        "scan_id": "scan-20261114T064041Z-5f4fdf",
+        "as_of": "2026-11-13",
+        "generated_at": "2026-11-14T06:42:51Z"
+      },
+      "provenance": {
+        "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
+        "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+        "db_path": "data/goe.db",
+        "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+      },
+      "opportunity": {
+        "opportunity_id": "OPP-0009",
+        "fingerprint": "FP-ec55d7b9d7b82b02",
+        "status": "excluded",
+        "score": 0.3455,
+        "score_breakdown": {
+          "anomaly_strength": 0.0,
+          "economic_impact": 0.38,
+          "expectation_gap": 0.4,
+          "repricing_potential": 0.3113,
+          "catalyst": 0.1,
+          "timing_window": 1.0,
+          "risk_liquidity": 1.0,
+          "evidence_quality": 0.4958
+        },
+        "archetype": "price_fundamental_divergence",
+        "title": "美国 Consumer Discretionary Select Sector SPDR：价格上行与驱动/预期代理不一致（待检验的过度乐观假设）",
+        "market": "US",
+        "asset_class": "sector_equity",
+        "horizon": "1-3m",
+        "instruments": [
+          {
+            "id": "US_SEC_XLY",
+            "name": "Consumer Discretionary Select Sector SPDR",
+            "symbol": "XLY",
+            "asset_class": "sector_equity",
+            "region": "US",
+            "role": "primary",
+            "importance": 0.5,
+            "liquidity": "very_high"
+          }
+        ],
+        "discovery": {
+          "what": "Consumer Discretionary Select Sector SPDR 近 1 个月上涨 +8.0%（3 个月 +2.1%），但标准驱动与预期差代理未能确认该幅度。",
+          "why_now": "信用/风险偏好未确认这轮上涨；1 月收益 z=+1.25，回撤分位 78%。",
+          "hypothesis": "若这轮上涨主要由预期而非基本面/流动性驱动，存在预期回摆与估值重定价风险；若基本面同步改善，该假设不成立。",
+          "anomalies": [],
+          "expectation_gap": {
+            "value": 0.4,
+            "confidence": 0.4,
+            "available": [
+              "residual_divergence"
+            ],
+            "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+            "components": {
+              "positioning": {
+                "name": "positioning",
+                "value": null,
+                "weight": 0.35,
+                "source": "cftc",
+                "reason": "该资产无映射的 CFTC 持仓市场",
+                "evidence": {}
+              },
+              "valuation": {
+                "name": "valuation",
+                "value": null,
+                "weight": 0.25,
+                "source": "shiller",
+                "reason": "该资产没有可比的估值序列（仅覆盖美国宽基）",
+                "evidence": {
+                  "theme": "us_sector_disc"
+                }
+              },
+              "residual_divergence": {
+                "name": "residual_divergence",
+                "value": 1.0,
+                "weight": 0.4,
+                "source": "derived",
+                "reason": null,
+                "evidence": {
+                  "kind": "equity",
+                  "drivers": [
+                    "market",
+                    "dollar",
+                    "rates"
+                  ],
+                  "r2": 0.7149,
+                  "n_obs": 74,
+                  "residual_z": 3.337,
+                  "residual": 0.1062,
+                  "actual_return": 0.0804,
+                  "predicted_return": -0.0259,
+                  "sign_consistent": true,
+                  "as_of_return_date": "2026-11-12",
+                  "lag_days": 1,
+                  "history_start": "2020-06-11",
+                  "meaning": "1 个月实际收益中无法由市场/美元/利率解释的部分（同向且 |z|>=1.5 才计分）"
+                }
+              }
+            }
+          },
+          "mechanism_assets": 1,
+          "data_quality_gaps": [
+            "分析师盈利预期与修正数据未接入"
+          ],
+          "direction": "up",
+          "expectation_gap_used": {
+            "value": 0.4,
+            "confidence": 0.4,
+            "available": "True"
+          },
+          "invalidation_checks": [
+            {
+              "entity": "US_SEC_XLY",
+              "feature": "rel_strength_vs_benchmark",
+              "window": "3m",
+              "op": ">",
+              "value": 0.1,
+              "note": "相对强势继续扩大"
+            }
+          ]
+        },
+        "mechanism": {
+          "id": null,
+          "chain": [
+            "预期/资金驱动上涨",
+            "基本面未同步验证",
+            "预期回摆风险"
+          ],
+          "confidence": 0.3,
+          "causal_status": "hypothesis",
+          "conditions": [
+            "盈利/政策未同步改善",
+            "仓位未进一步扩张"
+          ],
+          "identification": "该链条是待检验假设；上涨与基本面之间的相关性不等于因果。"
+        },
+        "evidence_for": [
+          {
+            "claim": "价格上行超出标准驱动可解释范围",
+            "evidence": "1 个月 +8.0%，3 个月 +2.1%，1 月 z=+1.25；残差 z=3.337，R²=0.7149",
+            "source": "derived",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "预期差代理（仓位/估值/残差）",
+            "evidence": "gap=0.40，覆盖度=40%，组件=['residual_divergence']",
+            "source": "derived",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          }
+        ],
+        "evidence_against": [
+          {
+            "claim": "上涨可能由基本面改善或资金流驱动",
+            "evidence": "本系统未接入盈利一致预期、ETF 资金流与期权隐含分布；若盈利/政策持续改善，'过度乐观'假设不成立。",
+            "source": "data_gap",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          },
+          {
+            "claim": "动量与趋势可能延续",
+            "evidence": "回撤分位 78%（越高越接近历史高位）；强趋势中的偏离可能长期持续。",
+            "source": "derived",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          }
+        ],
+        "catalysts": [],
+        "open_questions": [
+          "该资产的盈利/现金流预期是否已经同步下修？本系统未接入分析师一致预期，需要在 investment-agent 中核验。",
+          "下跌是风险溢价上升还是现金流预期下降？两者对后续定价含义不同。",
+          "同行业/同国家其他资产是否出现一致的定价变化（行业性 vs 个股/个券性）？"
+        ],
+        "invalidation": "若 Consumer Discretionary Select Sector SPDR 3 个月相对基准继续跑赢 10% 以上且信用/盈利同步改善，或价格回落至 200 日均线附近，则'过度乐观'假设失效。",
+        "data_quality": {
+          "score": 0.65,
+          "gaps": [
+            "分析师盈利预期与修正数据未接入",
+            "无期权隐含分布/资金流数据"
+          ]
+        },
+        "research_question": "【全球机会引擎研究任务】OPP-0009（price_fundamental_divergence，US，sector_equity，研究周期 1-3m）\n研究对象：Consumer Discretionary Select Sector SPDR(XLY)\n现象：Consumer Discretionary Select Sector SPDR 近 1 个月上涨 +8.0%（3 个月 +2.1%），但标准驱动与预期差代理未能确认该幅度。\n待检验假设：若这轮上涨主要由预期而非基本面/流动性驱动，存在预期回摆与估值重定价风险；若基本面同步改善，该假设不成立。\n初步传导逻辑：预期/资金驱动上涨 → 基本面未同步验证 → 预期回摆风险（置信度 0.30，条件：盈利/政策未同步改善；仓位未进一步扩张）\n支持证据：价格上行超出标准驱动可解释范围: 1 个月 +8.0%，3 个月 +2.1%，1 月 z=+1.25；残差 z=3.337，R²=0.7149；预期差代理（仓位/估值/残差）: gap=0.40，覆盖度=40%，组件=['residual_divergence']\n反对证据：上涨可能由基本面改善或资金流驱动: 本系统未接入盈利一致预期、ETF 资金流与期权隐含分布；若盈利/政策持续改善，'过度乐观'假设不成立。；动量与趋势可能延续: 回撤分位 78%（越高越接近历史高位）；强趋势中的偏离可能长期持续。\n失效条件：若 Consumer Discretionary Select Sector SPDR 3 个月相对基准继续跑赢 10% 以上且信用/盈利同步改善，或价格回落至 200 日均线附近，则'过度乐观'假设失效。\n需要回答：该资产的盈利/现金流预期是否已经同步下修？本系统未接入分析师一致预期，需要在 investment-agent 中核验。；下跌是风险溢价上升还是现金流预期下降？两者对后续定价含义不同。；同行业/同国家其他资产是否出现一致的定价变化（行业性 vs 个股/个券性）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "engine": {
+        "name": "global-opportunity-engine",
+        "version": "0.1.0",
+        "scan_id": "scan-20261114T064041Z-5f4fdf",
+        "as_of": "2026-11-13",
+        "generated_at": "2026-11-14T06:42:51Z"
+      },
+      "provenance": {
+        "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
+        "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+        "db_path": "data/goe.db",
+        "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+      },
+      "opportunity": {
+        "opportunity_id": "OPP-0010",
+        "fingerprint": "FP-cc8d7d507a7efa95",
+        "status": "excluded",
+        "score": 0.3377,
+        "score_breakdown": {
+          "anomaly_strength": 0.0,
+          "economic_impact": 0.29,
+          "expectation_gap": 0.0605,
+          "repricing_potential": 1.0,
+          "catalyst": 0.1,
+          "timing_window": 1.0,
+          "risk_liquidity": 0.775,
+          "evidence_quality": 0.6157
+        },
+        "archetype": "price_fundamental_divergence",
+        "title": "中国 ChiNext ETF：价格下行与政策/利率/信用信号不一致（待检验的超跌假设）",
+        "market": "CN",
+        "asset_class": "equity_etf",
+        "horizon": "1-3m",
+        "instruments": [
+          {
+            "id": "CN_EQ_CHINEXT",
+            "name": "ChiNext ETF",
+            "symbol": "159915.SZ",
+            "asset_class": "equity_etf",
+            "region": "CN",
+            "role": "primary",
+            "importance": 0.35,
+            "liquidity": "high"
+          }
+        ],
+        "discovery": {
+          "what": "ChiNext ETF 出现价格异常下跌（1 个月收益 -13.0%，回撤 -44.4%）；信用代理与宏观序列未显示同等程度的恶化。",
+          "why_now": "1 个月收益 -13.0%、距 1 年高点 -44.4%（5 年分位 0%）；信用代理 z=-0.55；宏观解释判定：全球信用代理信号中性，本地增长/政策驱动需进一步验证。",
+          "hypothesis": "若市场已计入比基本面更悲观的情形，价格存在重新定价空间；若盈利预期同步下修，该假设不成立。",
+          "anomalies": [],
+          "cape_pctile": NaN,
+          "erp_level": NaN,
+          "context_verdict": "ambiguous",
+          "context_note": "全球信用代理信号中性，本地增长/政策驱动需进一步验证",
+          "theme": "china_growth",
+          "expectation_gap": {
+            "value": 0.0605,
+            "confidence": 0.4,
+            "available": [
+              "residual_divergence"
+            ],
+            "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+            "components": {
+              "positioning": {
+                "name": "positioning",
+                "value": null,
+                "weight": 0.35,
+                "source": "cftc",
+                "reason": "该资产无映射的 CFTC 持仓市场",
+                "evidence": {}
+              },
+              "valuation": {
+                "name": "valuation",
+                "value": null,
+                "weight": 0.25,
+                "source": "shiller",
+                "reason": "该资产没有可比的估值序列（仅覆盖美国宽基）",
+                "evidence": {
+                  "theme": "china_growth"
+                }
+              },
+              "residual_divergence": {
+                "name": "residual_divergence",
+                "value": 0.1513,
+                "weight": 0.4,
+                "source": "derived",
+                "reason": null,
+                "evidence": {
+                  "kind": "equity",
+                  "drivers": [
+                    "market",
+                    "dollar",
+                    "rates",
+                    "cny"
+                  ],
+                  "r2": 0.7183,
+                  "n_obs": 64,
+                  "residual_z": -1.727,
+                  "residual": -0.0709,
+                  "actual_return": -0.1269,
+                  "predicted_return": -0.0561,
+                  "sign_consistent": true,
+                  "as_of_return_date": "2026-11-12",
+                  "lag_days": 1,
+                  "history_start": "2020-06-11",
+                  "meaning": "1 个月实际收益中无法由市场/美元/利率解释的部分（同向且 |z|>=1.5 才计分）"
+                }
+              }
+            }
+          },
+          "data_quality_gaps": [
+            "分析师盈利预期与修正数据未接入"
+          ],
+          "expectation_gap_used": {
+            "value": 0.0605,
+            "confidence": 0.4,
+            "available": "True"
+          },
+          "invalidation_checks": [
+            {
+              "entity": "CN_EQ_CHINEXT",
+              "feature": "rel_strength_vs_benchmark",
+              "window": "1m",
+              "op": "<",
+              "value": -0.08,
+              "note": "相对基准继续大幅跑输"
+            },
+            {
+              "entity": "CREDIT_RISK",
+              "feature": "hy_minus_treasury_z_3y",
+              "op": "<",
+              "value": -2.0,
+              "note": "信用利差代理恶化"
+            }
+          ]
+        },
+        "mechanism": {
+          "id": null,
+          "chain": [
+            "增长/流动性预期",
+            "风险溢价与盈利预期",
+            "估值",
+            "价格"
+          ],
+          "confidence": 0.51,
+          "causal_status": "hypothesis",
+          "conditions": [
+            "信用利差未持续走阔",
+            "宏观增长数据未显著下修",
+            "无重大资产特有负面事件"
+          ],
+          "identification": "该链条是待检验假设；价格与基本面代理之间的相关性不等于因果。"
+        },
+        "evidence_for": [
+          {
+            "claim": "当期价格特征处于极端",
+            "evidence": "1 个月收益 -13.0%（z=-1.57），回撤 -44.4%（5 年分位 0%）",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "价格走势无法由标准驱动解释（残差背离）",
+            "evidence": "残差 z=-1.727，R²=0.7183，驱动=['market', 'dollar', 'rates', 'cny']",
+            "source": "derived",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "美元 1 个月变化",
+            "evidence": "DXY +1.1%",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-13",
+            "strength": "weak"
+          },
+          {
+            "claim": "美国 10Y 收益率 1 个月变化",
+            "evidence": "-11bp",
+            "source": "treasury_us",
+            "tier": "official",
+            "as_of": "2026-11-13",
+            "strength": "weak"
+          },
+          {
+            "claim": "信用代理未确认风险厌恶",
+            "evidence": "HY/国债相对表现 z=-0.55",
+            "source": "yahoo_proxy",
+            "tier": "proxy",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "中国 10Y 国债收益率变化",
+            "evidence": "-5bp",
+            "source": "akshare_cn_bond",
+            "tier": "aggregator",
+            "as_of": "2026-11-13",
+            "strength": "weak"
+          },
+          {
+            "claim": "中国私人部门信贷同比",
+            "evidence": "+5.2%",
+            "source": "bis",
+            "tier": "official",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "人民币汇率 1 个月变化",
+            "evidence": "USD/CNY -0.5%",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-13",
+            "strength": "weak"
+          },
+          {
+            "claim": "市场广度",
+            "evidence": "中国 广度 z=-1.06",
+            "source": "derived",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          }
+        ],
+        "evidence_against": [
+          {
+            "claim": "价格下跌可能反映基本面恶化而非错误定价",
+            "evidence": "本系统未接入盈利一致预期与修正数据；若 EPS 预期同步下修，'超跌'假设不成立。",
+            "source": "data_gap",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          },
+          {
+            "claim": "下跌可能与宏观驱动一致",
+            "evidence": "全球信用代理信号中性，本地增长/政策驱动需进一步验证；因此'超跌'判断证据不足，需先验证驱动因素。",
+            "source": "methodology",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          }
+        ],
+        "catalysts": [],
+        "open_questions": [
+          "该资产的盈利/现金流预期是否已经同步下修？本系统未接入分析师一致预期，需要在 investment-agent 中核验。",
+          "下跌是风险溢价上升还是现金流预期下降？两者对后续定价含义不同。",
+          "同行业/同国家其他资产是否出现一致的定价变化（行业性 vs 个股/个券性）？"
+        ],
+        "invalidation": "若 ChiNext ETF 相对基准再下跌 8% 以上，或 HY/国债相对表现跌至 -2σ（约 -3%），或出现明确的盈利下修/信用事件，则'超跌'假设失效。",
+        "data_quality": {
+          "score": 0.546,
+          "gaps": [
+            "分析师盈利预期与修正数据未接入",
+            "信用利差使用 HYG/IEF 代理，非 OAS 直接数据"
+          ]
+        },
+        "research_question": "【全球机会引擎研究任务】OPP-0010（price_fundamental_divergence，CN，equity_etf，研究周期 1-3m）\n研究对象：ChiNext ETF(159915.SZ)\n现象：ChiNext ETF 出现价格异常下跌（1 个月收益 -13.0%，回撤 -44.4%）；信用代理与宏观序列未显示同等程度的恶化。\n待检验假设：若市场已计入比基本面更悲观的情形，价格存在重新定价空间；若盈利预期同步下修，该假设不成立。\n初步传导逻辑：增长/流动性预期 → 风险溢价与盈利预期 → 估值 → 价格（置信度 0.51，条件：信用利差未持续走阔；宏观增长数据未显著下修；无重大资产特有负面事件）\n支持证据：当期价格特征处于极端: 1 个月收益 -13.0%（z=-1.57），回撤 -44.4%（5 年分位 0%）；价格走势无法由标准驱动解释（残差背离）: 残差 z=-1.727，R²=0.7183，驱动=['market', 'dollar', 'rates', 'cny']；美元 1 个月变化: DXY +1.1%；美国 10Y 收益率 1 个月变化: -11bp\n反对证据：价格下跌可能反映基本面恶化而非错误定价: 本系统未接入盈利一致预期与修正数据；若 EPS 预期同步下修，'超跌'假设不成立。；下跌可能与宏观驱动一致: 全球信用代理信号中性，本地增长/政策驱动需进一步验证；因此'超跌'判断证据不足，需先验证驱动因素。\n失效条件：若 ChiNext ETF 相对基准再下跌 8% 以上，或 HY/国债相对表现跌至 -2σ（约 -3%），或出现明确的盈利下修/信用事件，则'超跌'假设失效。\n需要回答：该资产的盈利/现金流预期是否已经同步下修？本系统未接入分析师一致预期，需要在 investment-agent 中核验。；下跌是风险溢价上升还是现金流预期下降？两者对后续定价含义不同。；同行业/同国家其他资产是否出现一致的定价变化（行业性 vs 个股/个券性）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "engine": {
+        "name": "global-opportunity-engine",
+        "version": "0.1.0",
+        "scan_id": "scan-20261114T064041Z-5f4fdf",
+        "as_of": "2026-11-13",
+        "generated_at": "2026-11-14T06:42:51Z"
+      },
+      "provenance": {
+        "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
+        "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+        "db_path": "data/goe.db",
+        "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+      },
+      "opportunity": {
+        "opportunity_id": "OPP-0011",
+        "fingerprint": "FP-6e67f7242569f81b",
+        "status": "excluded",
+        "score": 0.3346,
+        "score_breakdown": {
+          "anomaly_strength": 0.0,
+          "economic_impact": 0.62,
+          "expectation_gap": 0.2018,
+          "repricing_potential": 0.131,
+          "catalyst": 0.1,
+          "timing_window": 1.0,
+          "risk_liquidity": 1.0,
+          "evidence_quality": 0.6157
+        },
+        "archetype": "price_fundamental_divergence",
+        "title": "美国 Technology Select Sector SPDR：价格下行与估值/信用/风险溢价信号不一致（待检验的超跌假设）",
+        "market": "US",
+        "asset_class": "sector_equity",
+        "horizon": "1-3m",
+        "instruments": [
+          {
+            "id": "US_SEC_XLK",
+            "name": "Technology Select Sector SPDR",
+            "symbol": "XLK",
+            "asset_class": "sector_equity",
+            "region": "US",
+            "role": "primary",
+            "importance": 0.9,
+            "liquidity": "very_high"
+          }
+        ],
+        "discovery": {
+          "what": "Technology Select Sector SPDR 出现价格异常下跌（1 个月收益 -8.7%，回撤 -14.0%）；信用代理与宏观序列未显示同等程度的恶化。",
+          "why_now": "1 个月收益 -8.7%、距 1 年高点 -14.0%（5 年分位 21%）；信用代理 z=-0.55；宏观解释判定：信用信号中性，宏观驱动不明确。",
+          "hypothesis": "若市场已计入比基本面更悲观的情形，价格存在重新定价空间；若盈利预期同步下修，该假设不成立。",
+          "anomalies": [],
+          "cape_pctile": NaN,
+          "erp_level": NaN,
+          "context_verdict": "ambiguous",
+          "context_note": "信用信号中性，宏观驱动不明确",
+          "theme": "us_sector_tech",
+          "expectation_gap": {
+            "value": 0.2018,
+            "confidence": 0.4,
+            "available": [
+              "residual_divergence"
+            ],
+            "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+            "components": {
+              "positioning": {
+                "name": "positioning",
+                "value": null,
+                "weight": 0.35,
+                "source": "cftc",
+                "reason": "该资产无映射的 CFTC 持仓市场",
+                "evidence": {}
+              },
+              "valuation": {
+                "name": "valuation",
+                "value": null,
+                "weight": 0.25,
+                "source": "shiller",
+                "reason": "该资产没有可比的估值序列（仅覆盖美国宽基）",
+                "evidence": {
+                  "theme": "us_sector_tech"
+                }
+              },
+              "residual_divergence": {
+                "name": "residual_divergence",
+                "value": 0.5045,
+                "weight": 0.4,
+                "source": "derived",
+                "reason": null,
+                "evidence": {
+                  "kind": "equity",
+                  "drivers": [
+                    "market",
+                    "dollar",
+                    "rates"
+                  ],
+                  "r2": 0.7893,
+                  "n_obs": 74,
+                  "residual_z": -2.257,
+                  "residual": -0.0659,
+                  "actual_return": -0.0875,
+                  "predicted_return": -0.0216,
+                  "sign_consistent": true,
+                  "as_of_return_date": "2026-11-12",
+                  "lag_days": 1,
+                  "history_start": "2020-06-11",
+                  "meaning": "1 个月实际收益中无法由市场/美元/利率解释的部分（同向且 |z|>=1.5 才计分）"
+                }
+              }
+            }
+          },
+          "data_quality_gaps": [
+            "分析师盈利预期与修正数据未接入"
+          ],
+          "expectation_gap_used": {
+            "value": 0.2018,
+            "confidence": 0.4,
+            "available": "True"
+          },
+          "invalidation_checks": [
+            {
+              "entity": "US_SEC_XLK",
+              "feature": "rel_strength_vs_benchmark",
+              "window": "1m",
+              "op": "<",
+              "value": -0.08,
+              "note": "相对基准继续大幅跑输"
+            },
+            {
+              "entity": "CREDIT_RISK",
+              "feature": "hy_minus_treasury_z_3y",
+              "op": "<",
+              "value": -2.0,
+              "note": "信用利差代理恶化"
+            }
+          ]
+        },
+        "mechanism": {
+          "id": null,
+          "chain": [
+            "增长/流动性预期",
+            "风险溢价与盈利预期",
+            "估值",
+            "价格"
+          ],
+          "confidence": 0.42,
+          "causal_status": "hypothesis",
+          "conditions": [
+            "信用利差未持续走阔",
+            "宏观增长数据未显著下修",
+            "无重大资产特有负面事件"
+          ],
+          "identification": "该链条是待检验假设；价格与基本面代理之间的相关性不等于因果。"
+        },
+        "evidence_for": [
+          {
+            "claim": "当期价格特征处于极端",
+            "evidence": "1 个月收益 -8.7%（z=-1.93），回撤 -14.0%（5 年分位 21%）",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "价格走势无法由标准驱动解释（残差背离）",
+            "evidence": "残差 z=-2.257，R²=0.7893，驱动=['market', 'dollar', 'rates']",
+            "source": "derived",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "美元 1 个月变化",
+            "evidence": "DXY +1.1%",
+            "source": "yahoo",
+            "tier": "aggregator",
+            "as_of": "2026-11-13",
+            "strength": "weak"
+          },
+          {
+            "claim": "美国 10Y 收益率 1 个月变化",
+            "evidence": "-11bp",
+            "source": "treasury_us",
+            "tier": "official",
+            "as_of": "2026-11-13",
+            "strength": "weak"
+          },
+          {
+            "claim": "信用代理未确认风险厌恶",
+            "evidence": "HY/国债相对表现 z=-0.55",
+            "source": "yahoo_proxy",
+            "tier": "proxy",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          },
+          {
+            "claim": "市场广度",
+            "evidence": "美国 广度 z=-2.02",
+            "source": "derived",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "moderate"
+          }
+        ],
+        "evidence_against": [
+          {
+            "claim": "价格下跌可能反映基本面恶化而非错误定价",
+            "evidence": "本系统未接入盈利一致预期与修正数据；若 EPS 预期同步下修，'超跌'假设不成立。",
+            "source": "data_gap",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          },
+          {
+            "claim": "下跌可能与宏观驱动一致",
+            "evidence": "信用信号中性，宏观驱动不明确；因此'超跌'判断证据不足，需先验证驱动因素。",
+            "source": "methodology",
+            "tier": "derived",
+            "as_of": "2026-11-13",
+            "strength": "strong"
+          }
+        ],
+        "catalysts": [],
+        "open_questions": [
+          "该资产的盈利/现金流预期是否已经同步下修？本系统未接入分析师一致预期，需要在 investment-agent 中核验。",
+          "下跌是风险溢价上升还是现金流预期下降？两者对后续定价含义不同。",
+          "同行业/同国家其他资产是否出现一致的定价变化（行业性 vs 个股/个券性）？"
+        ],
+        "invalidation": "若 Technology Select Sector SPDR 相对基准再下跌 8% 以上，或 HY/国债相对表现跌至 -2σ（约 -3%），或出现明确的盈利下修/信用事件，则'超跌'假设失效。",
+        "data_quality": {
+          "score": 0.546,
+          "gaps": [
+            "分析师盈利预期与修正数据未接入",
+            "信用利差使用 HYG/IEF 代理，非 OAS 直接数据"
+          ]
+        },
+        "research_question": "【全球机会引擎研究任务】OPP-0011（price_fundamental_divergence，US，sector_equity，研究周期 1-3m）\n研究对象：Technology Select Sector SPDR(XLK)\n现象：Technology Select Sector SPDR 出现价格异常下跌（1 个月收益 -8.7%，回撤 -14.0%）；信用代理与宏观序列未显示同等程度的恶化。\n待检验假设：若市场已计入比基本面更悲观的情形，价格存在重新定价空间；若盈利预期同步下修，该假设不成立。\n初步传导逻辑：增长/流动性预期 → 风险溢价与盈利预期 → 估值 → 价格（置信度 0.42，条件：信用利差未持续走阔；宏观增长数据未显著下修；无重大资产特有负面事件）\n支持证据：当期价格特征处于极端: 1 个月收益 -8.7%（z=-1.93），回撤 -14.0%（5 年分位 21%）；价格走势无法由标准驱动解释（残差背离）: 残差 z=-2.257，R²=0.7893，驱动=['market', 'dollar', 'rates']；美元 1 个月变化: DXY +1.1%；美国 10Y 收益率 1 个月变化: -11bp\n反对证据：价格下跌可能反映基本面恶化而非错误定价: 本系统未接入盈利一致预期与修正数据；若 EPS 预期同步下修，'超跌'假设不成立。；下跌可能与宏观驱动一致: 信用信号中性，宏观驱动不明确；因此'超跌'判断证据不足，需先验证驱动因素。\n失效条件：若 Technology Select Sector SPDR 相对基准再下跌 8% 以上，或 HY/国债相对表现跌至 -2σ（约 -3%），或出现明确的盈利下修/信用事件，则'超跌'假设失效。\n需要回答：该资产的盈利/现金流预期是否已经同步下修？本系统未接入分析师一致预期，需要在 investment-agent 中核验。；下跌是风险溢价上升还是现金流预期下降？两者对后续定价含义不同。；同行业/同国家其他资产是否出现一致的定价变化（行业性 vs 个股/个券性）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
       }
     }
-  ],
-  "_note": "示例：为控制体积仅保留前两条机会；完整文件由 `goe scan` 生成。"
+  ]
 }

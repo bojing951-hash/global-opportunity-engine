@@ -46,3 +46,23 @@ Commits are created in themed batches; see `git log --oneline main..HEAD`.
 - `tests/test_pipeline_e2e.py` (+1): rollback.
 - `tests/test_scoring.py` (+1): missing gap caps at watch.
 Offline suite: 121 passed (from 97).
+
+---
+
+# Round 2 (independent audits of 7c5df4c + worktree)
+
+Implemented and verified (details in `ROUND2_FIX_SUMMARY.md`, `ROOT_CAUSE_ANALYSIS.md`):
+- readiness: per-region + per-curve-system + latest AVAILABLE macro; `critical_degraded` split;
+  implicit-latest wall-clock; small-market warnings; dead UK/CN critical.
+- transactions: SAVEPOINT-aware `Store.transaction`; one outer scan transaction; detector
+  exceptions abort and roll back; nested rollback tested.
+- expectation gap: current row = latest common valid date (11-12), self-driver excluded,
+  local market/FX drivers, stale/lagged residual unavailable; history/lag/n_obs recorded.
+- ranking: past catalysts no longer score; current candidates' invalidation checks evaluated;
+  expected_direction contradictions removed/capped; one theme per candidate; evidence quality
+  includes counter-evidence and mechanism confidence; confidence-scaled breadth.
+- validation: case-entity detectors + derived proxies; stricter mechanism mixed confidence.
+- mechanism breakdown archetype for failed transmission (gold case); futures roll-risk disclosure.
+- handoff parser: S8 answered required; `refused` distinct; real run refused, exit 2.
+- blind eval: global shuffle before IDs; class-relative forward returns; rerun ratings.
+- tests 135→137; final scan 1,511 anomalies / 11 candidates; strict PIT replay 7/7.

@@ -1,0 +1,217 @@
+{
+  "task_id": "RT-20261113-0005",
+  "created_at": "2026-11-14T06:42:51Z",
+  "target_system": "investment-agent",
+  "priority": 5,
+  "opportunity_id": "OPP-0005",
+  "research_question": "【全球机会引擎研究任务】OPP-0005（mechanism_breakdown，JP，fx，研究周期 1-6m）\n研究对象：USD/JPY(USDJPY=X)\n现象：机制 M14_JAPAN_CARRY_UNWIND 的核心检验失败（3 项），而其映射资产 USD/JPY 同期变动 +1.2%。\n待检验假设：若历史传导关系发生结构性变化，旧的定价/对冲框架可能失效，值得研究新的驱动。\n初步传导逻辑：历史关系 → 检验失败 → 结构性变化待验证（置信度 0.05，条件：关系失效不是短期噪声；存在可识别的结构性原因）\n支持证据：机制 M14_JAPAN_CARRY_UNWIND 在历史检验中被证伪/不支持: 最大互相关出现在滞后 0 期（+0.16，p=1.000），领先关系不明显、不显著或方向相反。（不显著）；GX_FX_USDJPY 与 US_EQ_SPY 的滚动相关为 +0.04（期望符号 +1），近端窗口符号一致率 45%，样本 1693。（相关性过弱）；GX_FX_USDJPY 与 US_VOL_VIX 的滚动相关为 -0.06（期望符号 -1），近端窗口符号一致率 61%，样本 1693。（相关性过弱）；USD/JPY 近 1 个月出现可观察变化: 1 个月收益 +1.2%；当前异常 1 条\n反对证据：关系失效可能是样本/方法假象: 滚动相关受重叠样本、制度变化与多重检验影响；本系统未做因果识别，失效不等于可交易。；关系可能只是暂时失效: 历史机制在压力期常出现短期脱钩，随后恢复；需要样本外确认。\n失效条件：若该机制的核心滚动相关在后续 60 个交易日内恢复原符号并达到阈值，则失效线索作废。\n需要回答：历史关系失效是结构性变化、样本期偶然，还是检验方法（重叠样本/多重检验）造成？；关系失效从哪一环开始：触发器、传导变量还是目标资产？；若关系恢复，恢复的条件是什么（政策制度、供给约束、市场结构）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。",
+  "context": {
+    "schema_version": "1.0",
+    "engine": {
+      "name": "global-opportunity-engine",
+      "version": "0.1.0",
+      "scan_id": "scan-20261114T064041Z-5f4fdf",
+      "as_of": "2026-11-13",
+      "generated_at": "2026-11-14T06:42:51Z"
+    },
+    "provenance": {
+      "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
+      "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+      "db_path": "data/goe.db",
+      "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+    },
+    "opportunity": {
+      "opportunity_id": "OPP-0005",
+      "fingerprint": "FP-52dcbbe0b6e89d27",
+      "status": "low_priority",
+      "score": 0.4775,
+      "score_breakdown": {
+        "anomaly_strength": 0.6575,
+        "economic_impact": 0.5444,
+        "expectation_gap": 0.3261,
+        "repricing_potential": 0.048,
+        "catalyst": 0.1,
+        "timing_window": 1.0,
+        "risk_liquidity": 1.0,
+        "evidence_quality": 0.5642
+      },
+      "archetype": "mechanism_breakdown",
+      "title": "日元套息交易与全球去杠杆 Japan carry trade and global deleveraging：历史传导关系失效（USD/JPY）",
+      "market": "JP",
+      "asset_class": "fx",
+      "horizon": "1-6m",
+      "instruments": [
+        {
+          "id": "GX_FX_USDJPY",
+          "name": "USD/JPY",
+          "symbol": "USDJPY=X",
+          "asset_class": "fx",
+          "region": "JP",
+          "role": "primary",
+          "importance": 0.85,
+          "liquidity": "very_high"
+        }
+      ],
+      "discovery": {
+        "what": "机制 M14_JAPAN_CARRY_UNWIND 的核心检验失败（3 项），而其映射资产 USD/JPY 同期变动 +1.2%。",
+        "why_now": "2026-11-13 可用数据下机制状态为 unsupported（confidence 0.05）。",
+        "hypothesis": "若历史传导关系发生结构性变化，旧的定价/对冲框架可能失效，值得研究新的驱动。",
+        "anomalies": [
+          {
+            "id": "AN-e2290b1ebfe2e8",
+            "detector": "relative_strength_extreme",
+            "direction": "outperform",
+            "score": 0.6574799449038601
+          }
+        ],
+        "expectation_gap": {
+          "value": 0.3261,
+          "confidence": 0.4667,
+          "available": [
+            "positioning"
+          ],
+          "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+          "components": {
+            "positioning": {
+              "name": "positioning",
+              "value": 0.6988,
+              "weight": 0.35,
+              "source": "cftc",
+              "reason": null,
+              "evidence": {
+                "positioning_series": "POS_JPY_LEV",
+                "net_pctile_5y": 0.8494,
+                "as_of_report": "2026-11-07",
+                "meaning": "净头寸相对 5 年分布的单边程度"
+              }
+            },
+            "valuation": {
+              "name": "valuation",
+              "value": null,
+              "weight": 0.25,
+              "source": "shiller",
+              "reason": "该资产没有可比的估值序列（仅覆盖美国宽基）",
+              "evidence": {
+                "theme": "usdjpy"
+              }
+            },
+            "residual_divergence": {
+              "name": "residual_divergence",
+              "value": null,
+              "weight": 0.4,
+              "source": "derived",
+              "reason": "没有可用的解释变量",
+              "evidence": {
+                "kind": "unsupported"
+              }
+            }
+          }
+        },
+        "mechanism_assets": 1,
+        "data_quality_gaps": [],
+        "theme": "usdjpy",
+        "mechanism_failed": true,
+        "expectation_gap_used": {
+          "value": 0.3261,
+          "confidence": 0.4667,
+          "available": "True"
+        },
+        "invalidation_checks": []
+      },
+      "mechanism": {
+        "id": "M14_JAPAN_CARRY_UNWIND",
+        "chain": [
+          "历史关系",
+          "检验失败",
+          "结构性变化待验证"
+        ],
+        "confidence": 0.05,
+        "causal_status": "hypothesis",
+        "conditions": [
+          "关系失效不是短期噪声",
+          "存在可识别的结构性原因"
+        ],
+        "identification": "negative test only; 不能由检验失败反推因果。"
+      },
+      "evidence_for": [
+        {
+          "claim": "机制 M14_JAPAN_CARRY_UNWIND 在历史检验中被证伪/不支持",
+          "evidence": "最大互相关出现在滞后 0 期（+0.16，p=1.000），领先关系不明显、不显著或方向相反。（不显著）；GX_FX_USDJPY 与 US_EQ_SPY 的滚动相关为 +0.04（期望符号 +1），近端窗口符号一致率 45%，样本 1693。（相关性过弱）；GX_FX_USDJPY 与 US_VOL_VIX 的滚动相关为 -0.06（期望符号 -1），近端窗口符号一致率 61%，样本 1693。（相关性过弱）",
+          "source": "mechanism_stats",
+          "tier": "derived",
+          "as_of": "2026-11-13",
+          "strength": "strong"
+        },
+        {
+          "claim": "USD/JPY 近 1 个月出现可观察变化",
+          "evidence": "1 个月收益 +1.2%；当前异常 1 条",
+          "source": "yahoo",
+          "tier": "aggregator",
+          "as_of": "2026-11-13",
+          "strength": "moderate"
+        }
+      ],
+      "evidence_against": [
+        {
+          "claim": "关系失效可能是样本/方法假象",
+          "evidence": "滚动相关受重叠样本、制度变化与多重检验影响；本系统未做因果识别，失效不等于可交易。",
+          "source": "methodology",
+          "tier": "derived",
+          "as_of": "2026-11-13",
+          "strength": "strong"
+        },
+        {
+          "claim": "关系可能只是暂时失效",
+          "evidence": "历史机制在压力期常出现短期脱钩，随后恢复；需要样本外确认。",
+          "source": "methodology",
+          "tier": "derived",
+          "as_of": "2026-11-13",
+          "strength": "moderate"
+        }
+      ],
+      "catalysts": [
+        {
+          "id": "BOJ_2026_12_18",
+          "date": "2026-12-18",
+          "type": "central_bank",
+          "title": "BoJ Monetary Policy Meeting decision (December 2026)",
+          "verified": true,
+          "source": "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm"
+        }
+      ],
+      "open_questions": [
+        "历史关系失效是结构性变化、样本期偶然，还是检验方法（重叠样本/多重检验）造成？",
+        "关系失效从哪一环开始：触发器、传导变量还是目标资产？",
+        "若关系恢复，恢复的条件是什么（政策制度、供给约束、市场结构）？"
+      ],
+      "invalidation": "若该机制的核心滚动相关在后续 60 个交易日内恢复原符号并达到阈值，则失效线索作废。",
+      "data_quality": {
+        "score": 0.7,
+        "gaps": [
+          "机制检验为描述性统计",
+          "无法识别结构断点"
+        ]
+      },
+      "research_question": "【全球机会引擎研究任务】OPP-0005（mechanism_breakdown，JP，fx，研究周期 1-6m）\n研究对象：USD/JPY(USDJPY=X)\n现象：机制 M14_JAPAN_CARRY_UNWIND 的核心检验失败（3 项），而其映射资产 USD/JPY 同期变动 +1.2%。\n待检验假设：若历史传导关系发生结构性变化，旧的定价/对冲框架可能失效，值得研究新的驱动。\n初步传导逻辑：历史关系 → 检验失败 → 结构性变化待验证（置信度 0.05，条件：关系失效不是短期噪声；存在可识别的结构性原因）\n支持证据：机制 M14_JAPAN_CARRY_UNWIND 在历史检验中被证伪/不支持: 最大互相关出现在滞后 0 期（+0.16，p=1.000），领先关系不明显、不显著或方向相反。（不显著）；GX_FX_USDJPY 与 US_EQ_SPY 的滚动相关为 +0.04（期望符号 +1），近端窗口符号一致率 45%，样本 1693。（相关性过弱）；GX_FX_USDJPY 与 US_VOL_VIX 的滚动相关为 -0.06（期望符号 -1），近端窗口符号一致率 61%，样本 1693。（相关性过弱）；USD/JPY 近 1 个月出现可观察变化: 1 个月收益 +1.2%；当前异常 1 条\n反对证据：关系失效可能是样本/方法假象: 滚动相关受重叠样本、制度变化与多重检验影响；本系统未做因果识别，失效不等于可交易。；关系可能只是暂时失效: 历史机制在压力期常出现短期脱钩，随后恢复；需要样本外确认。\n失效条件：若该机制的核心滚动相关在后续 60 个交易日内恢复原符号并达到阈值，则失效线索作废。\n需要回答：历史关系失效是结构性变化、样本期偶然，还是检验方法（重叠样本/多重检验）造成？；关系失效从哪一环开始：触发器、传导变量还是目标资产？；若关系恢复，恢复的条件是什么（政策制度、供给约束、市场结构）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
+    }
+  },
+  "expected_outputs": [
+    "宏观与政策背景",
+    "行业中观结构",
+    "微观/资产层面证据",
+    "情景分析",
+    "估值与赔率",
+    "支持与反对证据清单",
+    "数据缺口与失效条件"
+  ],
+  "callback": {
+    "opportunity_id": "OPP-0005",
+    "fingerprint": "FP-52dcbbe0b6e89d27",
+    "store": "goe.db:opportunities",
+    "status_map": {
+      "accepted": "deep_research",
+      "deferred": "watch",
+      "rejected": "excluded"
+    }
+  }
+}

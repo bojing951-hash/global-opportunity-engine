@@ -211,7 +211,7 @@ exports/        交接 JSON（gitignore，示例见 docs/examples）
 ## 环境
 
 - macOS（Apple Silicon 实测）/ Linux 均可；Python ≥ 3.10（开发环境 3.12）
-- 测试：121 离线 + 9 联网（见 TEST_RESULTS.md）
+- 测试：137 离线 + 9 联网（见 TEST_RESULTS.md）
 - 2026-11-14 独立审计与修复：见 `audit/ISSUE_LEDGER.md`、`audit/FIX_LOG.md`
 - 磁盘占用：SQLite 约 120 MB（10 年全量）；无 GPU、无付费 API、无外部数据库
 - 不连接任何实盘交易账户，不下单，不提供投资建议

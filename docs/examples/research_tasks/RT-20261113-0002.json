@@ -1,0 +1,221 @@
+{
+  "task_id": "RT-20261113-0002",
+  "created_at": "2026-11-14T06:42:51Z",
+  "target_system": "investment-agent",
+  "priority": 2,
+  "opportunity_id": "OPP-0002",
+  "research_question": "【全球机会引擎研究任务】OPP-0002（event_revision，US，fx，研究周期 1w-1m）\n研究对象：ICE US Dollar Index (DXY spot)(DX-Y.NYB)\n现象：ICE US Dollar Index (DXY spot) 在事件「US Employment Situation (November 2026)」（2026-12-04）前出现 2 项异常。\n待检验假设：若事件结果与当前定价隐含预期不一致，可能出现快速重定价；事件前异常是关注线索而非方向判断。\n初步传导逻辑：事件结果 → 预期修正 → 资产重定价（置信度 0.30，条件：事件结果存在不确定性；市场已提前定价部分结果）\n支持证据：事件临近：US Employment Situation (November 2026)（2026-12-04）: 事件类型 labour，影响资产包含 US_FX_DXY；来源 已核验。；事件前已出现 drawdown_extreme 异常: near_high，强度 0.87，发生于 2026-11-11；事件前已出现 relative_strength_extreme 异常: outperform，强度 0.04，发生于 2026-11-12\n反对证据：事件可能已被充分定价: 缺少期权隐含分布与一致预期数据，无法判断预期差大小。\n失效条件：若事件日期已过且无显著价格/波动反应，或事件被取消/推迟，则线索失效。\n需要回答：市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。；事件前是否已出现抢跑定价（价格/仓位提前移动）？；若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。",
+  "context": {
+    "schema_version": "1.0",
+    "engine": {
+      "name": "global-opportunity-engine",
+      "version": "0.1.0",
+      "scan_id": "scan-20261114T064041Z-5f4fdf",
+      "as_of": "2026-11-13",
+      "generated_at": "2026-11-14T06:42:51Z"
+    },
+    "provenance": {
+      "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
+      "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+      "db_path": "data/goe.db",
+      "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+    },
+    "opportunity": {
+      "opportunity_id": "OPP-0002",
+      "fingerprint": "FP-b761ac3cb002fc60",
+      "status": "watch",
+      "score": 0.5927,
+      "score_breakdown": {
+        "anomaly_strength": 0.867,
+        "economic_impact": 0.68,
+        "expectation_gap": 0.1748,
+        "repricing_potential": 0.2192,
+        "catalyst": 0.6,
+        "timing_window": 1.0,
+        "risk_liquidity": 1.0,
+        "evidence_quality": 0.6392
+      },
+      "archetype": "event_revision",
+      "title": "ICE US Dollar Index (DXY spot)：临近「US Employment Situation (November 2026)」，已出现异常变化（事件驱动的预期修正线索）",
+      "market": "US",
+      "asset_class": "fx",
+      "horizon": "1w-1m",
+      "instruments": [
+        {
+          "id": "US_FX_DXY",
+          "name": "ICE US Dollar Index (DXY spot)",
+          "symbol": "DX-Y.NYB",
+          "asset_class": "fx",
+          "region": "US",
+          "role": "primary",
+          "importance": 1.0,
+          "liquidity": "very_high"
+        }
+      ],
+      "discovery": {
+        "what": "ICE US Dollar Index (DXY spot) 在事件「US Employment Situation (November 2026)」（2026-12-04）前出现 2 项异常。",
+        "why_now": "事件可能迫使市场重新评估政策路径或数据结果，从而修正预期。",
+        "hypothesis": "若事件结果与当前定价隐含预期不一致，可能出现快速重定价；事件前异常是关注线索而非方向判断。",
+        "expectation_gap": {
+          "value": 0.1748,
+          "confidence": 0.4667,
+          "available": [
+            "positioning"
+          ],
+          "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+          "components": {
+            "positioning": {
+              "name": "positioning",
+              "value": 0.3745,
+              "weight": 0.35,
+              "source": "cftc",
+              "reason": null,
+              "evidence": {
+                "positioning_series": "POS_USD_LEV",
+                "net_pctile_5y": 0.6873,
+                "as_of_report": "2026-11-07",
+                "meaning": "净头寸相对 5 年分布的单边程度"
+              }
+            },
+            "valuation": {
+              "name": "valuation",
+              "value": null,
+              "weight": 0.25,
+              "source": "shiller",
+              "reason": "该资产没有可比的估值序列（仅覆盖美国宽基）",
+              "evidence": {
+                "theme": "usd"
+              }
+            },
+            "residual_divergence": {
+              "name": "residual_divergence",
+              "value": null,
+              "weight": 0.4,
+              "source": "derived",
+              "reason": "没有可用的解释变量",
+              "evidence": {
+                "kind": "unsupported"
+              }
+            }
+          }
+        },
+        "mechanism_assets": 1,
+        "data_quality_gaps": [],
+        "theme": "usd",
+        "anomalies": [
+          {
+            "id": "AN-1666451f83e571",
+            "detector": "drawdown_extreme",
+            "direction": "near_high",
+            "score": 0.8669579030976967
+          },
+          {
+            "id": "AN-c97be1cddbd9a9",
+            "detector": "relative_strength_extreme",
+            "direction": "outperform",
+            "score": 0.03632867893773003
+          }
+        ],
+        "expectation_gap_used": {
+          "value": 0.1748,
+          "confidence": 0.4667,
+          "available": "True"
+        },
+        "invalidation_checks": []
+      },
+      "mechanism": {
+        "id": null,
+        "chain": [
+          "事件结果",
+          "预期修正",
+          "资产重定价"
+        ],
+        "confidence": 0.3,
+        "causal_status": "hypothesis",
+        "conditions": [
+          "事件结果存在不确定性",
+          "市场已提前定价部分结果"
+        ],
+        "identification": "事件研究法的标准识别问题：无法区分事件效应与其他同时发生的冲击。"
+      },
+      "evidence_for": [
+        {
+          "claim": "事件临近：US Employment Situation (November 2026)（2026-12-04）",
+          "evidence": "事件类型 labour，影响资产包含 US_FX_DXY；来源 已核验。",
+          "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+          "tier": "official",
+          "as_of": "2026-11-13",
+          "strength": "moderate"
+        },
+        {
+          "claim": "事件前已出现 drawdown_extreme 异常",
+          "evidence": "near_high，强度 0.87，发生于 2026-11-11",
+          "source": "yahoo",
+          "tier": "aggregator",
+          "as_of": "2026-11-11",
+          "strength": "moderate"
+        },
+        {
+          "claim": "事件前已出现 relative_strength_extreme 异常",
+          "evidence": "outperform，强度 0.04，发生于 2026-11-12",
+          "source": "yahoo",
+          "tier": "aggregator",
+          "as_of": "2026-11-12",
+          "strength": "moderate"
+        }
+      ],
+      "evidence_against": [
+        {
+          "claim": "事件可能已被充分定价",
+          "evidence": "缺少期权隐含分布与一致预期数据，无法判断预期差大小。",
+          "source": "data_gap",
+          "tier": "derived",
+          "as_of": "2026-11-13",
+          "strength": "strong"
+        }
+      ],
+      "catalysts": [
+        {
+          "id": "US_EMPSIT_2026_12_04",
+          "date": "2026-12-04",
+          "type": "labour",
+          "title": "US Employment Situation (November 2026)",
+          "verified": true,
+          "source": "https://www.bls.gov/schedule/news_release/empsit.htm"
+        }
+      ],
+      "open_questions": [
+        "市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。",
+        "事件前是否已出现抢跑定价（价格/仓位提前移动）？",
+        "若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？"
+      ],
+      "invalidation": "若事件日期已过且无显著价格/波动反应，或事件被取消/推迟，则线索失效。",
+      "data_quality": {
+        "score": 0.7,
+        "gaps": [
+          "缺少期权隐含分布与事件一致预期"
+        ]
+      },
+      "research_question": "【全球机会引擎研究任务】OPP-0002（event_revision，US，fx，研究周期 1w-1m）\n研究对象：ICE US Dollar Index (DXY spot)(DX-Y.NYB)\n现象：ICE US Dollar Index (DXY spot) 在事件「US Employment Situation (November 2026)」（2026-12-04）前出现 2 项异常。\n待检验假设：若事件结果与当前定价隐含预期不一致，可能出现快速重定价；事件前异常是关注线索而非方向判断。\n初步传导逻辑：事件结果 → 预期修正 → 资产重定价（置信度 0.30，条件：事件结果存在不确定性；市场已提前定价部分结果）\n支持证据：事件临近：US Employment Situation (November 2026)（2026-12-04）: 事件类型 labour，影响资产包含 US_FX_DXY；来源 已核验。；事件前已出现 drawdown_extreme 异常: near_high，强度 0.87，发生于 2026-11-11；事件前已出现 relative_strength_extreme 异常: outperform，强度 0.04，发生于 2026-11-12\n反对证据：事件可能已被充分定价: 缺少期权隐含分布与一致预期数据，无法判断预期差大小。\n失效条件：若事件日期已过且无显著价格/波动反应，或事件被取消/推迟，则线索失效。\n需要回答：市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。；事件前是否已出现抢跑定价（价格/仓位提前移动）？；若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
+    }
+  },
+  "expected_outputs": [
+    "宏观与政策背景",
+    "行业中观结构",
+    "微观/资产层面证据",
+    "情景分析",
+    "估值与赔率",
+    "支持与反对证据清单",
+    "数据缺口与失效条件"
+  ],
+  "callback": {
+    "opportunity_id": "OPP-0002",
+    "fingerprint": "FP-b761ac3cb002fc60",
+    "store": "goe.db:opportunities",
+    "status_map": {
+      "accepted": "deep_research",
+      "deferred": "watch",
+      "rejected": "excluded"
+    }
+  }
+}

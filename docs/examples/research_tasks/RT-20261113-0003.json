@@ -1,0 +1,244 @@
+{
+  "task_id": "RT-20261113-0003",
+  "created_at": "2026-11-14T06:42:51Z",
+  "target_system": "investment-agent",
+  "priority": 3,
+  "opportunity_id": "OPP-0003",
+  "research_question": "【全球机会引擎研究任务】OPP-0003（event_revision，JP，equity_index，研究周期 1w-1m）\n研究对象：Nikkei 225(^N225)\n现象：Bank of Japan policy rate 出现 hike（+0.25），同期 Nikkei 225 近 1 个月收益 -9.7% 并出现异常。\n待检验假设：若政策变化未被充分定价，相关资产存在重新定价空间；若已被提前定价或基本面未响应，该假设不成立。\n初步传导逻辑：政策利率/操作变化 → 流动性/贴现率变化 → 风险溢价与估值重估 → 资产价格（置信度 0.30，条件：政策传导未被提前定价；信用/流动性渠道畅通）\n支持证据：观测到政策利率/操作变化：Bank of Japan policy rate: JP_POLICY_RATE 变动 +0.25（方向 hike），可用日 2026-10-16；来源 BIS 政策利率序列；政策变化窗口内资产异常：price_return_shock: down，强度 0.29，可用日 2026-10-15；政策变化窗口内资产异常：price_return_shock: down，强度 0.54，可用日 2026-11-06\n反对证据：政策变化可能已被提前定价: 缺少期权隐含分布与一致预期；若市场已提前计入，事件本身不构成新信息。\n失效条件：若事件后 20 个交易日内资产未出现显著重定价，或政策被撤回/逆转，则线索失效。\n需要回答：市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。；事件前是否已出现抢跑定价（价格/仓位提前移动）？；若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。",
+  "context": {
+    "schema_version": "1.0",
+    "engine": {
+      "name": "global-opportunity-engine",
+      "version": "0.1.0",
+      "scan_id": "scan-20261114T064041Z-5f4fdf",
+      "as_of": "2026-11-13",
+      "generated_at": "2026-11-14T06:42:51Z"
+    },
+    "provenance": {
+      "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
+      "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+      "db_path": "data/goe.db",
+      "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+    },
+    "opportunity": {
+      "opportunity_id": "OPP-0003",
+      "fingerprint": "FP-87e0f21b6e2d152d",
+      "status": "watch",
+      "score": 0.5477,
+      "score_breakdown": {
+        "anomaly_strength": 0.9841,
+        "economic_impact": 0.56,
+        "expectation_gap": 0.3143,
+        "repricing_potential": 0.1058,
+        "catalyst": 0.1,
+        "timing_window": 1.0,
+        "risk_liquidity": 0.775,
+        "evidence_quality": 0.6392
+      },
+      "archetype": "event_revision",
+      "title": "日本 政策变化后的重定价：Nikkei 225（JP_POLICY_RATE hike）",
+      "market": "JP",
+      "asset_class": "equity_index",
+      "horizon": "1w-1m",
+      "instruments": [
+        {
+          "id": "JP_EQ_N225",
+          "name": "Nikkei 225",
+          "symbol": "^N225",
+          "asset_class": "equity_index",
+          "region": "JP",
+          "role": "primary",
+          "importance": 0.8,
+          "liquidity": "high"
+        }
+      ],
+      "discovery": {
+        "what": "Bank of Japan policy rate 出现 hike（+0.25），同期 Nikkei 225 近 1 个月收益 -9.7% 并出现异常。",
+        "why_now": "政策操作可用日 2026-10-16；区域内股权资产在随后窗口出现异常。",
+        "hypothesis": "若政策变化未被充分定价，相关资产存在重新定价空间；若已被提前定价或基本面未响应，该假设不成立。",
+        "anomalies": [
+          {
+            "id": "AN-226370fa9730a8",
+            "detector": "drawdown_extreme",
+            "direction": "deep_drawdown",
+            "score": 0.9841143764892772
+          },
+          {
+            "id": "AN-cf3d8c6bde63f8",
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 0.28706435480543324
+          },
+          {
+            "id": "AN-567779a658bb87",
+            "detector": "price_return_shock",
+            "direction": "down",
+            "score": 0.537079997039705
+          }
+        ],
+        "expectation_gap": {
+          "value": 0.3143,
+          "confidence": 0.4,
+          "available": [
+            "residual_divergence"
+          ],
+          "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+          "components": {
+            "positioning": {
+              "name": "positioning",
+              "value": null,
+              "weight": 0.35,
+              "source": "cftc",
+              "reason": "该资产无映射的 CFTC 持仓市场",
+              "evidence": {}
+            },
+            "valuation": {
+              "name": "valuation",
+              "value": null,
+              "weight": 0.25,
+              "source": "shiller",
+              "reason": "该资产没有可比的估值序列（仅覆盖美国宽基）",
+              "evidence": {
+                "theme": "japan_equity"
+              }
+            },
+            "residual_divergence": {
+              "name": "residual_divergence",
+              "value": 0.7857,
+              "weight": 0.4,
+              "source": "derived",
+              "reason": null,
+              "evidence": {
+                "kind": "equity",
+                "drivers": [
+                  "market",
+                  "dollar",
+                  "rates",
+                  "jpy"
+                ],
+                "r2": 0.7928,
+                "n_obs": 65,
+                "residual_z": -2.679,
+                "residual": -0.0623,
+                "actual_return": -0.1022,
+                "predicted_return": -0.0399,
+                "sign_consistent": true,
+                "as_of_return_date": "2026-11-12",
+                "lag_days": 1,
+                "history_start": "2020-06-11",
+                "meaning": "1 个月实际收益中无法由市场/美元/利率解释的部分（同向且 |z|>=1.5 才计分）"
+              }
+            }
+          }
+        },
+        "mechanism_assets": 1,
+        "data_quality_gaps": [
+          "缺少政策事件的一致预期与期权隐含分布"
+        ],
+        "policy_series": "JP_POLICY_RATE",
+        "policy_change": 0.25,
+        "theme": "japan_equity",
+        "expectation_gap_used": {
+          "value": 0.3143,
+          "confidence": 0.4,
+          "available": "True"
+        },
+        "invalidation_checks": []
+      },
+      "mechanism": {
+        "id": null,
+        "chain": [
+          "政策利率/操作变化",
+          "流动性/贴现率变化",
+          "风险溢价与估值重估",
+          "资产价格"
+        ],
+        "confidence": 0.3,
+        "causal_status": "hypothesis",
+        "conditions": [
+          "政策传导未被提前定价",
+          "信用/流动性渠道畅通"
+        ],
+        "identification": "事件研究法无法排除同期其他冲击；相关性不等于因果。"
+      },
+      "evidence_for": [
+        {
+          "claim": "观测到政策利率/操作变化：Bank of Japan policy rate",
+          "evidence": "JP_POLICY_RATE 变动 +0.25（方向 hike），可用日 2026-10-16；来源 BIS 政策利率序列",
+          "source": "bis",
+          "tier": "official",
+          "as_of": "2026-10-16",
+          "strength": "strong"
+        },
+        {
+          "claim": "政策变化窗口内资产异常：price_return_shock",
+          "evidence": "down，强度 0.29，可用日 2026-10-15",
+          "source": "engine",
+          "tier": "derived",
+          "as_of": "2026-10-15",
+          "strength": "moderate"
+        },
+        {
+          "claim": "政策变化窗口内资产异常：price_return_shock",
+          "evidence": "down，强度 0.54，可用日 2026-11-06",
+          "source": "engine",
+          "tier": "derived",
+          "as_of": "2026-11-06",
+          "strength": "moderate"
+        }
+      ],
+      "evidence_against": [
+        {
+          "claim": "政策变化可能已被提前定价",
+          "evidence": "缺少期权隐含分布与一致预期；若市场已提前计入，事件本身不构成新信息。",
+          "source": "data_gap",
+          "tier": "derived",
+          "as_of": "2026-11-13",
+          "strength": "strong"
+        }
+      ],
+      "catalysts": [
+        {
+          "id": "POLICY_JP_POLICY_RATE_2026-10-16",
+          "date": "2026-10-16",
+          "title": "Bank of Japan policy rate hike",
+          "type": "central_bank",
+          "verified": true,
+          "source": "bis"
+        }
+      ],
+      "open_questions": [
+        "市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。",
+        "事件前是否已出现抢跑定价（价格/仓位提前移动）？",
+        "若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？"
+      ],
+      "invalidation": "若事件后 20 个交易日内资产未出现显著重定价，或政策被撤回/逆转，则线索失效。",
+      "data_quality": {
+        "score": 0.6999999999999998,
+        "gaps": [
+          "缺少事件一致预期与期权隐含分布"
+        ]
+      },
+      "research_question": "【全球机会引擎研究任务】OPP-0003（event_revision，JP，equity_index，研究周期 1w-1m）\n研究对象：Nikkei 225(^N225)\n现象：Bank of Japan policy rate 出现 hike（+0.25），同期 Nikkei 225 近 1 个月收益 -9.7% 并出现异常。\n待检验假设：若政策变化未被充分定价，相关资产存在重新定价空间；若已被提前定价或基本面未响应，该假设不成立。\n初步传导逻辑：政策利率/操作变化 → 流动性/贴现率变化 → 风险溢价与估值重估 → 资产价格（置信度 0.30，条件：政策传导未被提前定价；信用/流动性渠道畅通）\n支持证据：观测到政策利率/操作变化：Bank of Japan policy rate: JP_POLICY_RATE 变动 +0.25（方向 hike），可用日 2026-10-16；来源 BIS 政策利率序列；政策变化窗口内资产异常：price_return_shock: down，强度 0.29，可用日 2026-10-15；政策变化窗口内资产异常：price_return_shock: down，强度 0.54，可用日 2026-11-06\n反对证据：政策变化可能已被提前定价: 缺少期权隐含分布与一致预期；若市场已提前计入，事件本身不构成新信息。\n失效条件：若事件后 20 个交易日内资产未出现显著重定价，或政策被撤回/逆转，则线索失效。\n需要回答：市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。；事件前是否已出现抢跑定价（价格/仓位提前移动）？；若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
+    }
+  },
+  "expected_outputs": [
+    "宏观与政策背景",
+    "行业中观结构",
+    "微观/资产层面证据",
+    "情景分析",
+    "估值与赔率",
+    "支持与反对证据清单",
+    "数据缺口与失效条件"
+  ],
+  "callback": {
+    "opportunity_id": "OPP-0003",
+    "fingerprint": "FP-87e0f21b6e2d152d",
+    "store": "goe.db:opportunities",
+    "status_map": {
+      "accepted": "deep_research",
+      "deferred": "watch",
+      "rejected": "excluded"
+    }
+  }
+}

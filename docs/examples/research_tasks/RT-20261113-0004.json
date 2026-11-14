@@ -1,0 +1,218 @@
+{
+  "task_id": "RT-20261113-0004",
+  "created_at": "2026-11-14T06:42:51Z",
+  "target_system": "investment-agent",
+  "priority": 4,
+  "opportunity_id": "OPP-0004",
+  "research_question": "【全球机会引擎研究任务】OPP-0004（event_revision，DE，equity_index，研究周期 1w-1m）\n研究对象：DAX 40(^GDAXI)\n现象：DAX 40 在事件「ECB Governing Council rate decision (December 2026)」（2026-12-17）前出现 1 项异常。\n待检验假设：若事件结果与当前定价隐含预期不一致，可能出现快速重定价；事件前异常是关注线索而非方向判断。\n初步传导逻辑：事件结果 → 预期修正 → 资产重定价（置信度 0.30，条件：事件结果存在不确定性；市场已提前定价部分结果）\n支持证据：事件临近：ECB Governing Council rate decision (December 2026)（2026-12-17）: 事件类型 central_bank，影响资产包含 DE_EQ_DAX；来源 已核验。；事件前已出现 drawdown_extreme 异常: near_high，强度 0.76，发生于 2026-11-11\n反对证据：事件可能已被充分定价: 缺少期权隐含分布与一致预期数据，无法判断预期差大小。\n失效条件：若事件日期已过且无显著价格/波动反应，或事件被取消/推迟，则线索失效。\n需要回答：市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。；事件前是否已出现抢跑定价（价格/仓位提前移动）？；若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。",
+  "context": {
+    "schema_version": "1.0",
+    "engine": {
+      "name": "global-opportunity-engine",
+      "version": "0.1.0",
+      "scan_id": "scan-20261114T064041Z-5f4fdf",
+      "as_of": "2026-11-13",
+      "generated_at": "2026-11-14T06:42:51Z"
+    },
+    "provenance": {
+      "config_hash": "caa1d4271381b09f9f9f52a79f5e1764f58094439df3261b72d7ed360ed15d70",
+      "data_hash": "09958974eb37e6bd903a33af9331eefa641ace3d50af96562ed3dfc09901aee6",
+      "db_path": "data/goe.db",
+      "disclaimer": "Opportunity discovery output for research prioritisation. Not investment advice; scores rank research value, not expected return."
+    },
+    "opportunity": {
+      "opportunity_id": "OPP-0004",
+      "fingerprint": "FP-0e92266752488523",
+      "status": "low_priority",
+      "score": 0.5194,
+      "score_breakdown": {
+        "anomaly_strength": 0.7617,
+        "economic_impact": 0.5,
+        "expectation_gap": 0.2452,
+        "repricing_potential": 0.4831,
+        "catalyst": 0.1,
+        "timing_window": 1.0,
+        "risk_liquidity": 0.775,
+        "evidence_quality": 0.6392
+      },
+      "archetype": "event_revision",
+      "title": "DAX 40：临近「ECB Governing Council rate decision (December 2026)」，已出现异常变化（事件驱动的预期修正线索）",
+      "market": "DE",
+      "asset_class": "equity_index",
+      "horizon": "1w-1m",
+      "instruments": [
+        {
+          "id": "DE_EQ_DAX",
+          "name": "DAX 40",
+          "symbol": "^GDAXI",
+          "asset_class": "equity_index",
+          "region": "DE",
+          "role": "primary",
+          "importance": 0.7,
+          "liquidity": "high"
+        }
+      ],
+      "discovery": {
+        "what": "DAX 40 在事件「ECB Governing Council rate decision (December 2026)」（2026-12-17）前出现 1 项异常。",
+        "why_now": "事件可能迫使市场重新评估政策路径或数据结果，从而修正预期。",
+        "hypothesis": "若事件结果与当前定价隐含预期不一致，可能出现快速重定价；事件前异常是关注线索而非方向判断。",
+        "expectation_gap": {
+          "value": 0.2452,
+          "confidence": 0.4,
+          "available": [
+            "residual_divergence"
+          ],
+          "definition": "reliability-weighted mean of observable expectation proxies; None means insufficient evidence",
+          "components": {
+            "positioning": {
+              "name": "positioning",
+              "value": null,
+              "weight": 0.35,
+              "source": "cftc",
+              "reason": "该资产无映射的 CFTC 持仓市场",
+              "evidence": {}
+            },
+            "valuation": {
+              "name": "valuation",
+              "value": null,
+              "weight": 0.25,
+              "source": "shiller",
+              "reason": "该资产没有可比的估值序列（仅覆盖美国宽基）",
+              "evidence": {
+                "theme": "germany_equity"
+              }
+            },
+            "residual_divergence": {
+              "name": "residual_divergence",
+              "value": 0.6129,
+              "weight": 0.4,
+              "source": "derived",
+              "reason": null,
+              "evidence": {
+                "kind": "equity",
+                "drivers": [
+                  "market",
+                  "dollar",
+                  "rates"
+                ],
+                "r2": 0.5301,
+                "n_obs": 72,
+                "residual_z": 2.419,
+                "residual": 0.0735,
+                "actual_return": 0.0582,
+                "predicted_return": -0.0152,
+                "sign_consistent": true,
+                "as_of_return_date": "2026-11-12",
+                "lag_days": 1,
+                "history_start": "2020-06-11",
+                "meaning": "1 个月实际收益中无法由市场/美元/利率解释的部分（同向且 |z|>=1.5 才计分）"
+              }
+            }
+          }
+        },
+        "mechanism_assets": 1,
+        "data_quality_gaps": [],
+        "theme": "germany_equity",
+        "anomalies": [
+          {
+            "id": "AN-d92e2cbedecc68",
+            "detector": "drawdown_extreme",
+            "direction": "near_high",
+            "score": 0.7617156473391581
+          }
+        ],
+        "expectation_gap_used": {
+          "value": 0.2452,
+          "confidence": 0.4,
+          "available": "True"
+        },
+        "invalidation_checks": []
+      },
+      "mechanism": {
+        "id": null,
+        "chain": [
+          "事件结果",
+          "预期修正",
+          "资产重定价"
+        ],
+        "confidence": 0.3,
+        "causal_status": "hypothesis",
+        "conditions": [
+          "事件结果存在不确定性",
+          "市场已提前定价部分结果"
+        ],
+        "identification": "事件研究法的标准识别问题：无法区分事件效应与其他同时发生的冲击。"
+      },
+      "evidence_for": [
+        {
+          "claim": "事件临近：ECB Governing Council rate decision (December 2026)（2026-12-17）",
+          "evidence": "事件类型 central_bank，影响资产包含 DE_EQ_DAX；来源 已核验。",
+          "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+          "tier": "official",
+          "as_of": "2026-11-13",
+          "strength": "moderate"
+        },
+        {
+          "claim": "事件前已出现 drawdown_extreme 异常",
+          "evidence": "near_high，强度 0.76，发生于 2026-11-11",
+          "source": "yahoo",
+          "tier": "aggregator",
+          "as_of": "2026-11-11",
+          "strength": "moderate"
+        }
+      ],
+      "evidence_against": [
+        {
+          "claim": "事件可能已被充分定价",
+          "evidence": "缺少期权隐含分布与一致预期数据，无法判断预期差大小。",
+          "source": "data_gap",
+          "tier": "derived",
+          "as_of": "2026-11-13",
+          "strength": "strong"
+        }
+      ],
+      "catalysts": [
+        {
+          "id": "ECB_2026_12_17",
+          "date": "2026-12-17",
+          "type": "central_bank",
+          "title": "ECB Governing Council rate decision (December 2026)",
+          "verified": true,
+          "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html"
+        }
+      ],
+      "open_questions": [
+        "市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。",
+        "事件前是否已出现抢跑定价（价格/仓位提前移动）？",
+        "若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？"
+      ],
+      "invalidation": "若事件日期已过且无显著价格/波动反应，或事件被取消/推迟，则线索失效。",
+      "data_quality": {
+        "score": 0.7,
+        "gaps": [
+          "缺少期权隐含分布与事件一致预期"
+        ]
+      },
+      "research_question": "【全球机会引擎研究任务】OPP-0004（event_revision，DE，equity_index，研究周期 1w-1m）\n研究对象：DAX 40(^GDAXI)\n现象：DAX 40 在事件「ECB Governing Council rate decision (December 2026)」（2026-12-17）前出现 1 项异常。\n待检验假设：若事件结果与当前定价隐含预期不一致，可能出现快速重定价；事件前异常是关注线索而非方向判断。\n初步传导逻辑：事件结果 → 预期修正 → 资产重定价（置信度 0.30，条件：事件结果存在不确定性；市场已提前定价部分结果）\n支持证据：事件临近：ECB Governing Council rate decision (December 2026)（2026-12-17）: 事件类型 central_bank，影响资产包含 DE_EQ_DAX；来源 已核验。；事件前已出现 drawdown_extreme 异常: near_high，强度 0.76，发生于 2026-11-11\n反对证据：事件可能已被充分定价: 缺少期权隐含分布与一致预期数据，无法判断预期差大小。\n失效条件：若事件日期已过且无显著价格/波动反应，或事件被取消/推迟，则线索失效。\n需要回答：市场对事件的预期分布是什么（而非仅仅事件时间）？本系统缺少期权隐含分布。；事件前是否已出现抢跑定价（价格/仓位提前移动）？；若事件结果符合预期，是否仍存在二阶影响（指引、点阵图、政策路径）？\n任务性质：这是研究线索的事实核对与条件性分析，不构成投资建议；不要给买卖建议、收益承诺或目标价。\n请完成（只基于可核验事实）：① 核对宏观/价格/仓位事实与时间戳；② 区分支持证据、反对证据、代理指标与数据缺口；③ 在明确条件下（若 A 成立则 B）列出可证伪情景，不要求给出概率或目标价；④ 明确说明哪些问题当前数据无法回答。证据不足时请直接说明，不要补全缺失数据。"
+    }
+  },
+  "expected_outputs": [
+    "宏观与政策背景",
+    "行业中观结构",
+    "微观/资产层面证据",
+    "情景分析",
+    "估值与赔率",
+    "支持与反对证据清单",
+    "数据缺口与失效条件"
+  ],
+  "callback": {
+    "opportunity_id": "OPP-0004",
+    "fingerprint": "FP-0e92266752488523",
+    "store": "goe.db:opportunities",
+    "status_map": {
+      "accepted": "deep_research",
+      "deferred": "watch",
+      "rejected": "excluded"
+    }
+  }
+}

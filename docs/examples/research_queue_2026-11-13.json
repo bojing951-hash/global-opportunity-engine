@@ -1,0 +1,46 @@
+{
+  "as_of": "2026-11-13",
+  "generated_at": "2026-11-14T06:42:51Z",
+  "queue": [
+    {
+      "task_id": "RT-20261113-0001",
+      "opportunity_id": "OPP-0001",
+      "priority": 1,
+      "status": "watch",
+      "score": 0.6056,
+      "path": "docs/examples/research_tasks/RT-20261113-0001.json"
+    },
+    {
+      "task_id": "RT-20261113-0002",
+      "opportunity_id": "OPP-0002",
+      "priority": 2,
+      "status": "watch",
+      "score": 0.5927,
+      "path": "docs/examples/research_tasks/RT-20261113-0002.json"
+    },
+    {
+      "task_id": "RT-20261113-0003",
+      "opportunity_id": "OPP-0003",
+      "priority": 3,
+      "status": "watch",
+      "score": 0.5477,
+      "path": "docs/examples/research_tasks/RT-20261113-0003.json"
+    },
+    {
+      "task_id": "RT-20261113-0004",
+      "opportunity_id": "OPP-0004",
+      "priority": 4,
+      "status": "low_priority",
+      "score": 0.5194,
+      "path": "docs/examples/research_tasks/RT-20261113-0004.json"
+    },
+    {
+      "task_id": "RT-20261113-0005",
+      "opportunity_id": "OPP-0005",
+      "priority": 5,
+      "status": "low_priority",
+      "score": 0.4775,
+      "path": "docs/examples/research_tasks/RT-20261113-0005.json"
+    }
+  ]
+}

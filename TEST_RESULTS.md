@@ -57,9 +57,10 @@
 见 `PROJECT_STATE.md` §6 与仓库内 `reports/`（示例拷贝在 `docs/examples/`）：
 
 - `goe ingest --mode backfill`：价格 358,310 行 / 125 标的；指标 159,508 行 / 92 序列；失败 0。
-- 审计后最终扫描：异常 1,649；机制 5（2 mixed / 3 unsupported，p 值 + BH-FDR）；机会 18（9 watch / 7 low_priority / 2 excluded / 0 deep_research）。
-- `goe handoff --ia-path ~/investment-agent-dev --limit 1`：investment-agent `research-run` 返回 rc=0，
-  产出 `report.md` / `report.json`。
+- 审计后最终扫描：异常 1,511；机制 5（2 mixed / 3 unsupported，p 值 + BH-FDR）；机会 11（3 watch / 2 low_priority / 1 invalidated / 5 excluded / 0 deep_research）。
+- `goe handoff --ia-path ~/investment-agent-dev --limit 1`：investment-agent 进程 rc=0，但 S8 接地问答返回
+  `out_of_scope`；A 记录 `refused` / `not_completed:refused`，CLI exit 2，**不把 rc=0 当研究成功**。
+  这与“B 成功完成研究”是不同状态，验收中单列为未达成。
 
 ## 4. 历史验证
 
