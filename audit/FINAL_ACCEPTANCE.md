@@ -58,6 +58,10 @@ newly-found P0/P1s fixed; residual limitations explicit, no fabricated validatio
   A records `partial` / `not_completed:partial`, not success; event `ia_research_not_completed`.
 - Parser unit tests cover ok_valid / rejected / insufficient_data / partial / missing artifact /
   stdout `ok:false`; `investment-agent` was not modified.
+- A *scoped factual* question (US policy rate level/change, as_of 2026-11-12, explicit "no advice")
+  was also sent directly to B: B still returned `out_of_scope` (its zero-model intent gate is
+  brittle). A again recorded failure rather than success. No real `ok_valid` could be produced
+  without modifying B, which the task forbids.
 
 ## 6. Reproducibility
 ```bash

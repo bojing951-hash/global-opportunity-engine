@@ -4,7 +4,7 @@
 - Branch: `fix/autonomous-audit-remediation`
 - Base (main/remote): `e5da620cafce5b6214252de35538c70f7112aa3a`
 - Working commit: audit baseline `bb02363` + final remediation changes (see FIX_LOG); commits pending
-- Worktree: intentionally dirty during this loop
+- Worktree: clean; all changes committed and pushed to `origin/fix/autonomous-audit-remediation`
 
 ## Completed this round
 1. Baseline + independent audits (2 subagents: data/engineering, research method).
@@ -15,6 +15,11 @@
 6. Rebuilt scan: 1,649 anomalies; 5 mechanisms (2 mixed/3 unsupported); 18 candidates (9 watch, 7 low, 2 excluded, 0 deep under strict gates).
 7. Historical replay with PIT slices: 7/7; added observed-policy and upside-divergence archetypes.
 8. Handoff semantic parser verified: downstream partial/gap is recorded as not_completed, not success.
+
+## Final status
+Objective complete. Five gates assessed: engineering PASS, data PASS with documented residuals,
+research method PARTIAL (proxies, not consensus), screening PARTIAL (7/7 discovery; no return edge),
+handoff PASS for semantic correctness (B refuses; A never claims success).
 
 ## Pending
 1. ~~Historical case rerun~~ done (7/7); descriptive forward-return study added (`audit/FORWARD_RETURNS.md`).
