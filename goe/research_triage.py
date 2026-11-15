@@ -16,6 +16,8 @@ import numpy as np
 import pandas as pd
 
 from .config import load_themes, load_universe
+from .evidence.cross_asset import compute_fits, count_discriminating, evidence_for_bundle
+from .evidence.external import attach_external
 from .expectations import compute_expectation_gap
 from .hypotheses import build_hypotheses
 from .timesemantics import filter_recent
@@ -45,6 +47,7 @@ class ResearchCandidate:
     rationale: str = ""
     data_quality: dict[str, Any] = field(default_factory=dict)
     evidence_gaps: list[str] = field(default_factory=list)
+    research_readiness: str = ""
     evidence_for: list[dict[str, Any]] = field(default_factory=list)
     evidence_against: list[dict[str, Any]] = field(default_factory=list)
     evaluation_id: str = ""
@@ -202,7 +205,11 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
                 "policy_calendar": False,
             },
         )
+        fits = compute_fits(fs, iid, spec, as_of)
+        bundle = evidence_for_bundle(bundle, fits)
+        bundle = attach_external(bundle, spec, iid, as_of)
         hypotheses = bundle["hypotheses"]
+        discriminating_count = count_discriminating(bundle)
         falsification = list(bundle["tests"])
         discriminating = bool(bundle["discriminating"])
         decision = bundle["decision_impact"]
@@ -228,7 +235,7 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
         dist_level = 2 if len(avail_ids) >= 2 else (1 if (len(avail_ids) >= 1 or len(any_ids) >= 2) else 0)
         impact_level = 2 if (float(spec.importance) >= 0.8 and gap_level > 0) else \
             (1 if float(spec.importance) >= 0.5 else 0)
-        if mat_level < 1 or gap_level == 0 or not discriminating:
+        if mat_level < 1 or gap_level == 0 or not discriminating or discriminating_count < 2:
             tier = "intelligence"
         elif mat_level >= 3 and gap_level >= 2 and dist_level >= 2 and impact_level >= 2:
             tier = "A"
@@ -258,8 +265,11 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
             priority_tier=tier, priority_rank=0,
             rationale=f"tier {tier}: case={bundle['case']}, materiality L{mat_level}, "
                       f"gap L{gap_level}, distinguishability L{dist_level}, impact L{impact_level}, "
-                      f"open_hypotheses={bundle['open_count']}, cost={cost['hours']}h",
-            data_quality={"score": float(gap.confidence), "gaps": unknowns},
+                      f"open_hypotheses={bundle['open_count']}, discriminating={discriminating_count}, "
+                      f"cost={cost['hours']}h",
+            data_quality={"score": float(gap.confidence), "gaps": unknowns,
+                          "cross_asset": fits, "discriminating_hypotheses": discriminating_count},
+            research_readiness="evidence_ok" if discriminating_count >= 2 else "evidence_gap",
             evidence_gaps=unknowns, theme=theme,
             evidence_for=evidence_for, evidence_against=evidence_against,
             evaluation_id=f"D:{as_of}:{iid}",

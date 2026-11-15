@@ -39,3 +39,6 @@ evaluation measures asset cards, not D's research brief.
 
 | P1-G | P1 | release proof accepted a shell command and rename could hide a dirty code file | proof command validation was substring-based; dirty parser ignored rename destination | direct `python -m pytest tests` only, no `-c`; rename destination checked; rerun counts must match proof; tests reproduce both attacks | FIXED |
 | P1-H | P1 | untestable hypotheses leaked supporting evidence; 20 candidates only 7 structural signatures; SLV treated as futures | unconditional evidence + generic IDs | untestable evidence empty; phenomenon namespaces; 18 structural signatures; all 20 candidates pass the research contract; futures-only artifact test; tests cover all asset classes | FIXED |
+
+| P1-I | P1 | candidates with only "unknown" evidence were still tiered research | gate counted labels/tests, not measured evidence | cross-asset measured evidence + evidence gate; 20 -> 1 research / 19 intelligence; contract enforces evidence_ok + >=2 discriminating hypotheses | FIXED (product behavior change) |
+| P2-J | P2 | consensus/OIS not available as live licensed feeds | no vendor/authorization in environment | PIT file adapters + policy proxy script; consensus BLOCKED, no fabricated values; documented | OPEN (external blocker) |

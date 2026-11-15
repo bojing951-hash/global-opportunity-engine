@@ -11,7 +11,7 @@
 
 | 指标 | 结果 |
 |---|---|
-| 通过 | **179** |
+| 通过 | **208** |
 | 失败 | 0 |
 | 跳过/取消 | 9（标记为 `network` 的联网测试） |
 | 耗时 | ~75s |
@@ -87,7 +87,7 @@
 
 ```bash
 make setup
-make test           # 179 passed (offline)
+make test           # 208 passed (offline)
 make test-network   # 9 passed
 make cases          # 7 historical episodes
 make scan           # full pipeline on current data

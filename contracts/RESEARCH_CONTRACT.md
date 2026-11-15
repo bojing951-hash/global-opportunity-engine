@@ -74,3 +74,12 @@ A failed handoff MUST leave the candidate and all hypotheses/evidence intact; it
 adds task/result/event. Candidate update never deletes old events. No RC-* row may live in V1 tables;
 legacy RC-* rows are migrated once by `Store._migrate_legacy_v2()`.
 `Store.research_integrity()` must return zero for all orphan counters and legacy RC rows.
+
+## Evidence sufficiency gate (2026-11-15 decision)
+A candidate may remain a research candidate only when at least **two open hypotheses** each carry
+at least one **measured, discriminating** evidence item (`class != "unknown"` and
+`discriminating == true`). Availability notes, price-move restatements and unknown gaps do not count.
+Otherwise the candidate is retained as Market Intelligence with
+`research_readiness="evidence_gap"`; it is not deleted, ranked, or handed to B.
+`research_readiness="evidence_ok"` is mandatory for tiers A/B/C and is enforced by
+`goe.contracts.validate_research_candidate`.

@@ -50,10 +50,16 @@ def test_research_candidate_contract():
         "competing_hypotheses": [
             {"id": "H1", "label": "risk premium", "type": "risk_premium",
              "status": "open", "implications": "x",
-             "evidence_for": [], "evidence_against": []},
+             "evidence_for": [{"claim": "measured factor", "class": "statistical_association",
+                               "source": "derived", "available_at": "2024-01-01",
+                               "discriminating": True}],
+             "evidence_against": []},
             {"id": "H2", "label": "data artifact", "type": "data_artifact",
              "status": "open", "implications": "y",
-             "evidence_for": [], "evidence_against": []}],
+             "evidence_for": [{"claim": "measured artifact", "class": "statistical_association",
+                               "source": "derived", "available_at": "2024-01-01",
+                               "discriminating": True}],
+             "evidence_against": []}],
         "evidence": [{"claim": "fact", "class": "observed_fact", "source": "db",
                       "available_at": "2024-01-01"}],
         "critical_unknowns": ["earnings revisions"],
@@ -69,6 +75,7 @@ def test_research_candidate_contract():
         "evidence_against": [{"claim": "counter", "class": "unknown", "source": "gap",
                              "available_at": "2024-01-01"}],
         "evaluation_id": "D:2024-01-01:US_EQ_SPY", "method": "D_v2_triage",
+        "research_readiness": "evidence_ok",
     }
     validate_research_candidate(c)
     c["competing_hypotheses"] = c["competing_hypotheses"][:1]
@@ -198,3 +205,31 @@ def test_release_rejects_reverse_rename_and_subset(monkeypatch, tmp_path):
     p.write_text(json.dumps(_v3_proof(command_template=k_subset)), encoding="utf-8")
     with pytest.raises(rel.ReleaseError, match="forbidden selector|canonical"):
         rel.verify_test_proof(p)
+
+
+def test_research_tier_requires_two_measured_discriminators():
+    c = {
+        "research_id": "R-2", "as_of": "2024-01-01", "market": "US",
+        "asset_class": "equity_etf", "instruments": ["US_EQ_SPY"],
+        "observed_phenomenon": "x", "materiality": "high",
+        "competing_hypotheses": [
+            {"id": "H1", "label": "a", "type": "risk_premium", "status": "open",
+             "implications": "", "evidence_for": [{"claim": "m", "class": "statistical_association",
+             "source": "d", "available_at": "2024-01-01", "discriminating": True}],
+             "evidence_against": []},
+            {"id": "H2", "label": "b", "type": "data_artifact", "status": "open",
+             "implications": "", "evidence_for": [], "evidence_against": []}],
+        "evidence": [{"claim": "m", "class": "statistical_association", "source": "d",
+                      "available_at": "2024-01-01"}],
+        "critical_unknowns": ["x"],
+        "falsification_conditions": [{"test": "a", "threshold": "1", "data": "d", "hypothesis_id": "H1"},
+                                     {"test": "b", "threshold": "2", "data": "d", "hypothesis_id": "H2"}],
+        "required_data": [], "research_cost": {"hours": 2, "data_access": "low"},
+        "decision_impact": {"if_true": "a", "if_false": "b"},
+        "priority_tier": "B", "priority_rank": 1, "rationale": "x",
+        "data_quality": {}, "evidence_gaps": [], "evidence_for": [{"claim": "m"}],
+        "evidence_against": [{"claim": "u"}], "evaluation_id": "D:x:y", "method": "D_v2_triage",
+        "research_readiness": "evidence_ok",
+    }
+    with pytest.raises(ContractError):
+        validate_research_candidate(c)

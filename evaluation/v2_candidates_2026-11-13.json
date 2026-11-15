@@ -30,17 +30,18 @@
           "type": "global_risk",
           "status": "open",
           "implications": "本地基准与全球因子应能解释大部分变动；剔除后残差应显著缩小。",
-          "evidence_for": [],
-          "evidence_against": [
+          "evidence_for": [
             {
-              "claim": "未建立可执行的本地基准对照",
-              "value": "benchmark available but regression not run",
-              "class": "unknown",
-              "source": "prices",
+              "claim": "本地基准回归",
+              "value": "R²=0.72, beta=1.18, residual_z=0.19, n=252",
+              "class": "statistical_association",
+              "source": "derived/cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQJP-LOCAL"
+              "hypothesis_id": "H-EQJP-LOCAL",
+              "discriminating": true
             }
-          ]
+          ],
+          "evidence_against": []
         },
         {
           "id": "H-EQJP-GLOBAL",
@@ -48,24 +49,16 @@
           "type": "global_risk",
           "status": "open",
           "implications": "同日股票、信用、商品和美元应同向；控制全球因子后本地残差消失。",
-          "evidence_for": [
-            {
-              "claim": "单月变动达到可检验幅度",
-              "value": "1m=9.7%",
-              "class": "observed_fact",
-              "source": "prices",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQJP-GLOBAL"
-            }
-          ],
+          "evidence_for": [],
           "evidence_against": [
             {
-              "claim": "未提供同日跨资产横截面",
-              "value": "no same-day cross-asset sample",
-              "class": "unknown",
-              "source": "cross_asset",
+              "claim": "全球因子解释力不足",
+              "value": "R²=0.07 < 0.30; residual_z=0.28",
+              "class": "statistical_association",
+              "source": "derived/cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQJP-GLOBAL"
+              "hypothesis_id": "H-EQJP-GLOBAL",
+              "discriminating": true
             }
           ]
         },
@@ -122,12 +115,13 @@
           "implications": "本币贬值应压制本地股票（外币投资者视角）；汇率与股市同向。",
           "evidence_for": [
             {
-              "claim": "本地汇率可观察",
-              "value": "local FX",
-              "class": "observed_fact",
-              "source": "prices",
+              "claim": "本币汇率 beta",
+              "value": "R²=0.01, beta=-0.45, residual_z=0.25, n=252",
+              "class": "statistical_association",
+              "source": "derived/cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQJP-FX"
+              "hypothesis_id": "H-EQJP-FX",
+              "discriminating": true
             }
           ],
           "evidence_against": [
@@ -180,12 +174,13 @@
       ],
       "evidence": [
         {
-          "claim": "单月变动达到可检验幅度",
-          "value": "1m=9.7%",
-          "class": "observed_fact",
-          "source": "prices",
+          "claim": "本地基准回归",
+          "value": "R²=0.72, beta=1.18, residual_z=0.19, n=252",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-GLOBAL"
+          "hypothesis_id": "H-EQJP-LOCAL",
+          "discriminating": true
         },
         {
           "claim": "区域属于政策敏感市场",
@@ -196,12 +191,13 @@
           "hypothesis_id": "H-EQJP-POLICY"
         },
         {
-          "claim": "本地汇率可观察",
-          "value": "local FX",
-          "class": "observed_fact",
-          "source": "prices",
+          "claim": "本币汇率 beta",
+          "value": "R²=0.01, beta=-0.45, residual_z=0.25, n=252",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-FX"
+          "hypothesis_id": "H-EQJP-FX",
+          "discriminating": true
         }
       ],
       "critical_unknowns": [
@@ -259,28 +255,69 @@
       },
       "priority_tier": "A",
       "priority_rank": 1,
-      "rationale": "tier A: case=country_equity, materiality L3, gap L2, distinguishability L2, impact L2, open_hypotheses=4, cost=10h",
+      "rationale": "tier A: case=country_equity, materiality L3, gap L2, distinguishability L2, impact L2, open_hypotheses=4, discriminating=2, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
           "本地一致预期/盈利修正",
           "汇率/资金流",
           "政策决议精确时点"
-        ]
+        ],
+        "cross_asset": {
+          "available": true,
+          "instrument": "JP_EQ_N225",
+          "as_of": "2026-11-13",
+          "global": {
+            "available": true,
+            "kind": "global",
+            "factor": "US_EQ_SPY,US_EQ_QQQ,US_FX_DXY,US_CR_HYG,CM_MET_GC,US_FI_IEF",
+            "n_obs": 252,
+            "r2": 0.0722,
+            "beta": 0.9131,
+            "residual_z": 0.2753,
+            "as_of": "2026-11-13",
+            "reason": ""
+          },
+          "local": {
+            "available": true,
+            "kind": "local",
+            "factor": "JP_EQ_TOPIX",
+            "n_obs": 252,
+            "r2": 0.7238,
+            "beta": 1.1757,
+            "residual_z": 0.1858,
+            "as_of": "2026-11-13",
+            "reason": ""
+          },
+          "fx": {
+            "available": true,
+            "kind": "fx",
+            "factor": "GX_FX_USDJPY",
+            "n_obs": 252,
+            "r2": 0.0133,
+            "beta": -0.454,
+            "residual_z": 0.2498,
+            "as_of": "2026-11-13",
+            "reason": ""
+          }
+        },
+        "discriminating_hypotheses": 2
       },
       "evidence_gaps": [
         "本地一致预期/盈利修正",
         "汇率/资金流",
         "政策决议精确时点"
       ],
+      "research_readiness": "evidence_ok",
       "evidence_for": [
         {
-          "claim": "单月变动达到可检验幅度",
-          "value": "1m=9.7%",
-          "class": "observed_fact",
-          "source": "prices",
+          "claim": "本地基准回归",
+          "value": "R²=0.72, beta=1.18, residual_z=0.19, n=252",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-GLOBAL"
+          "hypothesis_id": "H-EQJP-LOCAL",
+          "discriminating": true
         },
         {
           "claim": "区域属于政策敏感市场",
@@ -291,30 +328,24 @@
           "hypothesis_id": "H-EQJP-POLICY"
         },
         {
-          "claim": "本地汇率可观察",
-          "value": "local FX",
-          "class": "observed_fact",
-          "source": "prices",
+          "claim": "本币汇率 beta",
+          "value": "R²=0.01, beta=-0.45, residual_z=0.25, n=252",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-FX"
+          "hypothesis_id": "H-EQJP-FX",
+          "discriminating": true
         }
       ],
       "evidence_against": [
         {
-          "claim": "未建立可执行的本地基准对照",
-          "value": "benchmark available but regression not run",
-          "class": "unknown",
-          "source": "prices",
+          "claim": "全球因子解释力不足",
+          "value": "R²=0.07 < 0.30; residual_z=0.28",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-LOCAL"
-        },
-        {
-          "claim": "未提供同日跨资产横截面",
-          "value": "no same-day cross-asset sample",
-          "class": "unknown",
-          "source": "cross_asset",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-GLOBAL"
+          "hypothesis_id": "H-EQJP-GLOBAL",
+          "discriminating": true
         },
         {
           "claim": "一致预期/财报修正未接入",
@@ -364,544 +395,30 @@
       "theme": "japan_equity"
     },
     {
-      "research_id": "RC-20261113-19",
+      "research_id": "RC-20261113-01",
       "as_of": "2026-11-13",
-      "market": "US",
-      "asset_class": "sector_equity",
+      "market": "CH",
+      "asset_class": "equity_index",
       "instruments": [
-        "US_SEC_XLV"
+        "CH_EQ_SMI"
       ],
-      "observed_phenomenon": "Health Care Select Sector SPDR 近期 price_return_shock（up，分数 0.17）；1 个月收益 +8.0%；回撤分位 0.87。",
+      "observed_phenomenon": "Swiss Market Index 近期 drawdown_extreme（near_high，分数 0.87）；1 个月收益 +7.2%；回撤分位 0.97。",
       "materiality": {
-        "level": 2,
-        "importance": 0.6,
-        "anomaly_score": 0.16697510183366862,
-        "return_1m": 0.0797309414916334,
+        "level": 1,
+        "importance": 0.4,
+        "anomaly_score": 0.8709293089753775,
+        "return_1m": 0.07215180984954928,
         "gap_score": 1.0,
         "gap_level": 2,
         "mechanism_conflict": false,
-        "distinguishability_level": 2,
-        "decision_impact_level": 1,
-        "has_change": true
-      },
-      "competing_hypotheses": [
-        {
-          "id": "H-SECHC-SECTOR",
-          "label": "Health Care Select Sector SPDR 行业相对基本面/需求",
-          "type": "fundamental",
-          "status": "untestable",
-          "implications": "行业相对盈利/需求应领先；需要行业一致预期与需求数据。",
-          "evidence_for": [],
-          "evidence_against": [
-            {
-              "claim": "行业盈利/需求数据未接入",
-              "value": "sector fundamentals missing",
-              "class": "unknown",
-              "source": "data_gap",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-SECHC-SECTOR"
-            }
-          ]
-        },
-        {
-          "id": "H-SECHC-STYLE",
-          "label": "利率/风格因子驱动的相对表现",
-          "type": "risk_premium",
-          "status": "open",
-          "implications": "利率上行应压制长久期成长行业；相对基准的利率 beta 应显著。",
-          "evidence_for": [
-            {
-              "claim": "利率与相对强弱可观察",
-              "value": "1m=8.0%",
-              "class": "observed_fact",
-              "source": "prices",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-SECHC-STYLE"
-            }
-          ],
-          "evidence_against": [
-            {
-              "claim": "未估计行业利率 beta",
-              "value": "beta not estimated",
-              "class": "unknown",
-              "source": "derived",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-SECHC-STYLE"
-            }
-          ]
-        },
-        {
-          "id": "H-SECHC-GLOBAL",
-          "label": "全球风险/行业轮动",
-          "type": "global_risk",
-          "status": "open",
-          "implications": "同日防御/周期行业应反向；相对表现应由共同因子解释。",
-          "evidence_for": [
-            {
-              "claim": "行业相对表现可观察",
-              "value": "1m=8.0%",
-              "class": "observed_fact",
-              "source": "prices",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-SECHC-GLOBAL"
-            }
-          ],
-          "evidence_against": [
-            {
-              "claim": "没有同日行业横截面",
-              "value": "no sector cross-section",
-              "class": "unknown",
-              "source": "cross_asset",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-SECHC-GLOBAL"
-            }
-          ]
-        },
-        {
-          "id": "H-SECHC-POS",
-          "label": "仓位/资金流拥挤",
-          "type": "positioning_flow",
-          "status": "untestable",
-          "implications": "拥挤行业应出现反转；ETF 资金流与相对表现背离。",
-          "evidence_for": [],
-          "evidence_against": [
-            {
-              "claim": "行业资金流未接入",
-              "value": "sector flows missing",
-              "class": "unknown",
-              "source": "data_gap",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-SECHC-POS"
-            }
-          ]
-        }
-      ],
-      "evidence": [
-        {
-          "claim": "利率与相对强弱可观察",
-          "value": "1m=8.0%",
-          "class": "observed_fact",
-          "source": "prices",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-SECHC-STYLE"
-        },
-        {
-          "claim": "行业相对表现可观察",
-          "value": "1m=8.0%",
-          "class": "observed_fact",
-          "source": "prices",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-SECHC-GLOBAL"
-        }
-      ],
-      "critical_unknowns": [
-        "行业一致预期/需求",
-        "ETF 资金流",
-        "行业利率 beta"
-      ],
-      "falsification_conditions": [
-        {
-          "hypothesis_id": "H-SECHC-STYLE",
-          "test": "相对基准的利率 beta",
-          "threshold": "beta significant and sign consistent",
-          "data": "UST",
-          "data_status": "available"
-        },
-        {
-          "hypothesis_id": "H-SECHC-GLOBAL",
-          "test": "行业多空对全球因子回归",
-          "threshold": "residual |z|<1.5",
-          "data": "cross_asset",
-          "data_status": "available"
-        }
-      ],
-      "required_data": [
-        "价格/成交量",
-        "CFTC 持仓（周度）",
-        "收益率曲线",
-        "宏观序列（按发布滞后）",
-        "分析师一致预期/修正",
-        "期权隐含分布",
-        "ETF 资金流",
-        "信用 OAS（仅有 HYG/IEF 代理）"
-      ],
-      "research_cost": {
-        "hours": 10,
-        "data_access": "medium"
-      },
-      "decision_impact": {
-        "if_true": "若利率/风格解释成立，研究久期与行业相对价值；若全球风险解释成立，研究防御/周期切换。",
-        "if_false": "若相对表现无法由风格/风险解释，保留为待验证的行业基本面问题。"
-      },
-      "priority_tier": "B",
-      "priority_rank": 2,
-      "rationale": "tier B: case=sector_equity, materiality L2, gap L2, distinguishability L2, impact L1, open_hypotheses=2, cost=10h",
-      "data_quality": {
-        "score": 0.4,
-        "gaps": [
-          "行业一致预期/需求",
-          "ETF 资金流",
-          "行业利率 beta"
-        ]
-      },
-      "evidence_gaps": [
-        "行业一致预期/需求",
-        "ETF 资金流",
-        "行业利率 beta"
-      ],
-      "evidence_for": [
-        {
-          "claim": "利率与相对强弱可观察",
-          "value": "1m=8.0%",
-          "class": "observed_fact",
-          "source": "prices",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-SECHC-STYLE"
-        },
-        {
-          "claim": "行业相对表现可观察",
-          "value": "1m=8.0%",
-          "class": "observed_fact",
-          "source": "prices",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-SECHC-GLOBAL"
-        }
-      ],
-      "evidence_against": [
-        {
-          "claim": "行业盈利/需求数据未接入",
-          "value": "sector fundamentals missing",
-          "class": "unknown",
-          "source": "data_gap",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-SECHC-SECTOR"
-        },
-        {
-          "claim": "未估计行业利率 beta",
-          "value": "beta not estimated",
-          "class": "unknown",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-SECHC-STYLE"
-        },
-        {
-          "claim": "没有同日行业横截面",
-          "value": "no sector cross-section",
-          "class": "unknown",
-          "source": "cross_asset",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-SECHC-GLOBAL"
-        },
-        {
-          "claim": "行业资金流未接入",
-          "value": "sector flows missing",
-          "class": "unknown",
-          "source": "data_gap",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-SECHC-POS"
-        }
-      ],
-      "evaluation_id": "D:2026-11-13:US_SEC_XLV",
-      "method": "D_v2_triage",
-      "v1_score": null,
-      "v1_status": null,
-      "theme": "us_sector_health"
-    },
-    {
-      "research_id": "RC-20261113-15",
-      "as_of": "2026-11-13",
-      "market": "US",
-      "asset_class": "equity_etf",
-      "instruments": [
-        "US_EQ_QQQ"
-      ],
-      "observed_phenomenon": "Invesco QQQ (Nasdaq 100) 近期 price_return_shock（up，分数 0.13）；1 个月收益 -5.6%；回撤分位 0.29。",
-      "materiality": {
-        "level": 2,
-        "importance": 0.95,
-        "anomaly_score": 0.12537393433190536,
-        "return_1m": -0.05594351960212729,
-        "gap_score": 0.328,
-        "gap_level": 2,
-        "mechanism_conflict": true,
         "distinguishability_level": 1,
-        "decision_impact_level": 2,
+        "decision_impact_level": 0,
         "has_change": true
       },
       "competing_hypotheses": [
         {
-          "id": "H-USEQ-GLOBAL",
-          "label": "全球共同风险/美元流动性冲击",
-          "type": "global_risk",
-          "status": "open",
-          "implications": "同日股票、信用、商品和美元应同向；控制全球因子后本地残差消失。",
-          "evidence_for": [
-            {
-              "claim": "单月变动达到可检验幅度",
-              "value": "1m=5.6%",
-              "class": "observed_fact",
-              "source": "prices",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-GLOBAL"
-            }
-          ],
-          "evidence_against": [
-            {
-              "claim": "未提供同日跨资产横截面",
-              "value": "no same-day cross-asset sample",
-              "class": "unknown",
-              "source": "cross_asset",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-GLOBAL"
-            }
-          ]
-        },
-        {
-          "id": "H-USEQ-RATES",
-          "label": "美国利率/估值折现率",
-          "type": "risk_premium",
-          "status": "open",
-          "implications": "实际利率上行应压制高估值成长；利率 beta 应显著。",
-          "evidence_for": [
-            {
-              "claim": "利率与估值代理可观察",
-              "value": "UST",
-              "class": "observed_fact",
-              "source": "curve",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-RATES"
-            }
-          ],
-          "evidence_against": [
-            {
-              "claim": "未估计实时利率 beta",
-              "value": "beta not estimated",
-              "class": "unknown",
-              "source": "derived",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-RATES"
-            }
-          ]
-        },
-        {
-          "id": "H-USEQ-FUND",
-          "label": "US 盈利/估值预期变化",
-          "type": "fundamental",
-          "status": "untestable",
-          "implications": "盈利修正/现金流预期应领先或同步；需要一致预期或财报数据。",
-          "evidence_for": [],
-          "evidence_against": [
-            {
-              "claim": "一致预期/财报修正未接入",
-              "value": "cannot test directly",
-              "class": "unknown",
-              "source": "data_gap",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-FUND"
-            }
-          ]
-        },
-        {
-          "id": "H-USEQ-POS",
-          "label": "仓位/资金流驱动的技术性移动",
-          "type": "positioning_flow",
-          "status": "untestable",
-          "implications": "CFTC/资金流极端仓位应随后均值回归；价格变动应集中在拥挤方向。",
-          "evidence_for": [],
-          "evidence_against": [
-            {
-              "claim": "仓位极端程度不足或缺失",
-              "value": "neutral/unknown",
-              "class": "unknown",
-              "source": "CFTC",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-POS"
-            }
-          ]
-        },
-        {
-          "id": "H-USEQ-ART",
-          "label": "数据伪影（换月/拆股/盘中/陈旧）",
-          "type": "data_artifact",
-          "status": "untestable",
-          "implications": "原始合约/拆分调整/抓取时点应能解释跳变；清洗后异常应消失。",
-          "evidence_for": [],
-          "evidence_against": [
-            {
-              "claim": "未记录价格清洗问题",
-              "value": "no price_data_issue",
-              "class": "observed_fact",
-              "source": "data_quality",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-ART"
-            }
-          ]
-        }
-      ],
-      "evidence": [
-        {
-          "claim": "单月变动达到可检验幅度",
-          "value": "1m=5.6%",
-          "class": "observed_fact",
-          "source": "prices",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-GLOBAL"
-        },
-        {
-          "claim": "利率与估值代理可观察",
-          "value": "UST",
-          "class": "observed_fact",
-          "source": "curve",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-RATES"
-        }
-      ],
-      "critical_unknowns": [
-        "盈利修正/估值",
-        "风格与利率 beta",
-        "资金流"
-      ],
-      "falsification_conditions": [
-        {
-          "hypothesis_id": "H-USEQ-GLOBAL",
-          "test": "同日跨资产 beta 与残差",
-          "threshold": "R² > 0.5 且残差 |z|<1.5",
-          "data": "cross_asset",
-          "data_status": "available"
-        },
-        {
-          "hypothesis_id": "H-USEQ-RATES",
-          "test": "利率 beta 与估值分位",
-          "threshold": "beta significant",
-          "data": "UST/valuation",
-          "data_status": "obtainable"
-        }
-      ],
-      "required_data": [
-        "价格/成交量",
-        "CFTC 持仓（周度）",
-        "收益率曲线",
-        "宏观序列（按发布滞后）",
-        "分析师一致预期/修正",
-        "期权隐含分布",
-        "ETF 资金流",
-        "信用 OAS（仅有 HYG/IEF 代理）"
-      ],
-      "research_cost": {
-        "hours": 10,
-        "data_access": "medium"
-      },
-      "decision_impact": {
-        "if_true": "若利率/全球风险解释成立，研究久期与风格暴露；若盈利解释成立，交 B 做估值/盈利研究。",
-        "if_false": "若均被证伪，保留为市场情报，不升级为研究候选。"
-      },
-      "priority_tier": "B",
-      "priority_rank": 3,
-      "rationale": "tier B: case=us_equity_etf, materiality L2, gap L2, distinguishability L1, impact L2, open_hypotheses=2, cost=10h",
-      "data_quality": {
-        "score": 0.4,
-        "gaps": [
-          "盈利修正/估值",
-          "风格与利率 beta",
-          "资金流"
-        ]
-      },
-      "evidence_gaps": [
-        "盈利修正/估值",
-        "风格与利率 beta",
-        "资金流"
-      ],
-      "evidence_for": [
-        {
-          "claim": "单月变动达到可检验幅度",
-          "value": "1m=5.6%",
-          "class": "observed_fact",
-          "source": "prices",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-GLOBAL"
-        },
-        {
-          "claim": "利率与估值代理可观察",
-          "value": "UST",
-          "class": "observed_fact",
-          "source": "curve",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-RATES"
-        }
-      ],
-      "evidence_against": [
-        {
-          "claim": "未提供同日跨资产横截面",
-          "value": "no same-day cross-asset sample",
-          "class": "unknown",
-          "source": "cross_asset",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-GLOBAL"
-        },
-        {
-          "claim": "未估计实时利率 beta",
-          "value": "beta not estimated",
-          "class": "unknown",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-RATES"
-        },
-        {
-          "claim": "一致预期/财报修正未接入",
-          "value": "cannot test directly",
-          "class": "unknown",
-          "source": "data_gap",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-FUND"
-        },
-        {
-          "claim": "仓位极端程度不足或缺失",
-          "value": "neutral/unknown",
-          "class": "unknown",
-          "source": "CFTC",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-POS"
-        },
-        {
-          "claim": "未记录价格清洗问题",
-          "value": "no price_data_issue",
-          "class": "observed_fact",
-          "source": "data_quality",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-ART"
-        }
-      ],
-      "evaluation_id": "D:2026-11-13:US_EQ_QQQ",
-      "method": "D_v2_triage",
-      "v1_score": 0.5142,
-      "v1_status": "low_priority",
-      "theme": "us_equity_growth"
-    },
-    {
-      "research_id": "RC-20261113-14",
-      "as_of": "2026-11-13",
-      "market": "TW",
-      "asset_class": "equity_index",
-      "instruments": [
-        "TW_EQ_TAIEX"
-      ],
-      "observed_phenomenon": "TAIEX 近期 price_return_shock（down，分数 0.81）；1 个月收益 -9.7%；回撤分位 0.20。",
-      "materiality": {
-        "level": 2,
-        "importance": 0.5,
-        "anomaly_score": 0.8096038529330292,
-        "return_1m": -0.09652588305404886,
-        "gap_score": 0.782,
-        "gap_level": 2,
-        "mechanism_conflict": false,
-        "distinguishability_level": 1,
-        "decision_impact_level": 1,
-        "has_change": true
-      },
-      "competing_hypotheses": [
-        {
-          "id": "H-EQTW-LOCAL",
-          "label": "TW 本地市场/区域风险因子",
+          "id": "H-EQCH-LOCAL",
+          "label": "CH 本地市场/区域风险因子",
           "type": "global_risk",
           "status": "open",
           "implications": "本地基准与全球因子应能解释大部分变动；剔除后残差应显著缩小。",
@@ -913,40 +430,32 @@
               "class": "unknown",
               "source": "prices",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQTW-LOCAL"
+              "hypothesis_id": "H-EQCH-LOCAL"
             }
           ]
         },
         {
-          "id": "H-EQTW-GLOBAL",
+          "id": "H-EQCH-GLOBAL",
           "label": "全球共同风险/美元流动性冲击",
           "type": "global_risk",
           "status": "open",
           "implications": "同日股票、信用、商品和美元应同向；控制全球因子后本地残差消失。",
-          "evidence_for": [
-            {
-              "claim": "单月变动达到可检验幅度",
-              "value": "1m=9.7%",
-              "class": "observed_fact",
-              "source": "prices",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQTW-GLOBAL"
-            }
-          ],
+          "evidence_for": [],
           "evidence_against": [
             {
-              "claim": "未提供同日跨资产横截面",
-              "value": "no same-day cross-asset sample",
-              "class": "unknown",
-              "source": "cross_asset",
+              "claim": "全球因子解释力不足",
+              "value": "R²=0.09 < 0.30; residual_z=1.16",
+              "class": "statistical_association",
+              "source": "derived/cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQTW-GLOBAL"
+              "hypothesis_id": "H-EQCH-GLOBAL",
+              "discriminating": true
             }
           ]
         },
         {
-          "id": "H-EQTW-FUND",
-          "label": "TW 盈利/基本面预期变化",
+          "id": "H-EQCH-FUND",
+          "label": "CH 盈利/基本面预期变化",
           "type": "fundamental",
           "status": "untestable",
           "implications": "盈利修正/现金流预期应领先或同步；需要一致预期或财报数据。",
@@ -958,12 +467,12 @@
               "class": "unknown",
               "source": "data_gap",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQTW-FUND"
+              "hypothesis_id": "H-EQCH-FUND"
             }
           ]
         },
         {
-          "id": "H-EQTW-POLICY",
+          "id": "H-EQCH-POLICY",
           "label": "本地政策/监管冲击",
           "type": "policy",
           "status": "untestable",
@@ -976,12 +485,12 @@
               "class": "unknown",
               "source": "calendar",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQTW-POLICY"
+              "hypothesis_id": "H-EQCH-POLICY"
             }
           ]
         },
         {
-          "id": "H-EQTW-POS",
+          "id": "H-EQCH-POS",
           "label": "仓位/资金流驱动的技术性移动",
           "type": "positioning_flow",
           "status": "untestable",
@@ -994,12 +503,12 @@
               "class": "unknown",
               "source": "CFTC",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQTW-POS"
+              "hypothesis_id": "H-EQCH-POS"
             }
           ]
         },
         {
-          "id": "H-EQTW-ART",
+          "id": "H-EQCH-ART",
           "label": "数据伪影（换月/拆股/盘中/陈旧）",
           "type": "data_artifact",
           "status": "untestable",
@@ -1012,19 +521,18 @@
               "class": "observed_fact",
               "source": "data_quality",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQTW-ART"
+              "hypothesis_id": "H-EQCH-ART"
             }
           ]
         }
       ],
       "evidence": [
         {
-          "claim": "单月变动达到可检验幅度",
-          "value": "1m=9.7%",
+          "claim": "近期异常",
+          "value": "drawdown_extreme near_high 分数 0.87",
           "class": "observed_fact",
-          "source": "prices",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQTW-GLOBAL"
+          "source": "engine/anomalies",
+          "available_at": "2026-11-10"
         }
       ],
       "critical_unknowns": [
@@ -1034,14 +542,14 @@
       ],
       "falsification_conditions": [
         {
-          "hypothesis_id": "H-EQTW-LOCAL",
+          "hypothesis_id": "H-EQCH-LOCAL",
           "test": "对本地基准与全球因子回归后的残差",
           "threshold": "|residual z| < 1.5",
           "data": "prices/regional benchmark",
           "data_status": "obtainable"
         },
         {
-          "hypothesis_id": "H-EQTW-GLOBAL",
+          "hypothesis_id": "H-EQCH-GLOBAL",
           "test": "同日跨资产 beta 与残差",
           "threshold": "R² > 0.5 且残差 |z|<1.5",
           "data": "cross_asset",
@@ -1066,32 +574,41 @@
         "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
         "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
       },
-      "priority_tier": "B",
-      "priority_rank": 4,
-      "rationale": "tier B: case=country_equity, materiality L2, gap L2, distinguishability L1, impact L1, open_hypotheses=2, cost=10h",
+      "priority_tier": "intelligence",
+      "priority_rank": 0,
+      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L2, distinguishability L1, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
           "本地一致预期/盈利修正",
           "汇率/资金流",
           "政策决议精确时点"
-        ]
+        ],
+        "cross_asset": {
+          "available": true,
+          "instrument": "CH_EQ_SMI",
+          "as_of": "2026-11-13",
+          "global": {
+            "available": true,
+            "kind": "global",
+            "factor": "US_EQ_SPY,US_EQ_QQQ,US_FX_DXY,US_CR_HYG,CM_MET_GC,US_FI_IEF",
+            "n_obs": 252,
+            "r2": 0.087,
+            "beta": 0.4103,
+            "residual_z": 1.1644,
+            "as_of": "2026-11-13",
+            "reason": ""
+          }
+        },
+        "discriminating_hypotheses": 0
       },
       "evidence_gaps": [
         "本地一致预期/盈利修正",
         "汇率/资金流",
         "政策决议精确时点"
       ],
-      "evidence_for": [
-        {
-          "claim": "单月变动达到可检验幅度",
-          "value": "1m=9.7%",
-          "class": "observed_fact",
-          "source": "prices",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQTW-GLOBAL"
-        }
-      ],
+      "research_readiness": "evidence_gap",
+      "evidence_for": [],
       "evidence_against": [
         {
           "claim": "未建立可执行的本地基准对照",
@@ -1099,15 +616,16 @@
           "class": "unknown",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQTW-LOCAL"
+          "hypothesis_id": "H-EQCH-LOCAL"
         },
         {
-          "claim": "未提供同日跨资产横截面",
-          "value": "no same-day cross-asset sample",
-          "class": "unknown",
-          "source": "cross_asset",
+          "claim": "全球因子解释力不足",
+          "value": "R²=0.09 < 0.30; residual_z=1.16",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQTW-GLOBAL"
+          "hypothesis_id": "H-EQCH-GLOBAL",
+          "discriminating": true
         },
         {
           "claim": "一致预期/财报修正未接入",
@@ -1115,7 +633,7 @@
           "class": "unknown",
           "source": "data_gap",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQTW-FUND"
+          "hypothesis_id": "H-EQCH-FUND"
         },
         {
           "claim": "没有可核验的决议/公告时点",
@@ -1123,7 +641,7 @@
           "class": "unknown",
           "source": "calendar",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQTW-POLICY"
+          "hypothesis_id": "H-EQCH-POLICY"
         },
         {
           "claim": "仓位极端程度不足或缺失",
@@ -1131,7 +649,7 @@
           "class": "unknown",
           "source": "CFTC",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQTW-POS"
+          "hypothesis_id": "H-EQCH-POS"
         },
         {
           "claim": "未记录价格清洗问题",
@@ -1139,224 +657,782 @@
           "class": "observed_fact",
           "source": "data_quality",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQTW-ART"
+          "hypothesis_id": "H-EQCH-ART"
         }
       ],
-      "evaluation_id": "D:2026-11-13:TW_EQ_TAIEX",
+      "evaluation_id": "D:2026-11-13:CH_EQ_SMI",
       "method": "D_v2_triage",
-      "v1_score": 0.3792,
-      "v1_status": "excluded",
-      "theme": "taiwan_equity"
+      "v1_score": null,
+      "v1_status": null,
+      "theme": "swiss_equity"
     },
     {
-      "research_id": "RC-20261113-21",
+      "research_id": "RC-20261113-02",
       "as_of": "2026-11-13",
       "market": "WORLD",
-      "asset_class": "equity_etf",
+      "asset_class": "commodity",
       "instruments": [
-        "WORLD_EQ_EEM"
+        "CM_AGR_LE"
       ],
-      "observed_phenomenon": "iShares MSCI Emerging Markets 近期 vol_regime_shift（expansion，分数 0.33）；1 个月收益 -5.0%；回撤分位 0.24。",
+      "observed_phenomenon": "Live Cattle front month 近期 drawdown_extreme（deep_drawdown，分数 0.99）；1 个月收益 -2.2%；回撤分位 0.02。",
       "materiality": {
-        "level": 2,
-        "importance": 0.5,
-        "anomaly_score": 0.3271983444756895,
-        "return_1m": -0.050473676515090604,
-        "gap_score": 0.281,
-        "gap_level": 1,
-        "mechanism_conflict": true,
-        "distinguishability_level": 1,
-        "decision_impact_level": 1,
+        "level": 1,
+        "importance": 0.2,
+        "anomaly_score": 0.9880857823669579,
+        "return_1m": -0.02233139855426547,
+        "gap_score": 0.0,
+        "gap_level": 0,
+        "mechanism_conflict": false,
+        "distinguishability_level": 2,
+        "decision_impact_level": 0,
         "has_change": true
       },
       "competing_hypotheses": [
         {
-          "id": "H-USEQ-GLOBAL",
-          "label": "全球共同风险/美元流动性冲击",
-          "type": "global_risk",
-          "status": "open",
-          "implications": "同日股票、信用、商品和美元应同向；控制全球因子后本地残差消失。",
-          "evidence_for": [
-            {
-              "claim": "单月变动达到可检验幅度",
-              "value": "1m=5.0%",
-              "class": "observed_fact",
-              "source": "prices",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-GLOBAL"
-            }
-          ],
-          "evidence_against": [
-            {
-              "claim": "未提供同日跨资产横截面",
-              "value": "no same-day cross-asset sample",
-              "class": "unknown",
-              "source": "cross_asset",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-GLOBAL"
-            }
-          ]
-        },
-        {
-          "id": "H-USEQ-RATES",
-          "label": "美国利率/估值折现率",
-          "type": "risk_premium",
-          "status": "open",
-          "implications": "实际利率上行应压制高估值成长；利率 beta 应显著。",
-          "evidence_for": [
-            {
-              "claim": "利率与估值代理可观察",
-              "value": "UST",
-              "class": "observed_fact",
-              "source": "curve",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-RATES"
-            }
-          ],
-          "evidence_against": [
-            {
-              "claim": "未估计实时利率 beta",
-              "value": "beta not estimated",
-              "class": "unknown",
-              "source": "derived",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-RATES"
-            }
-          ]
-        },
-        {
-          "id": "H-USEQ-FUND",
-          "label": "WORLD 盈利/估值预期变化",
+          "id": "H-AGRI-SUPPLY",
+          "label": "供给冲击/库存变化",
           "type": "fundamental",
           "status": "untestable",
-          "implications": "盈利修正/现金流预期应领先或同步；需要一致预期或财报数据。",
+          "implications": "库存、产量或地缘供给应领先价格；曲线 backwardation 加深。",
           "evidence_for": [],
           "evidence_against": [
             {
-              "claim": "一致预期/财报修正未接入",
-              "value": "cannot test directly",
+              "claim": "库存/产量数据未接入",
+              "value": "inventory missing",
               "class": "unknown",
               "source": "data_gap",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-FUND"
+              "hypothesis_id": "H-AGRI-SUPPLY"
             }
           ]
         },
         {
-          "id": "H-USEQ-POS",
-          "label": "仓位/资金流驱动的技术性移动",
-          "type": "positioning_flow",
-          "status": "untestable",
-          "implications": "CFTC/资金流极端仓位应随后均值回归；价格变动应集中在拥挤方向。",
-          "evidence_for": [],
-          "evidence_against": [
-            {
-              "claim": "仓位极端程度不足或缺失",
-              "value": "neutral/unknown",
-              "class": "unknown",
-              "source": "CFTC",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-POS"
-            }
-          ]
-        },
-        {
-          "id": "H-USEQ-ART",
-          "label": "数据伪影（换月/拆股/盘中/陈旧）",
-          "type": "data_artifact",
-          "status": "untestable",
-          "implications": "原始合约/拆分调整/抓取时点应能解释跳变；清洗后异常应消失。",
-          "evidence_for": [],
-          "evidence_against": [
-            {
-              "claim": "未记录价格清洗问题",
-              "value": "no price_data_issue",
-              "class": "observed_fact",
-              "source": "data_quality",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-ART"
-            }
-          ]
-        },
-        {
-          "id": "H-USEQ-USD",
-          "label": "美元/新兴市场资金流",
+          "id": "H-AGRI-DEMAND",
+          "label": "全球需求/增长预期",
           "type": "global_risk",
           "status": "open",
-          "implications": "美元走强应压制 EM；USD 与相对表现负相关。",
+          "implications": "全球增长/工业产出应与商品同向；美元与利率同向确认。",
           "evidence_for": [
             {
-              "claim": "DXY 可观察",
-              "value": "DXY",
+              "claim": "全球风险代理可观察",
+              "value": "global growth proxies",
               "class": "observed_fact",
-              "source": "prices",
+              "source": "derived",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-USD"
+              "hypothesis_id": "H-AGRI-DEMAND"
             }
           ],
           "evidence_against": [
             {
-              "claim": "未做美元 beta",
-              "value": "not estimated",
+              "claim": "没有工业产出/PMI 实时数据",
+              "value": "PMI missing",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-AGRI-DEMAND"
+            }
+          ]
+        },
+        {
+          "id": "H-AGRI-USD",
+          "label": "美元/实际利率计价效应",
+          "type": "risk_premium",
+          "status": "open",
+          "implications": "美元与实际利率应负向解释黄金/商品；控制后残差下降。",
+          "evidence_for": [
+            {
+              "claim": "DXY/UST 可用",
+              "value": "DXY, UST",
+              "class": "observed_fact",
+              "source": "prices",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-AGRI-USD"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "未做实时回归",
+              "value": "regression not run",
               "class": "unknown",
               "source": "derived",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-USEQ-USD"
+              "hypothesis_id": "H-AGRI-USD"
+            }
+          ]
+        },
+        {
+          "id": "H-AGRI-ART",
+          "label": "拆股/盘中/陈旧数据伪影",
+          "type": "data_artifact",
+          "status": "untestable",
+          "implications": "换月日附近跳变；原始合约与连续合约不一致。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "未记录换月/清洗问题",
+              "value": "no issue recorded",
+              "class": "observed_fact",
+              "source": "data_quality",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-AGRI-ART"
+            }
+          ]
+        },
+        {
+          "id": "H-AGRI-WEATHER",
+          "label": "农产品：天气/供给冲击",
+          "type": "fundamental",
+          "status": "untestable",
+          "implications": "天气/产量数据应领先；需要产区降雨/库存。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "天气/库存数据缺失",
+              "value": "weather/inventory missing",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-AGRI-WEATHER"
             }
           ]
         }
       ],
       "evidence": [
         {
-          "claim": "单月变动达到可检验幅度",
-          "value": "1m=5.0%",
+          "claim": "全球风险代理可观察",
+          "value": "global growth proxies",
+          "class": "observed_fact",
+          "source": "derived",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-DEMAND"
+        },
+        {
+          "claim": "DXY/UST 可用",
+          "value": "DXY, UST",
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-GLOBAL"
-        },
-        {
-          "claim": "利率与估值代理可观察",
-          "value": "UST",
-          "class": "observed_fact",
-          "source": "curve",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-RATES"
-        },
-        {
-          "claim": "DXY 可观察",
-          "value": "DXY",
-          "class": "observed_fact",
-          "source": "prices",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-USD"
+          "hypothesis_id": "H-AGRI-USD"
         }
       ],
       "critical_unknowns": [
-        "盈利修正/估值",
-        "风格与利率 beta",
-        "资金流"
+        "库存/产量",
+        "工业产出/PMI",
+        "换月因子"
       ],
       "falsification_conditions": [
         {
-          "hypothesis_id": "H-USEQ-GLOBAL",
-          "test": "同日跨资产 beta 与残差",
-          "threshold": "R² > 0.5 且残差 |z|<1.5",
+          "hypothesis_id": "H-AGRI-DEMAND",
+          "test": "全球增长代理与商品",
+          "threshold": "corr > 0.3",
           "data": "cross_asset",
           "data_status": "available"
         },
         {
-          "hypothesis_id": "H-USEQ-RATES",
-          "test": "利率 beta 与估值分位",
-          "threshold": "beta significant",
-          "data": "UST/valuation",
-          "data_status": "obtainable"
+          "hypothesis_id": "H-AGRI-USD",
+          "test": "美元/实际利率回归",
+          "threshold": "residual |z|<1.5",
+          "data": "DXY/UST",
+          "data_status": "available"
+        }
+      ],
+      "required_data": [
+        "价格/成交量",
+        "CFTC 持仓（周度）",
+        "收益率曲线",
+        "宏观序列（按发布滞后）",
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "research_cost": {
+        "hours": 12,
+        "data_access": "high"
+      },
+      "decision_impact": {
+        "if_true": "若供给解释成立，研究库存/地缘情景；若美元解释成立，研究计价与对冲。",
+        "if_false": "若均不成立，保留为待验证情报，不直接做方向性判断。"
+      },
+      "priority_tier": "intelligence",
+      "priority_rank": 0,
+      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L2, impact L0, open_hypotheses=2, discriminating=0, cost=12h",
+      "data_quality": {
+        "score": 0.0,
+        "gaps": [
+          "库存/产量",
+          "工业产出/PMI",
+          "换月因子"
+        ],
+        "cross_asset": {
+          "available": true,
+          "instrument": "CM_AGR_LE",
+          "as_of": "2026-11-13",
+          "global": {
+            "available": true,
+            "kind": "global",
+            "factor": "US_EQ_SPY,US_EQ_QQQ,US_FX_DXY,US_CR_HYG,CM_MET_GC,US_FI_IEF",
+            "n_obs": 252,
+            "r2": 0.0112,
+            "beta": 0.2041,
+            "residual_z": 0.1263,
+            "as_of": "2026-11-13",
+            "reason": ""
+          }
+        },
+        "discriminating_hypotheses": 0
+      },
+      "evidence_gaps": [
+        "库存/产量",
+        "工业产出/PMI",
+        "换月因子"
+      ],
+      "research_readiness": "evidence_gap",
+      "evidence_for": [
+        {
+          "claim": "全球风险代理可观察",
+          "value": "global growth proxies",
+          "class": "observed_fact",
+          "source": "derived",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-DEMAND"
         },
         {
-          "hypothesis_id": "H-USEQ-USD",
-          "test": "美元 beta",
-          "threshold": "negative and significant",
-          "data": "DXY",
+          "claim": "DXY/UST 可用",
+          "value": "DXY, UST",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-USD"
+        }
+      ],
+      "evidence_against": [
+        {
+          "claim": "库存/产量数据未接入",
+          "value": "inventory missing",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-SUPPLY"
+        },
+        {
+          "claim": "没有工业产出/PMI 实时数据",
+          "value": "PMI missing",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-DEMAND"
+        },
+        {
+          "claim": "未做实时回归",
+          "value": "regression not run",
+          "class": "unknown",
+          "source": "derived",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-USD"
+        },
+        {
+          "claim": "未记录换月/清洗问题",
+          "value": "no issue recorded",
+          "class": "observed_fact",
+          "source": "data_quality",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-ART"
+        },
+        {
+          "claim": "天气/库存数据缺失",
+          "value": "weather/inventory missing",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-WEATHER"
+        }
+      ],
+      "evaluation_id": "D:2026-11-13:CM_AGR_LE",
+      "method": "D_v2_triage",
+      "v1_score": null,
+      "v1_status": null,
+      "theme": "livestock"
+    },
+    {
+      "research_id": "RC-20261113-03",
+      "as_of": "2026-11-13",
+      "market": "WORLD",
+      "asset_class": "commodity",
+      "instruments": [
+        "CM_AGR_SB"
+      ],
+      "observed_phenomenon": "Sugar No.11 front month 近期 vol_regime_shift（expansion，分数 0.01）；1 个月收益 -12.6%；回撤分位 0.52。",
+      "materiality": {
+        "level": 1,
+        "importance": 0.25,
+        "anomaly_score": 0.007774295284068167,
+        "return_1m": -0.1257198090235162,
+        "gap_score": 0.0,
+        "gap_level": 0,
+        "mechanism_conflict": false,
+        "distinguishability_level": 2,
+        "decision_impact_level": 0,
+        "has_change": true
+      },
+      "competing_hypotheses": [
+        {
+          "id": "H-AGRI-SUPPLY",
+          "label": "供给冲击/库存变化",
+          "type": "fundamental",
+          "status": "untestable",
+          "implications": "库存、产量或地缘供给应领先价格；曲线 backwardation 加深。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "库存/产量数据未接入",
+              "value": "inventory missing",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-AGRI-SUPPLY"
+            }
+          ]
+        },
+        {
+          "id": "H-AGRI-DEMAND",
+          "label": "全球需求/增长预期",
+          "type": "global_risk",
+          "status": "open",
+          "implications": "全球增长/工业产出应与商品同向；美元与利率同向确认。",
+          "evidence_for": [
+            {
+              "claim": "全球风险代理可观察",
+              "value": "global growth proxies",
+              "class": "observed_fact",
+              "source": "derived",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-AGRI-DEMAND"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "没有工业产出/PMI 实时数据",
+              "value": "PMI missing",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-AGRI-DEMAND"
+            }
+          ]
+        },
+        {
+          "id": "H-AGRI-USD",
+          "label": "美元/实际利率计价效应",
+          "type": "risk_premium",
+          "status": "open",
+          "implications": "美元与实际利率应负向解释黄金/商品；控制后残差下降。",
+          "evidence_for": [
+            {
+              "claim": "DXY/UST 可用",
+              "value": "DXY, UST",
+              "class": "observed_fact",
+              "source": "prices",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-AGRI-USD"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "未做实时回归",
+              "value": "regression not run",
+              "class": "unknown",
+              "source": "derived",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-AGRI-USD"
+            }
+          ]
+        },
+        {
+          "id": "H-AGRI-ART",
+          "label": "拆股/盘中/陈旧数据伪影",
+          "type": "data_artifact",
+          "status": "untestable",
+          "implications": "换月日附近跳变；原始合约与连续合约不一致。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "未记录换月/清洗问题",
+              "value": "no issue recorded",
+              "class": "observed_fact",
+              "source": "data_quality",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-AGRI-ART"
+            }
+          ]
+        },
+        {
+          "id": "H-AGRI-WEATHER",
+          "label": "农产品：天气/供给冲击",
+          "type": "fundamental",
+          "status": "untestable",
+          "implications": "天气/产量数据应领先；需要产区降雨/库存。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "天气/库存数据缺失",
+              "value": "weather/inventory missing",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-AGRI-WEATHER"
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "claim": "全球风险代理可观察",
+          "value": "global growth proxies",
+          "class": "observed_fact",
+          "source": "derived",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-DEMAND"
+        },
+        {
+          "claim": "DXY/UST 可用",
+          "value": "DXY, UST",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-USD"
+        }
+      ],
+      "critical_unknowns": [
+        "库存/产量",
+        "工业产出/PMI",
+        "换月因子"
+      ],
+      "falsification_conditions": [
+        {
+          "hypothesis_id": "H-AGRI-DEMAND",
+          "test": "全球增长代理与商品",
+          "threshold": "corr > 0.3",
+          "data": "cross_asset",
+          "data_status": "available"
+        },
+        {
+          "hypothesis_id": "H-AGRI-USD",
+          "test": "美元/实际利率回归",
+          "threshold": "residual |z|<1.5",
+          "data": "DXY/UST",
+          "data_status": "available"
+        }
+      ],
+      "required_data": [
+        "价格/成交量",
+        "CFTC 持仓（周度）",
+        "收益率曲线",
+        "宏观序列（按发布滞后）",
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "research_cost": {
+        "hours": 12,
+        "data_access": "high"
+      },
+      "decision_impact": {
+        "if_true": "若供给解释成立，研究库存/地缘情景；若美元解释成立，研究计价与对冲。",
+        "if_false": "若均不成立，保留为待验证情报，不直接做方向性判断。"
+      },
+      "priority_tier": "intelligence",
+      "priority_rank": 0,
+      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L2, impact L0, open_hypotheses=2, discriminating=0, cost=12h",
+      "data_quality": {
+        "score": 0.0,
+        "gaps": [
+          "库存/产量",
+          "工业产出/PMI",
+          "换月因子"
+        ],
+        "cross_asset": {
+          "available": true,
+          "instrument": "CM_AGR_SB",
+          "as_of": "2026-11-13",
+          "global": {
+            "available": true,
+            "kind": "global",
+            "factor": "US_EQ_SPY,US_EQ_QQQ,US_FX_DXY,US_CR_HYG,CM_MET_GC,US_FI_IEF",
+            "n_obs": 252,
+            "r2": 0.0001,
+            "beta": -0.0331,
+            "residual_z": -0.8647,
+            "as_of": "2026-11-13",
+            "reason": ""
+          }
+        },
+        "discriminating_hypotheses": 0
+      },
+      "evidence_gaps": [
+        "库存/产量",
+        "工业产出/PMI",
+        "换月因子"
+      ],
+      "research_readiness": "evidence_gap",
+      "evidence_for": [
+        {
+          "claim": "全球风险代理可观察",
+          "value": "global growth proxies",
+          "class": "observed_fact",
+          "source": "derived",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-DEMAND"
+        },
+        {
+          "claim": "DXY/UST 可用",
+          "value": "DXY, UST",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-USD"
+        }
+      ],
+      "evidence_against": [
+        {
+          "claim": "库存/产量数据未接入",
+          "value": "inventory missing",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-SUPPLY"
+        },
+        {
+          "claim": "没有工业产出/PMI 实时数据",
+          "value": "PMI missing",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-DEMAND"
+        },
+        {
+          "claim": "未做实时回归",
+          "value": "regression not run",
+          "class": "unknown",
+          "source": "derived",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-USD"
+        },
+        {
+          "claim": "未记录换月/清洗问题",
+          "value": "no issue recorded",
+          "class": "observed_fact",
+          "source": "data_quality",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-ART"
+        },
+        {
+          "claim": "天气/库存数据缺失",
+          "value": "weather/inventory missing",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-AGRI-WEATHER"
+        }
+      ],
+      "evaluation_id": "D:2026-11-13:CM_AGR_SB",
+      "method": "D_v2_triage",
+      "v1_score": null,
+      "v1_status": null,
+      "theme": "softs"
+    },
+    {
+      "research_id": "RC-20261113-04",
+      "as_of": "2026-11-13",
+      "market": "WORLD",
+      "asset_class": "commodity",
+      "instruments": [
+        "CM_ENE_RB"
+      ],
+      "observed_phenomenon": "RBOB Gasoline front month 近期 price_return_shock（down，分数 0.15）；1 个月收益 -18.1%；回撤分位 0.23。",
+      "materiality": {
+        "level": 1,
+        "importance": 0.4,
+        "anomaly_score": 0.15388308765732672,
+        "return_1m": -0.18061053881062372,
+        "gap_score": 0.0,
+        "gap_level": 0,
+        "mechanism_conflict": false,
+        "distinguishability_level": 2,
+        "decision_impact_level": 0,
+        "has_change": true
+      },
+      "competing_hypotheses": [
+        {
+          "id": "H-ENER-SUPPLY",
+          "label": "供给冲击/库存变化",
+          "type": "fundamental",
+          "status": "untestable",
+          "implications": "库存、产量或地缘供给应领先价格；曲线 backwardation 加深。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "库存/产量数据未接入",
+              "value": "inventory missing",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-ENER-SUPPLY"
+            }
+          ]
+        },
+        {
+          "id": "H-ENER-DEMAND",
+          "label": "全球需求/增长预期",
+          "type": "global_risk",
+          "status": "open",
+          "implications": "全球增长/工业产出应与商品同向；美元与利率同向确认。",
+          "evidence_for": [
+            {
+              "claim": "全球风险代理可观察",
+              "value": "global growth proxies",
+              "class": "observed_fact",
+              "source": "derived",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-ENER-DEMAND"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "没有工业产出/PMI 实时数据",
+              "value": "PMI missing",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-ENER-DEMAND"
+            }
+          ]
+        },
+        {
+          "id": "H-ENER-USD",
+          "label": "美元/实际利率计价效应",
+          "type": "risk_premium",
+          "status": "open",
+          "implications": "美元与实际利率应负向解释黄金/商品；控制后残差下降。",
+          "evidence_for": [
+            {
+              "claim": "DXY/UST 可用",
+              "value": "DXY, UST",
+              "class": "observed_fact",
+              "source": "prices",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-ENER-USD"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "未做实时回归",
+              "value": "regression not run",
+              "class": "unknown",
+              "source": "derived",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-ENER-USD"
+            }
+          ]
+        },
+        {
+          "id": "H-ENER-ART",
+          "label": "拆股/盘中/陈旧数据伪影",
+          "type": "data_artifact",
+          "status": "untestable",
+          "implications": "换月日附近跳变；原始合约与连续合约不一致。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "未记录换月/清洗问题",
+              "value": "no issue recorded",
+              "class": "observed_fact",
+              "source": "data_quality",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-ENER-ART"
+            }
+          ]
+        },
+        {
+          "id": "H-ENER-CRACK",
+          "label": "能源：炼厂利润/供给",
+          "type": "fundamental",
+          "status": "open",
+          "implications": "裂解价差与库存应解释；需要炼厂利润/库存。",
+          "evidence_for": [
+            {
+              "claim": "能源价格可观察",
+              "value": "1m=18.1%",
+              "class": "observed_fact",
+              "source": "prices",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-ENER-CRACK"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "裂解价差/库存缺失",
+              "value": "crack/inventory missing",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-ENER-CRACK"
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "claim": "全球风险代理可观察",
+          "value": "global growth proxies",
+          "class": "observed_fact",
+          "source": "derived",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-ENER-DEMAND"
+        },
+        {
+          "claim": "DXY/UST 可用",
+          "value": "DXY, UST",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-ENER-USD"
+        },
+        {
+          "claim": "能源价格可观察",
+          "value": "1m=18.1%",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-ENER-CRACK"
+        }
+      ],
+      "critical_unknowns": [
+        "库存/产量",
+        "工业产出/PMI",
+        "换月因子"
+      ],
+      "falsification_conditions": [
+        {
+          "hypothesis_id": "H-ENER-DEMAND",
+          "test": "全球增长代理与商品",
+          "threshold": "corr > 0.3",
+          "data": "cross_asset",
+          "data_status": "available"
+        },
+        {
+          "hypothesis_id": "H-ENER-USD",
+          "test": "美元/实际利率回归",
+          "threshold": "residual |z|<1.5",
+          "data": "DXY/UST",
+          "data_status": "available"
+        },
+        {
+          "hypothesis_id": "H-ENER-CRACK",
+          "test": "裂解价差与库存",
+          "threshold": "sign consistent",
+          "data": "crack/inventory",
           "data_status": "obtainable"
         }
       ],
@@ -1371,111 +1447,121 @@
         "信用 OAS（仅有 HYG/IEF 代理）"
       ],
       "research_cost": {
-        "hours": 10,
-        "data_access": "medium"
+        "hours": 12,
+        "data_access": "high"
       },
       "decision_impact": {
-        "if_true": "若利率/全球风险解释成立，研究久期与风格暴露；若盈利解释成立，交 B 做估值/盈利研究。",
-        "if_false": "若均被证伪，保留为市场情报，不升级为研究候选。"
+        "if_true": "若供给解释成立，研究库存/地缘情景；若美元解释成立，研究计价与对冲。",
+        "if_false": "若均不成立，保留为待验证情报，不直接做方向性判断。"
       },
-      "priority_tier": "B",
-      "priority_rank": 5,
-      "rationale": "tier B: case=us_equity_etf, materiality L2, gap L1, distinguishability L1, impact L1, open_hypotheses=3, cost=10h",
+      "priority_tier": "intelligence",
+      "priority_rank": 0,
+      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L2, impact L0, open_hypotheses=3, discriminating=0, cost=12h",
       "data_quality": {
-        "score": 0.4,
+        "score": 0.5333333333333333,
         "gaps": [
-          "盈利修正/估值",
-          "风格与利率 beta",
-          "资金流"
-        ]
+          "库存/产量",
+          "工业产出/PMI",
+          "换月因子"
+        ],
+        "cross_asset": {
+          "available": true,
+          "instrument": "CM_ENE_RB",
+          "as_of": "2026-11-13",
+          "global": {
+            "available": true,
+            "kind": "global",
+            "factor": "US_EQ_SPY,US_EQ_QQQ,US_FX_DXY,US_CR_HYG,CM_MET_GC,US_FI_IEF",
+            "n_obs": 252,
+            "r2": 0.0843,
+            "beta": -1.5779,
+            "residual_z": 0.3614,
+            "as_of": "2026-11-13",
+            "reason": ""
+          }
+        },
+        "discriminating_hypotheses": 0
       },
       "evidence_gaps": [
-        "盈利修正/估值",
-        "风格与利率 beta",
-        "资金流"
+        "库存/产量",
+        "工业产出/PMI",
+        "换月因子"
       ],
+      "research_readiness": "evidence_gap",
       "evidence_for": [
         {
-          "claim": "单月变动达到可检验幅度",
-          "value": "1m=5.0%",
+          "claim": "全球风险代理可观察",
+          "value": "global growth proxies",
+          "class": "observed_fact",
+          "source": "derived",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-ENER-DEMAND"
+        },
+        {
+          "claim": "DXY/UST 可用",
+          "value": "DXY, UST",
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-GLOBAL"
+          "hypothesis_id": "H-ENER-USD"
         },
         {
-          "claim": "利率与估值代理可观察",
-          "value": "UST",
-          "class": "observed_fact",
-          "source": "curve",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-RATES"
-        },
-        {
-          "claim": "DXY 可观察",
-          "value": "DXY",
+          "claim": "能源价格可观察",
+          "value": "1m=18.1%",
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-USD"
+          "hypothesis_id": "H-ENER-CRACK"
         }
       ],
       "evidence_against": [
         {
-          "claim": "未提供同日跨资产横截面",
-          "value": "no same-day cross-asset sample",
-          "class": "unknown",
-          "source": "cross_asset",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-GLOBAL"
-        },
-        {
-          "claim": "未估计实时利率 beta",
-          "value": "beta not estimated",
-          "class": "unknown",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-RATES"
-        },
-        {
-          "claim": "一致预期/财报修正未接入",
-          "value": "cannot test directly",
+          "claim": "库存/产量数据未接入",
+          "value": "inventory missing",
           "class": "unknown",
           "source": "data_gap",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-FUND"
+          "hypothesis_id": "H-ENER-SUPPLY"
         },
         {
-          "claim": "仓位极端程度不足或缺失",
-          "value": "neutral/unknown",
+          "claim": "没有工业产出/PMI 实时数据",
+          "value": "PMI missing",
           "class": "unknown",
-          "source": "CFTC",
+          "source": "data_gap",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-POS"
+          "hypothesis_id": "H-ENER-DEMAND"
         },
         {
-          "claim": "未记录价格清洗问题",
-          "value": "no price_data_issue",
-          "class": "observed_fact",
-          "source": "data_quality",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-ART"
-        },
-        {
-          "claim": "未做美元 beta",
-          "value": "not estimated",
+          "claim": "未做实时回归",
+          "value": "regression not run",
           "class": "unknown",
           "source": "derived",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-USEQ-USD"
+          "hypothesis_id": "H-ENER-USD"
+        },
+        {
+          "claim": "未记录换月/清洗问题",
+          "value": "no issue recorded",
+          "class": "observed_fact",
+          "source": "data_quality",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-ENER-ART"
+        },
+        {
+          "claim": "裂解价差/库存缺失",
+          "value": "crack/inventory missing",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-ENER-CRACK"
         }
       ],
-      "evaluation_id": "D:2026-11-13:WORLD_EQ_EEM",
+      "evaluation_id": "D:2026-11-13:CM_ENE_RB",
       "method": "D_v2_triage",
       "v1_score": null,
       "v1_status": null,
-      "theme": "em_equity_broad"
+      "theme": "refined_products"
     }
   ],
-  "note": "top-5 snapshot; full 20 in v2_candidates_20"
+  "note": "top-5 snapshot after evidence gate"
 }

@@ -25,7 +25,8 @@ RESEARCH_REQUIRED = ["research_id", "as_of", "market", "asset_class", "instrumen
                      "evidence", "critical_unknowns", "falsification_conditions",
                      "required_data", "research_cost", "decision_impact",
                      "priority_tier", "priority_rank", "rationale", "data_quality",
-                     "evidence_gaps", "evidence_for", "evidence_against", "evaluation_id", "method"]
+                     "evidence_gaps", "evidence_for", "evidence_against", "evaluation_id", "method",
+                     "research_readiness"]
 V1_WEIGHTS = {"anomaly_strength", "economic_impact", "expectation_gap",
               "repricing_potential", "catalyst", "timing_window",
               "risk_liquidity", "evidence_quality"}
@@ -89,7 +90,7 @@ def validate_research_candidate(c: dict[str, Any]) -> None:
                 raise ContractError(f"evidence missing {k}")
         if e["class"] not in EVIDENCE_CLASSES:
             raise ContractError(f"bad evidence class {e['class']}")
-    if not c.get("evidence_for") or not c.get("evidence_against"):
+    if not is_intel and (not c.get("evidence_for") or not c.get("evidence_against")):
         raise ContractError("research candidate needs evidence_for and evidence_against")
     ids = [h["id"] for h in hyps]
     if len(ids) != len(set(ids)):
@@ -128,6 +129,13 @@ def validate_research_candidate(c: dict[str, Any]) -> None:
         raise ContractError("decision_impact needs if_true/if_false")
     if c["priority_tier"] not in {"A", "B", "C", "intelligence"}:
         raise ContractError("priority_tier must be A/B/C/intelligence")
+    if c["priority_tier"] != "intelligence":
+        discriminating = sum(
+            1 for h in hyps if h.get("status") == "open" and any(
+                e.get("discriminating") and e.get("class") != "unknown"
+                for e in h.get("evidence_for", [])))
+        if c.get("research_readiness") != "evidence_ok" or discriminating < 2:
+            raise ContractError("research tier requires >=2 hypotheses with discriminating evidence")
 
 
 def validate_v1_weights(weights: dict[str, float]) -> None:

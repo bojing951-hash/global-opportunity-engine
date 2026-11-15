@@ -1,0 +1,14 @@
+# Optional local evidence feeds for the research readiness gate.
+# No vendor entitlement is assumed and no rows are fabricated. Missing/disabled
+# files leave the hypothesis unknown. Generate the policy-path proxy with
+#   python scripts/fetch_external_evidence.py
+# (FRED SOFR/2Y/10Y is a policy-path proxy, NOT a term OIS curve.)
+consensus:
+  enabled: false
+  path: data/consensus_revisions.csv   # series_id,date,value,available_at,metric
+  max_age_days: 90
+ois:
+  enabled: false
+  path: data/policy_curve.csv          # series_id,tenor,date,value,available_at
+  max_age_days: 10
+  proxy: true
