@@ -169,35 +169,39 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
             pass
         updates = {
             hid("local", "H-EQ-LOCAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["local_asia_test"]["pass"] else "INCONCLUSIVE",
-                             "label": "Japan broad local market factor", "type": "local_market",
+                             "label": "Local market factor", "type": "local_market",
                              "new_evidence": "TOPIX same-day", "value": topix,
                              "note": "Broad co-move; not an independent instrument."},
             hid("global", "H-EQ-GLOBAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["global_lead_test"]["pass"] else "WEAKENED_BY_EVIDENCE",
-                              "label": "US/global risk lead", "type": "global_risk",
+                              "label": "Global risk lead", "type": "global_risk",
                               "new_evidence": "prior US session SPY/QQQ/VIX", "value": {"SPY": spy, "QQQ": qqq, "VIX": vix},
                               "note": "Prior US selloff/VIX spike preceded Asia; same-date US close is not used."},
             hid("fx", "H-EQ-FX"): {"status": "WEAKENED_BY_EVIDENCE" if not tests["fx_test"]["pass"] else "INCONCLUSIVE",
-                          "label": "JPY/cross-border flow", "type": "fx", "new_evidence": "prior USDJPY", "value": fx,
+                          "label": "FX/cross-border flow", "type": "fx", "new_evidence": "prior USDJPY", "value": fx,
                           "note": "Small FX move cannot explain the equity move by itself."},
             hid("policy", "H-EQ-POLICY"): {"status": "INSUFFICIENT_DATA" if policy_event is None else "INCONCLUSIVE",
                               "label": "Policy/regulatory event", "type": "policy",
                               "new_evidence": "config/events.yaml calendar check", "value": policy_event,
                               "note": ("No scheduled event in config/events.yaml; not proof no policy news."
                                        if policy_event is None else "Scheduled event exists; attribution not established.")},
-            hid("fund", "H-EQ-FUND"): {"status": "INSUFFICIENT_DATA", "label": "Japan fundamentals", "type": "fundamental",
+            hid("fund", "H-EQ-FUND"): {"status": "INSUFFICIENT_DATA", "label": "Fundamentals", "type": "fundamental",
                             "new_evidence": "consensus unavailable", "value": None,
                             "note": "No authorized consensus data; no fabrication."},
             hid("regional", "H-EQ-REGIONAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["asia_regional_test"]["pass"] else "INCONCLUSIVE",
-                                     "label": "Regional North Asia co-move", "type": "regional_asia",
+                                     "label": "Regional co-move", "type": "regional_asia",
                                      "new_evidence": "Taiwan/Korea same-day", "value": {"TAIEX": taiex, "KOSPI": kospi},
                                      "note": "Regional co-move; sector/tech attribution unavailable."},
         }
-        learned = [f"{spec.asset} event {event}: {p(n225)}; TOPIX {p(topix)}.",
-                   f"Prior US session {prior}: SPY {p(spy)}, QQQ {p(qqq)}, VIX {p(vix)}; global lead consistent.",
-                   f"Taiwan {p(taiex)}, Korea {p(kospi)}; North Asia co-move supported.",
-                   f"Prior USDJPY {p(fx)}; too small to be primary.",
+        local_label = observed.get(R.get("local", ""), {}).get("label", "local market")
+        tw_label = observed.get(R.get("regional_tw", ""), {}).get("label", "regional market A")
+        kr_label = observed.get(R.get("regional_kr", ""), {}).get("label", "regional market B")
+        fx_label = observed.get(R.get("fx", ""), {}).get("label", "FX")
+        learned = [f"{spec.asset} event {event}: {p(n225)}; {local_label} {p(topix)}.",
+                   f"Prior US session {prior}: {p(spy)}, {p(qqq)}, {p(vix)}; global lead consistent.",
+                   f"{tw_label} {p(taiex)}, {kr_label} {p(kospi)}; regional co-move supported.",
+                   f"{fx_label} {p(fx)}; too small to be primary.",
                    f"Three-session reversal {p(reversal)}.",
-                   "Local Japan and regional North Asia both survive; broad indices cannot separate."]
+                   "Local and regional explanations both survive; broad indices cannot separate."]
         unknown = ["TOPIX sector breadth", "Asia semiconductor exposure", "consensus revisions", "event/news calendar"]
 
     elif spec.case_kind == "fx_level":
@@ -290,7 +294,7 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         input_sha256=input_hash,
         code_commit=_commit(), feature_version=FEATURE_VERSION, status=status,
         data_dates={k: v["data_date"] for k, v in observed.items()}, rules=rules)
-    out = Path(out_dir) / spec.as_of / spec.asset
+    out = Path(out_dir) / spec.as_of / spec.asset / finding.finding_id
     out.mkdir(parents=True, exist_ok=True)
     payload = finding.to_dict()
     (out / "finding.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
