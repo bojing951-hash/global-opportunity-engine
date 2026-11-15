@@ -149,9 +149,13 @@ def verify_scan_evidence(store: Store, *, reports_dir: str | Path | None = None,
         _reject("scan stats anomaly count disagrees with DB")
     if _stat_int(stats.get("transmissions"), "n_activated") != tx_n:
         _reject("scan stats transmission count disagrees with DB")
-    created = (stats.get("opportunities") or {}).get("created")
-    if created is not None and int(created) != opp_n:
-        _reject("scan stats opportunity count disagrees with DB")
+    opp_stats = stats.get("opportunities") or {}
+    created = opp_stats.get("created")
+    refreshed = opp_stats.get("refreshed")
+    if created is not None:
+        expected_opp = int(created) + int(refreshed or 0)
+        if expected_opp != opp_n:
+            _reject("scan stats opportunity count disagrees with DB")
 
     report_md = reports / f"report_{as_of}.md"
     scan_json = reports / f"scan_{as_of}.json"
