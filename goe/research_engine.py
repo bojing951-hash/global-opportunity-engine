@@ -224,7 +224,11 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
                    f"Three-session reversal {p(reversal)}.",
                    ("Local and regional explanations both survive; broad indices cannot separate."
                     if local_ok and regional_ok else
-                    "Regional co-move survives; the local peer did not meet its pre-set threshold.")]
+                    ("Regional co-move survives; the local peer did not meet its pre-set threshold."
+                     if regional_ok else
+                     ("Local co-move survives; the regional peers did not meet threshold."
+                      if local_ok else
+                      "Neither local nor regional thresholds were met; only the global lead is supported.")))]
         unknown = [f"{local_label} sector/constituent breadth", "regional supply-chain exposure",
                    "consensus revisions", "event/news calendar"]
 
