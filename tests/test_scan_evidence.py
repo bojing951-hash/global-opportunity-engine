@@ -131,3 +131,16 @@ def test_old_success_or_partial_ingest_is_rejected(tmp_path, monkeypatch):
     s.conn.execute("UPDATE scan_runs SET stats_json=?", (json.dumps(bad),)); s.conn.commit()
     with pytest.raises(ScanEvidenceError, match="ingest status"):
         verify_scan_evidence(s, reports_dir=tmp_path, require_reports=False)
+
+
+def test_build_manifest_rejects_empty_scan_store(monkeypatch, tmp_path):
+    import goe.release as rel
+
+    fake_proof = {"category": "offline", "passed": 1, "skipped": 0,
+                  "required": {"sha256": "x"}, "executed": {"sha256": "x"},
+                  "command_template": [], "git_commit": "x"}
+    monkeypatch.setattr(rel, "verify_test_proof", lambda *a, **k: fake_proof)
+    monkeypatch.setattr(rel, "_dirty_code", lambda *a, **k: False)
+    with pytest.raises(rel.ReleaseError, match="verified scan evidence"):
+        rel.build_manifest(Store(tmp_path / "empty.db"), proof_path="unused",
+                           out_dir=tmp_path / "rel", require_clean=False)

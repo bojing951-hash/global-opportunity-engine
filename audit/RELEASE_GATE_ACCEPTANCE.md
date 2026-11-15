@@ -93,3 +93,10 @@ patch by retuning thresholds.
   never actually ran); `audit/QA_ZERO_GATE.md` found a local/global evidence-labelling P1 and a
   stale documentation line; both were fixed in `d50c10d`, but no fresh independent re-audit of that
   fix exists in this round. Treat the evidence-gate research status as **PARTIAL / NOT VALIDATED**.
+
+## Addendum 2026-11-15 — verified scan evidence gate
+`build_manifest()` now calls `goe.scan_evidence.verify_scan_evidence()` in addition to the v4 test
+proof. The scan gate independently recomputes config/data hashes, readiness, core-series freshness,
+DB counts vs `stats_json`, report/scan-json/pipeline existence, provenance and counts. Empty,
+fake-success, fake-hash, content-modified, wrong-as_of, stale, partial-ingest, missing-report and
+count-mismatch scans are rejected. See `tests/test_scan_evidence.py`.
