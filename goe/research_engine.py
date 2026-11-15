@@ -192,7 +192,7 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         updates = {
             hid("local", "H-EQ-LOCAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["local_asia_test"]["pass"] else "INCONCLUSIVE",
                              "label": "Local market factor", "type": "local_market",
-                             "new_evidence": "TOPIX same-day", "value": topix,
+                             "new_evidence": f"{local_label} same-day", "value": topix,
                              "note": ("Local peer co-moved; not an independent instrument." if local_ok
                                       else "Local peer did not meet its pre-set threshold; no local support.")},
             hid("global", "H-EQ-GLOBAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["global_lead_test"]["pass"] else "WEAKENED_BY_EVIDENCE",
@@ -212,7 +212,8 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
                             "note": "No authorized consensus data; no fabrication."},
             hid("regional", "H-EQ-REGIONAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["asia_regional_test"]["pass"] else "INCONCLUSIVE",
                                      "label": "Regional co-move", "type": "regional_asia",
-                                     "new_evidence": "Taiwan/Korea same-day", "value": {"TAIEX": taiex, "KOSPI": kospi},
+                                     "new_evidence": "regional peers same-day",
+                                     "value": {tw_label: taiex, kr_label: kospi},
                                      "note": "Regional co-move; sector/tech attribution unavailable."},
         }
         learned = [f"{spec.asset} event {event}: {p(n225)}; {local_label} {p(topix)}.",
