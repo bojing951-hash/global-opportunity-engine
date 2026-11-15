@@ -207,3 +207,16 @@ def test_frozen_artifact_hashes_reject_report_tamper(tmp_path, monkeypatch):
     with pytest.raises(ScanEvidenceError, match="artifact hash|not covered|provenance"):
         verify_scan_evidence(s, reports_dir=rep, exports_dir=exp, require_reports=True,
                              require_artifacts=True, reference_date=as_of)
+
+
+def test_output_fingerprint_covers_all_visible_columns(tmp_path):
+    s, as_of, *_ = make_scan(tmp_path)
+    s.conn.execute("""INSERT INTO opportunities(opportunity_id,fingerprint,as_of,first_seen,last_seen,
+                      status,score,title,status_reason,invalidation,run_id)
+                      VALUES('OPP-X','FP-X',?,'2026-01-03','2026-01-03','watch',0.5,
+                      'title-a','reason-a','inv-a','scan-1')""", (as_of,))
+    s.conn.commit()
+    before = s.scan_output_fingerprint("scan-1")
+    s.conn.execute("UPDATE opportunities SET title='title-b',status_reason='reason-b',invalidation='inv-b' WHERE opportunity_id='OPP-X'")
+    s.conn.commit()
+    assert s.scan_output_fingerprint("scan-1") != before

@@ -919,23 +919,21 @@ class Store:
         }
 
     def scan_output_fingerprint(self, scan_id: str) -> str:
-        """Content hash of the scan's derived output rows (tamper evidence)."""
+        """Content hash of ALL persisted output columns for a scan.
+
+        Hashing a hand-picked subset allowed post-scan edits to title/status_reason/
+        trigger/conditions to pass. Enumerate every column instead.
+        """
         h = hashlib.sha256()
-        for row in self.conn.execute(
-                """SELECT anomaly_id,as_of,available_date,detector,family,instrument_id,direction,
-                     magnitude,score,percentile,window,evidence_json,fingerprint FROM anomalies
-                   WHERE run_id=? ORDER BY anomaly_id""", (scan_id,)):
-            h.update(("a|" + "|".join("" if v is None else str(v) for v in tuple(row)) + "\n").encode())
-        for row in self.conn.execute(
-                """SELECT transmission_id,as_of,mechanism_id,confidence,status,evidence_for_json,
-                     evidence_against_json FROM transmissions WHERE run_id=? ORDER BY transmission_id""",
-                (scan_id,)):
-            h.update(("t|" + "|".join("" if v is None else str(v) for v in tuple(row)) + "\n").encode())
-        for row in self.conn.execute(
-                """SELECT opportunity_id,fingerprint,status,score,score_json,discovery_json,
-                     evidence_for_json,evidence_against_json FROM opportunities WHERE run_id=?
-                   ORDER BY opportunity_id""", (scan_id,)):
-            h.update(("o|" + "|".join("" if v is None else str(v) for v in tuple(row)) + "\n").encode())
+        for table, key in (("anomalies", "anomaly_id"),
+                           ("transmissions", "transmission_id"),
+                           ("opportunities", "opportunity_id")):
+            cols = [r[1] for r in self.conn.execute(f"PRAGMA table_info({table})")]
+            select = ",".join(cols)
+            for row in self.conn.execute(
+                    f"SELECT {select} FROM {table} WHERE run_id=? ORDER BY {key}", (scan_id,)):
+                h.update((table + "|" + "|".join("" if v is None else str(v) for v in tuple(row))
+                          + "\n").encode())
         return h.hexdigest()
 
     # ------------------------------------------------------------------ utility
