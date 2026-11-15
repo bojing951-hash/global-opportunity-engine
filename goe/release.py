@@ -718,7 +718,7 @@ def build_manifest(
         "scan_counts": counts,
         "opportunities_by_status": by_status,
         "test_evidence": {
-            "proof_path": str(proof_path),
+            "proof_path": rel(proof_path),
             "category": proof["category"],
             "passed": proof["passed"],
             "skipped": proof["skipped"],

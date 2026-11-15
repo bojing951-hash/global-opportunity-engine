@@ -178,6 +178,7 @@ def run_scan(store: Store, as_of: str | None = None, *, ingest: bool = False,
                 "feature_version": FEATURE_VERSION, "config_hash": config_hash, "data_hash": data_hash,
                 "generated_at": utc_now(), "data_readiness": readiness.to_dict(), **fs.meta,
             }
+            meta["output_fingerprint"] = store.scan_output_fingerprint(scan_id)
             issues = store.recent_issues(limit=30)
             result.report_paths = write_reports(out, store, fs, anomalies, tx_df, mechanisms, records, meta, issues)
 
@@ -194,6 +195,7 @@ def run_scan(store: Store, as_of: str | None = None, *, ingest: bool = False,
                         store, records, limit=3,
                         out_dir=(Path(export_dir) if export_dir else exports_dir()) / "ia_runs",
                     )
+            stats["output_fingerprint"] = store.scan_output_fingerprint(scan_id)
             stats["elapsed_s"] = round(time.time() - t0, 2)
             store.finish_scan(scan_id, "success", stats)
             return result

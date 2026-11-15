@@ -918,6 +918,26 @@ class Store:
             "legacy_v1_rc_events": q("SELECT COUNT(*) FROM opportunity_events WHERE opportunity_id LIKE 'RC-%'"),
         }
 
+    def scan_output_fingerprint(self, scan_id: str) -> str:
+        """Content hash of the scan's derived output rows (tamper evidence)."""
+        h = hashlib.sha256()
+        for row in self.conn.execute(
+                """SELECT anomaly_id,as_of,available_date,detector,family,instrument_id,direction,
+                     magnitude,score,percentile,window,evidence_json,fingerprint FROM anomalies
+                   WHERE run_id=? ORDER BY anomaly_id""", (scan_id,)):
+            h.update(("a|" + "|".join("" if v is None else str(v) for v in tuple(row)) + "\n").encode())
+        for row in self.conn.execute(
+                """SELECT transmission_id,as_of,mechanism_id,confidence,status,evidence_for_json,
+                     evidence_against_json FROM transmissions WHERE run_id=? ORDER BY transmission_id""",
+                (scan_id,)):
+            h.update(("t|" + "|".join("" if v is None else str(v) for v in tuple(row)) + "\n").encode())
+        for row in self.conn.execute(
+                """SELECT opportunity_id,fingerprint,status,score,score_json,discovery_json,
+                     evidence_for_json,evidence_against_json FROM opportunities WHERE run_id=?
+                   ORDER BY opportunity_id""", (scan_id,)):
+            h.update(("o|" + "|".join("" if v is None else str(v) for v in tuple(row)) + "\n").encode())
+        return h.hexdigest()
+
     # ------------------------------------------------------------------ utility
     def scalar(self, sql: str, params: Sequence[Any] = ()) -> Any:
         row = self.conn.execute(sql, params).fetchone()
@@ -949,8 +969,8 @@ class Store:
             "SELECT COUNT(*) AS n, COALESCE(MAX(date),'') AS last FROM indicators WHERE date<=?", (as_of,)
         ).fetchone()
         for row in self.conn.execute(
-                "SELECT instrument_id,date,close,adj_close,source_id FROM prices "
-                "WHERE date<=? ORDER BY instrument_id,date", (as_of,)):
+                "SELECT instrument_id,date,open,high,low,close,adj_close,volume,source_id "
+                "FROM prices WHERE date<=? ORDER BY instrument_id,date", (as_of,)):
             h.update(("|".join("" if v is None else str(v) for v in tuple(row)) + "\n").encode())
         for row in self.conn.execute(
                 "SELECT series_id,date,value,source_id FROM indicators "

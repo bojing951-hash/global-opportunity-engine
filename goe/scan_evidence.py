@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,7 @@ import pandas as pd
 
 from . import project_root
 from .db import Store
+from datetime import date
 from .config import load_sources
 from .readiness import check_data_readiness
 
@@ -76,7 +78,8 @@ class ScanEvidence:
 
 def verify_scan_evidence(store: Store, *, reports_dir: str | Path | None = None,
                          exports_dir: str | Path | None = None,
-                         require_reports: bool = True) -> ScanEvidence:
+                         require_reports: bool = True,
+                         reference_date: str | None = None) -> ScanEvidence:
     root = project_root()
     reports = Path(reports_dir) if reports_dir else root / "reports"
     exports = Path(exports_dir) if exports_dir else root / "exports"
@@ -94,6 +97,16 @@ def verify_scan_evidence(store: Store, *, reports_dir: str | Path | None = None,
         _reject("scan ordering is inconsistent")
 
     as_of = str(scan["as_of"])
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", as_of):
+        _reject(f"scan as_of is not a calendar date: {as_of!r}")
+    if scan["finished_at"] < scan["started_at"]:
+        _reject("scan finished_at precedes started_at")
+    ref = pd.Timestamp(reference_date or date.today().isoformat()).normalize()
+    scan_day = pd.Timestamp(as_of).normalize()
+    if scan_day > ref:
+        _reject(f"scan as_of {as_of} is in the future relative to {ref.date()}")
+    if (ref - scan_day).days > 7:
+        _reject(f"scan as_of {as_of} is stale ({ (ref - scan_day).days } days > 7)")
     price_n = int(store.scalar("SELECT COUNT(*) FROM prices WHERE date<=?", (as_of,)) or 0)
     ind_n = int(store.scalar("SELECT COUNT(*) FROM indicators WHERE date<=?", (as_of,)) or 0)
     if price_n <= 0:
@@ -142,12 +155,24 @@ def verify_scan_evidence(store: Store, *, reports_dir: str | Path | None = None,
             (as_of, *sorted(known_sources)))
         if missing_src:
             _reject(f"{table} contain observations from unregistered sources")
-    future_fetch = store.scalar(
-        "SELECT COUNT(*) FROM prices WHERE date<=? AND fetched_at > ?", (as_of, as_of + "T23:59:59Z"))
-    if future_fetch:
-        _reject("price rows have future fetched_at timestamps")
-    if scan["mode"] != "offline" and ingest_status not in ("success",):
-        _reject(f"live scan ingest status is {ingest_status!r}, not success")
+    for table in ("prices", "indicators"):
+        # fetched_at is wall-clock ingestion time, not the bar date. A bar for
+        # as_of 2026-11-13 fetched the next morning is legitimate; only a fetch
+        # after the scan itself started is impossible.
+        future_fetch = store.scalar(
+            f"SELECT COUNT(*) FROM {table} WHERE date<=? AND fetched_at > ?",
+            (as_of, scan["started_at"]))
+        if future_fetch:
+            _reject(f"{table} rows have fetched_at after the scan started")
+    if scan["mode"] != "offline":
+        if ingest_status not in ("success",):
+            _reject(f"live scan ingest status is {ingest_status!r}, not success")
+        ing = store.conn.execute(
+            """SELECT run_id FROM ingest_runs WHERE kind='prices' AND status='success'
+               AND finished_at IS NOT NULL AND finished_at >= date(?, '-1 day')
+               ORDER BY finished_at DESC LIMIT 1""", (scan["started_at"],)).fetchone()
+        if not ing:
+            _reject("live scan has no successful price ingest_run evidence")
 
     for sid, max_age in CORE_SERIES.items():
         last = store.scalar("SELECT MAX(date) FROM indicators WHERE series_id=? AND date<=?",
@@ -165,6 +190,11 @@ def verify_scan_evidence(store: Store, *, reports_dir: str | Path | None = None,
         "SELECT COUNT(*) FROM opportunities WHERE run_id=?", (scan["scan_id"],)) or 0)
     if anomaly_n <= 0:
         _reject("scan has no anomalies")
+    output_fp = stats.get("output_fingerprint")
+    if not output_fp:
+        _reject("scan stats have no output_fingerprint")
+    if output_fp != store.scan_output_fingerprint(scan["scan_id"]):
+        _reject("scan output content changed after the scan")
     if _stat_int(stats.get("anomalies"), "n") != anomaly_n:
         _reject("scan stats anomaly count disagrees with DB")
     if _stat_int(stats.get("transmissions"), "n_activated") != tx_n:
@@ -193,7 +223,8 @@ def verify_scan_evidence(store: Store, *, reports_dir: str | Path | None = None,
             raise ScanEvidenceError(f"scan json invalid: {exc}") from exc
         meta = doc.get("meta") or {}
         for k, v in (("scan_id", scan["scan_id"]), ("as_of", as_of),
-                     ("config_hash", config_hash), ("data_hash", data_hash)):
+                     ("config_hash", config_hash), ("data_hash", data_hash),
+                     ("output_fingerprint", output_fp)):
             if meta.get(k) != v:
                 _reject(f"scan json meta.{k} disagrees with DB")
         if int(len(doc.get("anomalies") or [])) != anomaly_n:
