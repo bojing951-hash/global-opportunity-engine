@@ -116,3 +116,10 @@ count-mismatch scans are rejected. See `tests/test_scan_evidence.py`.
 - Remaining accepted residuals: scan evidence depends on a local 101 MB DB (not committed); CI
   replays the test proof only (no Linux run yet); a self-consistent synthetic DB is inside the trust
   boundary; no licensed consensus/term-OIS feed.
+
+
+### P1 round 2026-11-15
+- `.gitignore` now excludes editable-install/build artifacts (`*.egg-info`, `build/`, `dist/`, `*.whl`);
+  reproducing the GitHub failure locally confirms `pip install -e .` no longer dirties the tree.
+- Research IDs are stable content hashes; external curves require a single curve identity.
+- 226 offline tests; a fresh proof/manifest and an actual GitHub Actions run are required to close P1-01.

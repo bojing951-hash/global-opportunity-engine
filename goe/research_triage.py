@@ -20,6 +20,7 @@ from .evidence.cross_asset import compute_fits, count_discriminating, evidence_f
 from .evidence.external import attach_external
 from .expectations import compute_expectation_gap
 from .hypotheses import build_hypotheses
+from .research_identity import research_id as make_research_id
 from .timesemantics import filter_recent
 
 MISSING_DATA = ["分析师一致预期/修正", "期权隐含分布", "ETF 资金流", "信用 OAS（仅有 HYG/IEF 代理）"]
@@ -244,7 +245,9 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
             tier = "intelligence"
         v1 = v1_by_theme.get(theme)
         cand = ResearchCandidate(
-            research_id=f"RC-{as_of.replace('-', '')}-{len(out)+1:02d}",
+            research_id=make_research_id(as_of=as_of, instrument_id=iid,
+                                         detector=str(r.detector), direction=str(r.direction),
+                                         window=str(getattr(r, "window", ""))),
             as_of=as_of, market=spec.region, asset_class=spec.asset_class,
             instruments=[iid], observed_phenomenon=(
                 f"{spec.name} 近期 {r.detector}（{r.direction}，分数 {score:.2f}）；"

@@ -158,6 +158,10 @@ CREATE TABLE IF NOT EXISTS research_v2_events (
   at TEXT NOT NULL, event_type TEXT NOT NULL, note TEXT, payload_json TEXT
 );
 
+CREATE TABLE IF NOT EXISTS research_v2_identity_map (
+  old_id TEXT PRIMARY KEY, new_id TEXT NOT NULL, reason TEXT, created_at TEXT
+);
+
 CREATE TABLE IF NOT EXISTS research_v2_results (
   result_id INTEGER PRIMARY KEY AUTOINCREMENT,
   research_id TEXT NOT NULL REFERENCES research_v2_candidates(research_id) ON DELETE RESTRICT,
@@ -862,6 +866,19 @@ class Store:
                          VALUES(?,?,?,?,?,?)""",
                       (research_id, task_id, now, f"status:{status}", note,
                        json.dumps(payload or {}, ensure_ascii=False, default=str)))
+
+    def record_identity_alias(self, old_id: str, new_id: str, reason: str = "") -> None:
+        """Preserve legacy identity mapping without re-pointing old tasks/results."""
+        with self.transaction() as c:
+            c.execute("""INSERT INTO research_v2_identity_map(old_id,new_id,reason,created_at)
+                         VALUES(?,?,?,?) ON CONFLICT(old_id) DO UPDATE SET
+                         new_id=excluded.new_id, reason=excluded.reason""",
+                      (old_id, new_id, reason, utc_now()))
+
+    def identity_lookup(self, old_id: str) -> str | None:
+        row = self.conn.execute("SELECT new_id FROM research_v2_identity_map WHERE old_id=?",
+                                (old_id,)).fetchone()
+        return row[0] if row else None
 
     def add_research_event(self, research_id: str, event_type: str, note: str = "",
                            task_id: str | None = None, payload: dict | None = None) -> None:

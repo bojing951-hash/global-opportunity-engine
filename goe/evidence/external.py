@@ -69,32 +69,71 @@ def consensus_evidence(as_of: str, series_id: str | None = None,
 
 
 def ois_evidence(as_of: str, region: str | None = None,
+                 currency: str | None = None, curve_type: str | None = None,
+                 curve_id: str | None = None,
                  config: dict[str, Any] | None = None) -> dict[str, Any] | None:
+    """Slope from ONE economically comparable curve; never stitch currencies.
+
+    Required schema: curve_id,currency,region,curve_type,tenor,date,value,
+    available_at,source. All tenors must share curve/currency/region/type and
+    observation date. The configured type is explicit: ``ois`` for a true OIS
+    curve, or ``policy_path_proxy`` for the FRED Treasury/SOFR proxy.
+    """
     cfg = (config or _config()).get("ois") or {}
     if not cfg.get("enabled"):
         return None
-    df = _read_csv(cfg.get("path", ""), {"series_id", "tenor", "date", "value", "available_at"})
+    cols = {"curve_id", "currency", "region", "curve_type", "tenor", "date",
+            "value", "available_at", "source"}
+    df = _read_csv(cfg.get("path", ""), cols)
     if df is None or df.empty:
         return None
+    desired_currency = currency or cfg.get("currency")
+    desired_region = region or cfg.get("region")
+    desired_type = curve_type or cfg.get("curve_type", "ois")
+    desired_curve = curve_id or cfg.get("curve_id")
+    if not desired_currency or not desired_region:
+        return None
     cutoff = pd.Timestamp(as_of)
-    avail = df[pd.to_datetime(df["available_at"]) <= cutoff].copy()
+    avail = df[(pd.to_datetime(df["available_at"]) <= cutoff)
+               & (df["currency"] == desired_currency)
+               & (df["region"] == desired_region)
+               & (df["curve_type"] == desired_type)].copy()
+    if desired_curve:
+        avail = avail[avail["curve_id"] == desired_curve]
     if avail.empty:
         return None
+    curve_ids = avail["curve_id"].unique()
+    if len(curve_ids) != 1:
+        return None  # ambiguous curve identity: refuse rather than stitch
+    cid = str(curve_ids[0])
     latest = avail.sort_values("available_at").groupby("tenor", as_index=False).tail(1)
-    if latest["tenor"].nunique() < 2:
+    tenors = set(latest["tenor"].astype(str))
+    if not {"2Y", "10Y"}.issubset(tenors):
         return None
-    values = dict(zip(latest["tenor"].astype(str), pd.to_numeric(latest["value"], errors="coerce")))
-    short = values.get("2Y", values.get("1Y"))
-    long = values.get("10Y", values.get("5Y"))
-    if short is None or long is None or pd.isna(short) or pd.isna(long):
+    short_row = latest[latest["tenor"].astype(str) == "2Y"].iloc[-1]
+    long_row = latest[latest["tenor"].astype(str) == "10Y"].iloc[-1]
+    if str(short_row["date"]) != str(long_row["date"]):
         return None
-    age = (cutoff - pd.Timestamp(latest["available_at"].max())).days
+    if str(short_row["available_at"]) != str(long_row["available_at"]):
+        return None
+    try:
+        short = float(short_row["value"]); long = float(long_row["value"])
+    except (TypeError, ValueError):
+        return None
+    if pd.isna(short) or pd.isna(long):
+        return None
+    age = (cutoff - pd.Timestamp(short_row["available_at"])).days
     if age > int(cfg.get("max_age_days", 10)):
         return None
-    return {"claim": "政策路径/曲线斜率", "value": f"2s10s={float(long) - float(short):.2f}pp",
-            "class": "statistical_association", "source": "ois_curve",
-            "available_at": str(latest["available_at"].max()), "discriminating": True,
-            "curve": {"2Y": short, "10Y": long}}
+    is_ois = desired_type == "ois"
+    return {"claim": "OIS 曲线 2s10s" if is_ois else "政策路径代理 2s10s（非 OIS）",
+            "value": f"2s10s={long - short:.2f}pp",
+            "class": "statistical_association", "source": str(short_row["source"]),
+            "available_at": str(short_row["available_at"]), "discriminating": True,
+            "curve": {"curve_id": cid, "currency": desired_currency,
+                      "region": desired_region, "curve_type": desired_type,
+                      "date": str(short_row["date"]), "2Y": short, "10Y": long}}
+
 
 
 def attach_external(bundle: dict[str, Any], spec, iid: str, as_of: str) -> dict[str, Any]:

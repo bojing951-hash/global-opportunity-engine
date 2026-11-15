@@ -37,3 +37,12 @@ scratch/
 
 !audit/test_evidence/*.log
 !audit/test_evidence/*.proof.json
+
+# --- python build / editable-install artifacts (must not make release worktree dirty) ---
+*.egg-info/
+*.egg-info
+.eggs/
+build/
+dist/
+*.whl
+pip-wheel-metadata/

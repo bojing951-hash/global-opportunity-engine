@@ -4,6 +4,15 @@ from types import SimpleNamespace
 
 from goe.evidence.external import attach_external, consensus_evidence, ois_evidence
 
+OIS_HEADER = "curve_id,currency,region,curve_type,tenor,date,value,available_at,source\n"
+
+
+def ois_cfg(tmp_path, rows: str):
+    p = tmp_path / "ois.csv"; p.write_text(OIS_HEADER + rows, encoding="utf-8")
+    return {"ois": {"enabled": True, "path": str(p), "curve_id": "US",
+                    "currency": "USD", "region": "US", "curve_type": "ois",
+                    "max_age_days": 10}}
+
 
 def test_consensus_is_point_in_time_and_stale_safe(tmp_path):
     p = tmp_path / "consensus.csv"
@@ -18,16 +27,30 @@ def test_consensus_is_point_in_time_and_stale_safe(tmp_path):
     assert consensus_evidence("2026-01-01", "US_EQ_SPY", cfg) is None
 
 
-def test_ois_slope_and_missing(tmp_path):
-    p = tmp_path / "ois.csv"
-    p.write_text("series_id,tenor,date,value,available_at\n"
-                 "USD,2Y,2026-01-01,4.0,2026-01-02\n"
-                 "USD,10Y,2026-01-01,4.5,2026-01-02\n", encoding="utf-8")
-    cfg = {"ois": {"enabled": True, "path": str(p), "max_age_days": 10}}
-    got = ois_evidence("2026-01-05", "US", cfg)
-    assert got and "0.50" in got["value"] and got["discriminating"]
-    assert ois_evidence("2026-02-01", "US", cfg) is None
-    assert ois_evidence("2026-01-05", "US", {"ois": {"enabled": False}}) is None
+def test_same_curve_slope_and_cross_currency_rejected(tmp_path):
+    cfg = ois_cfg(tmp_path, "US,USD,US,ois,2Y,2026-01-01,4.0,2026-01-02,test\n"
+                            "US,USD,US,ois,10Y,2026-01-01,4.5,2026-01-02,test\n")
+    got = ois_evidence("2026-01-05", "US", "USD", "ois", config=cfg)
+    assert got and "0.50" in got["value"] and got["curve"]["curve_id"] == "US"
+    # same file also contains a EUR curve with a different curvature; must never stitch
+    mixed = tmp_path / "mixed.csv"
+    mixed.write_text(OIS_HEADER + "US,USD,US,ois,2Y,2026-01-01,4.0,2026-01-02,test\n"
+                                  "EU,EUR,EA,ois,10Y,2026-01-01,1.0,2026-01-02,test\n", encoding="utf-8")
+    cfg_mixed = {"ois": {**cfg["ois"], "path": str(mixed)}}
+    assert ois_evidence("2026-01-05", "US", "USD", "ois", config=cfg_mixed) is None
+    assert ois_evidence("2026-01-05", "EA", "EUR", "ois", config=cfg_mixed) is None
+
+
+def test_curve_rejects_different_dates_missing_tenor_expired_and_wrong_type(tmp_path):
+    different = ois_cfg(tmp_path, "US,USD,US,ois,2Y,2026-01-01,4.0,2026-01-02,test\n"
+                                  "US,USD,US,ois,10Y,2026-01-02,4.5,2026-01-03,test\n")
+    assert ois_evidence("2026-01-05", "US", "USD", "ois", config=different) is None
+    missing = ois_cfg(tmp_path, "US,USD,US,ois,10Y,2026-01-01,4.5,2026-01-02,test\n")
+    assert ois_evidence("2026-01-05", "US", "USD", "ois", config=missing) is None
+    assert ois_evidence("2026-02-01", "US", "USD", "ois", config=different) is None
+    wrong_type = ois_cfg(tmp_path, "US,USD,US,policy_path_proxy,2Y,2026-01-01,4.0,2026-01-02,test\n"
+                                    "US,USD,US,policy_path_proxy,10Y,2026-01-01,4.5,2026-01-02,test\n")
+    assert ois_evidence("2026-01-05", "US", "USD", "ois", config=wrong_type) is None
 
 
 def test_attach_external_opens_fundamental_only_when_measured(tmp_path, monkeypatch):

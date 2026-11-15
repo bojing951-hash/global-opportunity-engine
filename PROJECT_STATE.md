@@ -2,19 +2,19 @@
 
 - Date: 2026-11-15
 - Branch: `architecture/research-v2`
-- HEAD at last state write: Phase-1 freeze commit (will advance with the Phase-1 scan-evidence commit)
+- HEAD at last state write: current P1-fix commit (will advance with the Phase-1 scan-evidence commit)
 - Main: untouched. V1: tag `v1-frozen-1f2b341`; no V1 changes.
 - Current phase: **Phase 1 — Engineering Closure** (scan evidence gate), then Phase 2 research.
 
 ## Phase 1 tasks
 | ID | Objective | Priority | Status | Evidence |
 |---|---|---|---|---|
-| P1-SCAN-1 | Release gate independently verifies real scan/data/report evidence | P0/P1 | IN PROGRESS | `goe/scan_evidence.py`, `tests/test_scan_evidence.py` |
+| P1-SCAN-1 | Release gate independently verifies real scan/data/report evidence | P0/P1 | DONE | `goe/scan_evidence.py`, `tests/test_scan_evidence.py` |
 | P1-SCAN-2 | Adversarial invalid/valid scan tests | P1 | IN PROGRESS | empty, fake hash, modified content, wrong as_of, old scan, partial ingest, missing/mismatched report |
-| P1-REL-1 | New proof after code freeze | P1 | DONE | `release_671f5faa5f.json`, 222 tests |
+| P1-REL-1 | New proof after code freeze | P1 | DONE | `release_671f5faa5f.json`, 226 tests |
 | P1-QA-1 | Independent red-team on scan evidence | P1 | DONE | QA C/D/E/F found P1s, fixed; G/H final |
 | P1-QA-2 | Second independent pass / fresh clone | P1 | IN PROGRESS | QA G/H |
-| P1-CI-1 | GitHub Actions cross-OS run | P1 | BLOCKED | workflow exists; Docker Keychain blocked; no GitHub runner |
+| P1-CI-1 | GitHub Actions cross-OS run | P1 | FIXED LOCALLY; AWAIT GITHUB | egg-info ignore + CI rerun |
 
 ## Phase 2 tasks (not started until Phase 1 frozen)
 | ID | Objective | Status |
@@ -30,7 +30,7 @@
 - V2 research gate: 20 candidates -> 0 research / 20 intelligence (`evidence_gap`) because no
   candidate has two measured discriminating hypotheses.
 - DISCOVERY VALUE: **NOT VALIDATED**.
-- Latest release proof: `release_671f5faa5f.json` (222 tests, scan-evidence v5).
+- Latest release proof: `release_671f5faa5f.json` (226 tests, scan-evidence v5).
 
 ## Next action
 Freeze scan-evidence code, generate new proof, run independent QA; if PASS, mark Phase 1
@@ -39,7 +39,7 @@ ENGINEERING ACCEPTED and continue Phase 2 without reopening release-gate hardeni
 
 ## Accepted Phase-1 residuals (P2, explicit)
 1. Scan evidence depends on the local 101 MB `data/goe.db` and gitignored `reports/`/`exports/`; a
-   fresh clone can replay the 222-test proof but cannot re-derive scan evidence.
+   fresh clone can replay the 226-test proof but cannot re-derive scan evidence.
 2. A self-consistent synthetic DB can satisfy the scan gate; there is no external signature/anchor.
 3. A fabricated in-window `ingest_runs` success row can satisfy the live-ingest check.
 4. Artifact-vs-DB content is not fully cross-checked; frozen artifact SHA-256 prevents post-scan file
@@ -56,3 +56,16 @@ ENGINEERING ACCEPTED and continue Phase 2 without reopening release-gate hardeni
 - Current: 20 intelligence / 0 research; mean measured evidence coverage 0.075.
 - Data: cross-asset measured evidence active; consensus BLOCKED; OIS policy-path proxy only.
 - CI: workflow present, GitHub Actions not executed; Docker Linux replay blocked by Keychain.
+
+
+## P1 fix round (2026-11-15)
+- P1-01: added `*.egg-info/`, `build/`, `dist/`, `*.whl` to `.gitignore`; editable install no longer
+  makes the release worktree dirty. Local reproduction with Python 3.12 confirmed. GitHub Actions
+  rerun is required for closure (cannot be claimed from macOS).
+- P1-02: `goe/research_identity.py` derives `RC-<asof>-<instrument>-<phenomenon-hash>`; order changes
+  cannot change identity. Legacy `research_v2_identity_map` preserves old→new mappings; old tasks
+  remain on their original ID.
+- P1-03: `goe/evidence/external.py` requires `curve_id,currency,region,curve_type,tenor,date,value,
+  available_at,source`; all tenors must be the same curve/currency/region/type/date. Cross-currency,
+  mixed curve, wrong type, missing tenor, different dates, stale and future data are rejected.
+- Tests: 226 passed offline (before the next proof).

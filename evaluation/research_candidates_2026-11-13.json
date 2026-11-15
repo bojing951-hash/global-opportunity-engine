@@ -3,7 +3,7 @@
   "as_of": "2026-11-13",
   "candidates": [
     {
-      "research_id": "RC-20261113-01",
+      "research_id": "RC-20261113-CH_EQ_SMI-1438e3aa5bb7",
       "as_of": "2026-11-13",
       "market": "CH",
       "asset_class": "equity_index",
@@ -275,7 +275,7 @@
       "theme": "swiss_equity"
     },
     {
-      "research_id": "RC-20261113-02",
+      "research_id": "RC-20261113-CM_AGR_LE-f0851c3c415a",
       "as_of": "2026-11-13",
       "market": "WORLD",
       "asset_class": "commodity",
@@ -540,7 +540,7 @@
       "theme": "livestock"
     },
     {
-      "research_id": "RC-20261113-03",
+      "research_id": "RC-20261113-CM_AGR_SB-3d2c094bfbb6",
       "as_of": "2026-11-13",
       "market": "WORLD",
       "asset_class": "commodity",
@@ -805,7 +805,7 @@
       "theme": "softs"
     },
     {
-      "research_id": "RC-20261113-04",
+      "research_id": "RC-20261113-CM_ENE_RB-45ada7784c4a",
       "as_of": "2026-11-13",
       "market": "WORLD",
       "asset_class": "commodity",
@@ -1102,7 +1102,7 @@
       "theme": "refined_products"
     },
     {
-      "research_id": "RC-20261113-05",
+      "research_id": "RC-20261113-CM_ETF_SLV-31b18b96549b",
       "as_of": "2026-11-13",
       "market": "WORLD",
       "asset_class": "commodity",
@@ -1408,7 +1408,7 @@
       "theme": "silver"
     },
     {
-      "research_id": "RC-20261113-06",
+      "research_id": "RC-20261113-CN_EQ_CSI1000-67b29d5b0466",
       "as_of": "2026-11-13",
       "market": "CN",
       "asset_class": "equity_index",
@@ -1786,7 +1786,7 @@
       "theme": "china_small"
     },
     {
-      "research_id": "RC-20261113-07",
+      "research_id": "RC-20261113-CN_SEC_EV-efd47b130d9d",
       "as_of": "2026-11-13",
       "market": "CN",
       "asset_class": "sector_equity",
@@ -2036,7 +2036,7 @@
       "theme": "china_ev"
     },
     {
-      "research_id": "RC-20261113-08",
+      "research_id": "RC-20261113-DE_EQ_DAX-f0c491641f0d",
       "as_of": "2026-11-13",
       "market": "DE",
       "asset_class": "equity_index",
@@ -2335,7 +2335,7 @@
       "theme": "germany_equity"
     },
     {
-      "research_id": "RC-20261113-09",
+      "research_id": "RC-20261113-GX_FX_USDBRL-52e02877b1d2",
       "as_of": "2026-11-13",
       "market": "BR",
       "asset_class": "fx",
@@ -2574,7 +2574,7 @@
       "theme": "usdbrl"
     },
     {
-      "research_id": "RC-20261113-10",
+      "research_id": "RC-20261113-GX_FX_USDKRW-e18cb73d9ec9",
       "as_of": "2026-11-13",
       "market": "KR",
       "asset_class": "fx",
@@ -2813,7 +2813,7 @@
       "theme": "usdkrw"
     },
     {
-      "research_id": "RC-20261113-11",
+      "research_id": "RC-20261113-IN_EQ_INDA-8e22daa664a8",
       "as_of": "2026-11-13",
       "market": "IN",
       "asset_class": "equity_etf",
@@ -3085,7 +3085,7 @@
       "theme": "india_equity"
     },
     {
-      "research_id": "RC-20261113-12",
+      "research_id": "RC-20261113-JP_EQ_N225-455ff8e1a32f",
       "as_of": "2026-11-13",
       "market": "JP",
       "asset_class": "equity_index",
@@ -3474,7 +3474,7 @@
       "theme": "japan_equity"
     },
     {
-      "research_id": "RC-20261113-13",
+      "research_id": "RC-20261113-MX_EQ_IPC-8f3340472d14",
       "as_of": "2026-11-13",
       "market": "MX",
       "asset_class": "equity_index",
@@ -3757,7 +3757,7 @@
       "theme": "mexico_equity"
     },
     {
-      "research_id": "RC-20261113-14",
+      "research_id": "RC-20261113-TW_EQ_TAIEX-d1be6bcd3313",
       "as_of": "2026-11-13",
       "market": "TW",
       "asset_class": "equity_index",
@@ -4029,7 +4029,7 @@
       "theme": "taiwan_equity"
     },
     {
-      "research_id": "RC-20261113-15",
+      "research_id": "RC-20261113-US_EQ_QQQ-ed67c9acfee9",
       "as_of": "2026-11-13",
       "market": "US",
       "asset_class": "equity_etf",
@@ -4314,7 +4314,7 @@
       "theme": "us_equity_growth"
     },
     {
-      "research_id": "RC-20261113-16",
+      "research_id": "RC-20261113-US_FAC_MTUM-66083bd4ef45",
       "as_of": "2026-11-13",
       "market": "US",
       "asset_class": "equity_etf",
@@ -4599,7 +4599,7 @@
       "theme": "us_momentum_factor"
     },
     {
-      "research_id": "RC-20261113-17",
+      "research_id": "RC-20261113-US_SEC_XLB-cce9f5cca3a3",
       "as_of": "2026-11-13",
       "market": "US",
       "asset_class": "sector_equity",
@@ -4858,7 +4858,7 @@
       "theme": "us_sector_materials"
     },
     {
-      "research_id": "RC-20261113-18",
+      "research_id": "RC-20261113-US_SEC_XLP-d928c9167d8c",
       "as_of": "2026-11-13",
       "market": "US",
       "asset_class": "sector_equity",
@@ -5108,7 +5108,7 @@
       "theme": "us_sector_staples"
     },
     {
-      "research_id": "RC-20261113-19",
+      "research_id": "RC-20261113-US_SEC_XLV-08992cbc4a1e",
       "as_of": "2026-11-13",
       "market": "US",
       "asset_class": "sector_equity",
@@ -5358,7 +5358,7 @@
       "theme": "us_sector_health"
     },
     {
-      "research_id": "RC-20261113-20",
+      "research_id": "RC-20261113-US_VOL_VIX-c1092d4e5bea",
       "as_of": "2026-11-13",
       "market": "US",
       "asset_class": "volatility",

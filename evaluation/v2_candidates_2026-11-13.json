@@ -3,7 +3,7 @@
   "as_of": "2026-11-13",
   "candidates": [
     {
-      "research_id": "RC-20261113-01",
+      "research_id": "RC-20261113-CH_EQ_SMI-1438e3aa5bb7",
       "as_of": "2026-11-13",
       "market": "CH",
       "asset_class": "equity_index",
@@ -275,7 +275,7 @@
       "theme": "swiss_equity"
     },
     {
-      "research_id": "RC-20261113-02",
+      "research_id": "RC-20261113-CM_AGR_LE-f0851c3c415a",
       "as_of": "2026-11-13",
       "market": "WORLD",
       "asset_class": "commodity",
@@ -540,7 +540,7 @@
       "theme": "livestock"
     },
     {
-      "research_id": "RC-20261113-03",
+      "research_id": "RC-20261113-CM_AGR_SB-3d2c094bfbb6",
       "as_of": "2026-11-13",
       "market": "WORLD",
       "asset_class": "commodity",
@@ -805,7 +805,7 @@
       "theme": "softs"
     },
     {
-      "research_id": "RC-20261113-04",
+      "research_id": "RC-20261113-CM_ENE_RB-45ada7784c4a",
       "as_of": "2026-11-13",
       "market": "WORLD",
       "asset_class": "commodity",
@@ -1102,7 +1102,7 @@
       "theme": "refined_products"
     },
     {
-      "research_id": "RC-20261113-05",
+      "research_id": "RC-20261113-CM_ETF_SLV-31b18b96549b",
       "as_of": "2026-11-13",
       "market": "WORLD",
       "asset_class": "commodity",
