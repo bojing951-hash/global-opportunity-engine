@@ -23,6 +23,8 @@ def test_orchestrator_runs_and_records_workflow(tmp_path, monkeypatch):
     orch.register(spec)
     assert store.research_workflow_state(spec.research_id) == "PLANNED"
     assert orch.run(spec) is fake
+    orch.register(spec)  # rescan must not reset completed workflow
+    assert store.research_workflow_state(spec.research_id) == "INCONCLUSIVE"
     assert calls[0].research_id == spec.research_id
     assert store.research_workflow_state(spec.research_id) == "INCONCLUSIVE"
     assert any(r["workflow"] == "INCONCLUSIVE" for r in orch.status())

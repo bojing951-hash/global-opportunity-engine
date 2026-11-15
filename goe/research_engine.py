@@ -107,7 +107,13 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         return (observed.get(k) or {}).get("return")
 
     n225 = rv(spec.asset)
-    tests: dict[str, Any] = {}
+    hist = returns[spec.asset].dropna()
+    hist = hist[hist.index <= pd.Timestamp(event)].tail(252)
+    pct = float((hist < n225).mean()) if len(hist) and n225 is not None else None
+    tests: dict[str, Any] = {"historical_percentile": {
+        "event_return": n225, "percentile": pct,
+        "pass": bool(pct is not None and (pct <= 0.05 or pct >= 0.95)),
+        "interpretation": "two-sided 5% tail of the trailing 252-session return distribution"}}
     updates: dict[str, Any] = {}
     learned: list[str] = []
     unknown: list[str] = []
@@ -209,7 +215,7 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         }
         learned = [f"{spec.asset} event {event}: {n225:+.2%}.",
                    f"EURUSD {eur:+.2%}, USDJPY {jpy:+.2%}, IEF {ief:+.2%}, SPY {spy:+.2%}, VIX {vix:+.2%}.",
-                   "Rate and risk channels both survive; no causal identification."]
+                   "Rate/broad-USD co-move is supported; risk-off is weakened at this event; no causal identification."]
         unknown = ["2Y/10Y yield decomposition", "positioning", "policy calendar", "real-time news"]
 
     elif spec.case_kind == "commodity_event":

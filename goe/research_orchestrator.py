@@ -32,7 +32,8 @@ class ResearchOrchestrator:
     def register(self, spec: ResearchSpec) -> None:
         hyps = [{"id": k, **v} for k, v in spec.hypotheses]
         self.store.upsert_research_candidate(_candidate(spec, hyps))
-        self.store.set_research_workflow_state(spec.research_id, "PLANNED")
+        if self.store.research_workflow_state(spec.research_id) is None:
+            self.store.set_research_workflow_state(spec.research_id, "PLANNED")
         self.store.add_research_event(spec.research_id, "research:planned", spec.question)
 
     def run(self, spec: ResearchSpec) -> Any:
