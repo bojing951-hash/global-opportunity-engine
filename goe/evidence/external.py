@@ -58,12 +58,15 @@ def consensus_evidence(as_of: str, series_id: str | None = None,
     if df is None or df.empty:
         return None
     cutoff = pd.Timestamp(as_of)
-    for c in ("observation_date", "forecast_target", "publication_time", "available_at"):
+    for c in ("observation_date", "forecast_target", "publication_time", "available_at",
+              "vintage"):
         df[c] = pd.to_datetime(df[c])
-    # Publication/availability must be known by the decision time; a future
-    # forecast target is allowed, but its publication is not.
+    # Publication/availability/vintage must be known by the decision time; a
+    # future forecast target is allowed, but its publication/vintage is not.
     avail = df[(df["available_at"] <= cutoff) & (df["publication_time"] <= cutoff)
-               & (df["publication_time"] <= df["available_at"])]
+               & (df["vintage"] <= cutoff) & (df["vintage"] <= df["available_at"])
+               & (df["publication_time"] <= df["available_at"])
+               & (df["observation_date"] <= cutoff)]
     if series_id:
         avail = avail[avail["series_id"] == series_id]
     if avail.empty:
@@ -119,10 +122,12 @@ def ois_evidence(as_of: str, region: str | None = None,
     if not desired_currency or not desired_region:
         return None
     cutoff = pd.Timestamp(as_of)
-    for c in ("date", "publication_time", "available_at"):
+    for c in ("date", "publication_time", "available_at", "vintage"):
         df[c] = pd.to_datetime(df[c])
-    avail = df[(df["available_at"] <= cutoff) & (df["publication_time"] <= cutoff)
+    avail = df[(df["date"] <= cutoff) & (df["available_at"] <= cutoff)
+               & (df["publication_time"] <= cutoff) & (df["vintage"] <= cutoff)
                & (df["publication_time"] <= df["available_at"])
+               & (df["vintage"] <= df["available_at"])
                & (df["currency"] == desired_currency)
                & (df["region"] == desired_region)
                & (df["curve_type"] == desired_type)].copy()

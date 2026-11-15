@@ -891,9 +891,9 @@ class Store:
                             (research_id,)).fetchone()
             if not row:
                 raise ValueError(f"research candidate does not exist: {research_id}")
-            if row["status"] == "research_complete" and status in ("active", "intelligence",
-                                                                   "handoff_pending", "handoff_failed"):
-                raise ValueError("completed research cannot be reopened by a status update")
+            if row["status"] in ("research_complete", "archived") and status in (
+                    "active", "intelligence", "handoff_pending", "handoff_failed"):
+                raise ValueError("completed/archived research cannot be reopened by a status update")
             c.execute("UPDATE research_v2_candidates SET status=?,updated_at=? WHERE research_id=?",
                       (status, now, research_id))
             c.execute("""INSERT INTO research_v2_events(research_id,task_id,at,event_type,note,payload_json)
