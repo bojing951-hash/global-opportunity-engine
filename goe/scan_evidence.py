@@ -79,6 +79,7 @@ class ScanEvidence:
 def verify_scan_evidence(store: Store, *, reports_dir: str | Path | None = None,
                          exports_dir: str | Path | None = None,
                          require_reports: bool = True,
+                         require_artifacts: bool = False,
                          reference_date: str | None = None) -> ScanEvidence:
     root = project_root()
     reports = Path(reports_dir) if reports_dir else root / "reports"
@@ -236,6 +237,24 @@ def verify_scan_evidence(store: Store, *, reports_dir: str | Path | None = None,
         for token in (scan["scan_id"], as_of, config_hash[:16], data_hash[:16]):
             if token not in text:
                 _reject(f"report does not contain provenance token: {token}")
+    if require_artifacts:
+        hashes = stats.get("artifact_sha256")
+        if not isinstance(hashes, dict) or not hashes:
+            _reject("scan stats have no frozen artifact hashes")
+        for label, p in (("report", report_md), ("scan_json", scan_json),
+                         ("pipeline", pipeline)):
+            if not p.exists():
+                rel = ""
+            else:
+                try:
+                    rel = p.resolve().relative_to(root.resolve()).as_posix()
+                except Exception:
+                    rel = p.name
+            if rel and rel in hashes:
+                if _sha256(p) != hashes[rel]:
+                    _reject(f"{label} content does not match the scan-time artifact hash")
+            elif p.exists():
+                _reject(f"{label} is not covered by the scan-time artifact hash")
     if pipeline.exists():
         try:
             pdoc = json.loads(pipeline.read_text(encoding="utf-8"))

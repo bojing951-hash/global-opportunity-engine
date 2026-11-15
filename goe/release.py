@@ -681,7 +681,7 @@ def build_manifest(
         )
 
     try:
-        scan_ev = verify_scan_evidence(store)
+        scan_ev = verify_scan_evidence(store, require_artifacts=True)
     except ScanEvidenceError as exc:
         raise ReleaseError(f"verified scan evidence failed: {exc}") from exc
     scan = store.conn.execute(

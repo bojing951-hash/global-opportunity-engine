@@ -94,7 +94,11 @@ patch by retuning thresholds.
   stale documentation line; both were fixed in `d50c10d`, but no fresh independent re-audit of that
   fix exists in this round. Treat the evidence-gate research status as **PARTIAL / NOT VALIDATED**.
 
-## Addendum 2026-11-15 — verified scan evidence gate
+## Addendum 2026-11-15 — verified scan evidence gate (v3, 217 tests)
+Latest proof `release_5bcaa5de06.json` (code 5bcaa5d): 217/217 tests, real scan
+`scan-20261115T041932Z-50a761`, 358,310 prices / 159,508 indicators / 1,506 anomalies /
+5 transmissions / 11 opportunities. Heavy fields (OHLCV, output status/score) are content-hashed;
+stale/future/live-without-ingest scans are rejected.
 `build_manifest()` now calls `goe.scan_evidence.verify_scan_evidence()` in addition to the v4 test
 proof. The scan gate independently recomputes config/data hashes, readiness, core-series freshness,
 DB counts vs `stats_json`, report/scan-json/pipeline existence, provenance and counts. Empty,

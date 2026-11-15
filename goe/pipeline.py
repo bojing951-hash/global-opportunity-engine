@@ -196,6 +196,21 @@ def run_scan(store: Store, as_of: str | None = None, *, ingest: bool = False,
                         out_dir=(Path(export_dir) if export_dir else exports_dir()) / "ia_runs",
                     )
             stats["output_fingerprint"] = store.scan_output_fingerprint(scan_id)
+            art_hashes = {}
+            import hashlib
+            for group in (result.report_paths, result.export_paths):
+                for key, value in (group or {}).items():
+                    if not isinstance(value, (str, Path)):
+                        continue
+                    ap = Path(value)
+                    if not ap.is_file():
+                        continue
+                    try:
+                        rel = ap.resolve().relative_to(project_root().resolve()).as_posix()
+                    except Exception:
+                        continue
+                    art_hashes[rel] = hashlib.sha256(ap.read_bytes()).hexdigest()
+            stats["artifact_sha256"] = art_hashes
             stats["elapsed_s"] = round(time.time() - t0, 2)
             store.finish_scan(scan_id, "success", stats)
             return result

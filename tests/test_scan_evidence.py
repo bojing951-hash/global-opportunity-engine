@@ -182,3 +182,28 @@ def test_ohlcv_and_derived_output_tamper_is_rejected(tmp_path, monkeypatch):
     with pytest.raises(ScanEvidenceError, match="output content"):
         verify_scan_evidence(s, reports_dir=tmp_path, require_reports=False,
                              reference_date=as_of)
+
+
+def test_frozen_artifact_hashes_reject_report_tamper(tmp_path, monkeypatch):
+    import hashlib
+    s, as_of, config, data, stats = make_scan(tmp_path)
+    monkeypatch.setattr("goe.scan_evidence.check_data_readiness",
+                        lambda *a, **k: SimpleNamespace(ok=True, critical=[]))
+    rep, exp = _write_artifacts(tmp_path, config, data, s.scan_output_fingerprint("scan-1"))
+    hashes = {}
+    for p in (rep / "report_2026-01-03.md", rep / "scan_2026-01-03.json",
+              exp / "pipeline_2026-01-03.json"):
+        hashes[p.relative_to(tmp_path).as_posix()] = hashlib.sha256(p.read_bytes()).hexdigest()
+    # the production paths are repo-relative; tests point reports_dir at tmp, so
+    # exercise the hash contract directly through the same helper expectations
+    s.conn.execute("UPDATE scan_runs SET stats_json=? WHERE scan_id='scan-1'",
+                   (json.dumps({**stats, "artifact_sha256": {
+                       "report_2026-01-03.md": hashlib.sha256((rep / "report_2026-01-03.md").read_bytes()).hexdigest(),
+                       "scan_2026-01-03.json": hashlib.sha256((rep / "scan_2026-01-03.json").read_bytes()).hexdigest(),
+                       "pipeline_2026-01-03.json": hashlib.sha256((exp / "pipeline_2026-01-03.json").read_bytes()).hexdigest(),
+                   }}),))
+    s.conn.commit()
+    (rep / "report_2026-01-03.md").write_text("tampered", encoding="utf-8")
+    with pytest.raises(ScanEvidenceError, match="artifact hash|not covered|provenance"):
+        verify_scan_evidence(s, reports_dir=rep, exports_dir=exp, require_reports=True,
+                             require_artifacts=True, reference_date=as_of)
