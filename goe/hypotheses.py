@@ -46,7 +46,8 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
     ac = spec.asset_class
     region = spec.region
     equity = ac in ("equity_index", "equity_etf", "sector_equity")
-    rates = ac in ("fixed_income", "credit", "volatility")
+    rates = ac in ("fixed_income", "credit")
+    volatility = ac == "volatility"
     fx = ac == "fx"
     commodity = ac == "commodity"
     crypto = ac == "crypto"
@@ -205,6 +206,29 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
                         "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"}
             unknowns = ["本地一致预期/盈利修正", "汇率/资金流", "政策决议精确时点"]
             case = "country_equity"
+    elif volatility:
+        add_global()
+        hyps += [
+            _h("H-VOL", "波动率/风险溢价状态变化", "risk_premium", "open",
+               "波动率应均值回归；期限结构/实现波动与隐含波动的关系应可检验。",
+               [_ev("波动率指数出现变化", f"1m={chg:.1%}", "observed_fact", "prices", as_of, "H-VOL")],
+               [_ev("缺少 VIX 期限结构与期权隐含分布", "term structure missing", "unknown",
+                    "data_gap", as_of, "H-VOL")]),
+            _h("H-POS", "仓位/波动率交易拥挤", "positioning_flow",
+               "open" if positioning_value is not None else "untestable",
+               "VIX 期货/期权仓位极端应预示反转；需要持仓与期权数据。",
+               [_ev("仓位分位", str(positioning_value), "observed_fact", "CFTC", as_of, "H-POS")]
+               if positioning_value is not None else [],
+               [_ev("VIX 仓位/期权数据缺失", "vix positioning missing", "unknown", "data_gap", as_of, "H-POS")]),
+        ]
+        tests += [_test("H-VOL", "VIX 均值回归/期限结构", "term structure sign consistent", "VIX term", "obtainable")]
+        if positioning_value is not None:
+            tests.append(_test("H-POS", "VIX 期货/期权仓位反转", ">90% or <10%", "CFTC/options"))
+        add_artifact()
+        decision = {"if_true": "若波动率状态解释成立，研究波动率风险溢价与期限结构。",
+                    "if_false": "若无稳定关系，保留为市场情报，不宣称错误定价。"}
+        unknowns = ["VIX 期限结构", "期权隐含分布", "波动率仓位"]
+        case = "volatility"
     elif rates:
         hyps += [
             _h("H-REAL", "实际利率/通胀预期变化", "fundamental", "open",
@@ -337,6 +361,8 @@ def build_hypotheses(spec, *, detector: str, direction: str, ret1m: float | None
             code = "EQ" + str(region)
     elif rates:
         code = "RT" + str(region)
+    elif volatility:
+        code = "VOL"
     elif fx:
         code = "FX" + str(region)
     elif commodity:

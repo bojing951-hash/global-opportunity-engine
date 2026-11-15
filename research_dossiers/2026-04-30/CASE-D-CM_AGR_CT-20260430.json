@@ -1,0 +1,189 @@
+{
+  "dossier_id": "RD-CASE-D-CM_AGR_CT-20260430",
+  "research_id": "CASE-D-CM_AGR_CT-20260430",
+  "research_theme_id": "RT-DATA-ROLL-CM_AGR_CT",
+  "case_label": "CASE_D_DATA_ARTIFACT",
+  "decision_as_of": "2026-04-30",
+  "market": "WORLD",
+  "asset_class": "commodity",
+  "instruments": [
+    "CM_AGR_CT"
+  ],
+  "sections": {
+    "Observed Facts": [
+      {
+        "claim": "drawdown detector",
+        "value": "near_high 0.90",
+        "source": "anomaly",
+        "available_at": "2026-04-30",
+        "class": "observed_fact"
+      },
+      {
+        "claim": "continuous futures / month end",
+        "value": "True / True",
+        "source": "anomaly evidence",
+        "available_at": "2026-04-30",
+        "class": "observed_fact"
+      }
+    ],
+    "Why This Matters": {
+      "materiality": {
+        "importance": 0.2,
+        "gap_score": 0.0,
+        "near_month_end": true,
+        "is_continuous_futures": true
+      },
+      "decision_relevance": {
+        "if_true": "No further research; mark data artifact.",
+        "if_false": "Could investigate cattle fundamentals if raw data validates move."
+      },
+      "observed_phenomenon": "Live Cattle continuous futures near 5y high at month-end (drawdown percentile 0.98)."
+    },
+    "Research Question": "What explains: Live Cattle continuous futures near 5y high at month-end (drawdown percentile 0.98).",
+    "Competing Hypotheses": [
+      {
+        "id": "H-ART",
+        "label": "Continuous-futures roll / month-end data artifact",
+        "type": "data_artifact",
+        "status": "open",
+        "implications": "If roll artifact, raw contract ratio/roll date explains the jump and no economic question remains.",
+        "evidence_for": [
+          {
+            "claim": "near month end on continuous futures",
+            "value": "2026-04-30",
+            "class": "observed_fact",
+            "source": "anomaly evidence",
+            "available_at": "2026-04-30",
+            "discriminating": true
+          }
+        ],
+        "evidence_against": [
+          {
+            "claim": "roll metadata unavailable",
+            "value": "unknown",
+            "class": "unknown",
+            "source": "provider",
+            "available_at": "2026-04-30"
+          }
+        ]
+      },
+      {
+        "id": "H-SUPPLY",
+        "label": "Cattle supply/demand shock",
+        "type": "fundamental",
+        "status": "untestable",
+        "implications": "Inventories/slaughter data should move before price; not available in current dataset.",
+        "evidence_for": [],
+        "evidence_against": [
+          {
+            "claim": "no inventory/slaughter data",
+            "value": "unknown",
+            "class": "unknown",
+            "source": "data_gap",
+            "available_at": "2026-04-30"
+          }
+        ]
+      }
+    ],
+    "Different Predictions": [
+      "If roll artifact, raw contract ratio/roll date explains the jump and no economic question remains.",
+      "Inventories/slaughter data should move before price; not available in current dataset."
+    ],
+    "Supporting Evidence": [
+      {
+        "claim": "near month end on continuous futures",
+        "value": "2026-04-30",
+        "class": "observed_fact",
+        "source": "anomaly evidence",
+        "available_at": "2026-04-30",
+        "discriminating": true
+      }
+    ],
+    "Contradicting Evidence": [
+      {
+        "claim": "roll metadata unavailable",
+        "value": "unknown",
+        "class": "unknown",
+        "source": "provider",
+        "available_at": "2026-04-30"
+      },
+      {
+        "claim": "no inventory/slaughter data",
+        "value": "unknown",
+        "class": "unknown",
+        "source": "data_gap",
+        "available_at": "2026-04-30"
+      }
+    ],
+    "Critical Unknowns": [
+      "raw contract price and roll date",
+      "CFTC cattle positioning",
+      "slaughter/inventory data"
+    ],
+    "Evidence Acquisition Plan": [
+      "明确数据源、发布日期与可得时点：raw contract price and roll date",
+      "明确数据源、发布日期与可得时点：CFTC cattle positioning",
+      "明确数据源、发布日期与可得时点：slaughter/inventory data"
+    ],
+    "Falsification Conditions": [
+      {
+        "hypothesis_id": "H-ART",
+        "test": "compare raw front/next contract around roll",
+        "threshold": "ratio jumps at roll",
+        "data": "raw futures"
+      },
+      {
+        "hypothesis_id": "H-SUPPLY",
+        "test": "inventory/slaughter change",
+        "threshold": "supply shock precedes price",
+        "data": "USDA"
+      }
+    ],
+    "Research Worthiness": {
+      "rating": "low",
+      "rationale": "Case D: continuous futures near month end; likely roll artifact, no economic research claim."
+    },
+    "Evidence Readiness": {
+      "rating": "partial",
+      "research_readiness": "evidence_gap",
+      "measured_note": "Only measured, discriminating evidence counts; availability notes do not."
+    },
+    "Research Cost": {
+      "hours": 3,
+      "data_access": "low"
+    },
+    "Next Research Action": "No further research allocation; retain as market intelligence",
+    "B Capability / Handoff": {
+      "supported": false,
+      "kind": "deep_asset_research_unsupported",
+      "reason": "B is a macro fact workbench, not a general equity/sector/commodity valuation or mispricing engine; keep in A",
+      "eligibility": "a_retained",
+      "research_queue": "archive",
+      "tier": "intelligence"
+    },
+    "Result / Open Questions": {
+      "result": "NOT_EXECUTED",
+      "open_questions": [
+        "raw contract price and roll date",
+        "CFTC cattle positioning",
+        "slaughter/inventory data"
+      ],
+      "learned": "No research result is claimed; unresolved unknowns remain explicit."
+    },
+    "Independent Quality Review": {
+      "status": "NOT_INDEPENDENTLY_REVIEWED",
+      "note": "No human/expert review was performed for this dossier. Do not treat the dossier as validated research value."
+    },
+    "Source & Version References": {
+      "artifact_path": "data/goe.db#anomalies/AN-ef670579d660c2",
+      "scan_id": null,
+      "config_hash": null,
+      "data_hash": null,
+      "theme_id": "RT-DATA-ROLL-CM_AGR_CT",
+      "evidence_count": 2,
+      "source_note": "All evidence retains source and available_at; unavailable facts are unknown."
+    }
+  },
+  "discovery_value": "NOT VALIDATED",
+  "content_sha256": "36d09a6284dd3bd631019906651c70d75fb00726d0d52c32907654a437256206"
+}

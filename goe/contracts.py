@@ -136,7 +136,7 @@ def validate_research_candidate(c: dict[str, Any]) -> None:
         raise ContractError("bad evidence_readiness")
     if c["research_queue"] not in {"research", "watch", "archive"}:
         raise ContractError("bad research_queue")
-    if c["handoff_eligibility"] not in {"eligible", "a_retained"}:
+    if c["handoff_eligibility"] not in {"eligible", "a_retained", "capability_gap"}:
         raise ContractError("bad handoff_eligibility")
     if c["handoff_eligibility"] == "eligible" and (
             c["priority_tier"] == "intelligence" or c["evidence_readiness"] != "ready"):

@@ -89,3 +89,11 @@ def test_all_untestable_hypotheses_have_no_supporting_evidence():
         for h in b["hypotheses"]:
             if h["status"] == "untestable":
                 assert h["evidence_for"] == [], (ac, h["id"])
+
+
+def test_volatility_is_not_treated_as_rates():
+    b = build(spec("volatility", "VIX", "US"))
+    ids = [h["id"] for h in b["hypotheses"]]
+    assert b["case"] == "volatility"
+    assert any(x.endswith("-VOL") for x in ids)
+    assert not any(x.endswith("-REAL") or x.endswith("-TERM") for x in ids)

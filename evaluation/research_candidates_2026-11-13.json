@@ -5476,139 +5476,144 @@
       },
       "competing_hypotheses": [
         {
-          "id": "H-RTUS-REAL",
-          "label": "实际利率/通胀预期变化",
-          "type": "fundamental",
-          "status": "open",
-          "implications": "实际利率与盈亏平衡通胀应同向变化；名义利率分解应解释。",
+          "id": "H-VOL-GLOBAL",
+          "label": "全球共同风险/美元流动性冲击",
+          "type": "global_risk",
+          "status": "supported",
+          "implications": "同日股票、信用、商品和美元应同向；控制全球因子后本地残差消失。",
           "evidence_for": [
             {
-              "claim": "名义利率变动可观察",
+              "claim": "同日跨资产全球因子回归",
+              "value": "R²=0.47, beta=-11.20, residual_z=-0.34, n=252",
+              "class": "statistical_association",
+              "source": "derived/cross_asset",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-VOL-GLOBAL",
+              "discriminating": true
+            }
+          ],
+          "evidence_against": []
+        },
+        {
+          "id": "H-VOL-VOL",
+          "label": "波动率/风险溢价状态变化",
+          "type": "risk_premium",
+          "status": "open",
+          "implications": "波动率应均值回归；期限结构/实现波动与隐含波动的关系应可检验。",
+          "evidence_for": [
+            {
+              "claim": "波动率指数出现变化",
               "value": "1m=10.8%",
               "class": "observed_fact",
               "source": "prices",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-RTUS-REAL"
+              "hypothesis_id": "H-VOL-VOL"
             }
           ],
           "evidence_against": [
             {
-              "claim": "缺少实时盈亏平衡通胀",
-              "value": "local breakeven unavailable",
+              "claim": "缺少 VIX 期限结构与期权隐含分布",
+              "value": "term structure missing",
               "class": "unknown",
               "source": "data_gap",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-RTUS-REAL"
+              "hypothesis_id": "H-VOL-VOL"
             }
           ]
         },
         {
-          "id": "H-RTUS-TERM",
-          "label": "期限溢价/财政供给冲击",
-          "type": "risk_premium",
+          "id": "H-VOL-POS",
+          "label": "仓位/波动率交易拥挤",
+          "type": "positioning_flow",
           "status": "open",
-          "implications": "曲线斜率与拍卖/供给应共同变化；短端稳定而长端移动。",
+          "implications": "VIX 期货/期权仓位极端应预示反转；需要持仓与期权数据。",
           "evidence_for": [
             {
-              "claim": "本地曲线水平可观察",
-              "value": "US curve",
+              "claim": "仓位分位",
+              "value": "0.07335907335907343",
               "class": "observed_fact",
-              "source": "curve",
+              "source": "CFTC",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-RTUS-TERM"
+              "hypothesis_id": "H-VOL-POS"
             }
           ],
           "evidence_against": [
             {
-              "claim": "拍卖/财政供给数据未接入",
-              "value": "auction data missing",
+              "claim": "VIX 仓位/期权数据缺失",
+              "value": "vix positioning missing",
               "class": "unknown",
               "source": "data_gap",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-RTUS-TERM"
+              "hypothesis_id": "H-VOL-POS"
             }
           ]
         },
         {
-          "id": "H-RTUS-POL",
-          "label": "货币政策路径重新定价",
-          "type": "policy",
-          "status": "open",
-          "implications": "政策利率预期与短端应领先；事件窗口反应集中。",
-          "evidence_for": [
-            {
-              "claim": "区域政策利率序列可用",
-              "value": "US policy rate",
-              "class": "observed_fact",
-              "source": "macro",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-RTUS-POL"
-            }
-          ],
+          "id": "H-VOL-ART",
+          "label": "数据伪影（换月/拆股/盘中/陈旧）",
+          "type": "data_artifact",
+          "status": "untestable",
+          "implications": "原始合约/拆分调整/抓取时点应能解释跳变；清洗后异常应消失。",
+          "evidence_for": [],
           "evidence_against": [
             {
-              "claim": "市场隐含政策路径缺失",
-              "value": "OIS missing",
-              "class": "unknown",
-              "source": "data_gap",
+              "claim": "未记录价格清洗问题",
+              "value": "no price_data_issue",
+              "class": "observed_fact",
+              "source": "data_quality",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-RTUS-POL"
+              "hypothesis_id": "H-VOL-ART"
             }
           ]
         }
       ],
       "evidence": [
         {
-          "claim": "名义利率变动可观察",
+          "claim": "同日跨资产全球因子回归",
+          "value": "R²=0.47, beta=-11.20, residual_z=-0.34, n=252",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-VOL-GLOBAL",
+          "discriminating": true
+        },
+        {
+          "claim": "波动率指数出现变化",
           "value": "1m=10.8%",
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-RTUS-REAL"
+          "hypothesis_id": "H-VOL-VOL"
         },
         {
-          "claim": "本地曲线水平可观察",
-          "value": "US curve",
+          "claim": "仓位分位",
+          "value": "0.07335907335907343",
           "class": "observed_fact",
-          "source": "curve",
+          "source": "CFTC",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-RTUS-TERM"
-        },
-        {
-          "claim": "区域政策利率序列可用",
-          "value": "US policy rate",
-          "class": "observed_fact",
-          "source": "macro",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-RTUS-POL"
+          "hypothesis_id": "H-VOL-POS"
         }
       ],
       "critical_unknowns": [
-        "实时盈亏平衡通胀",
-        "拍卖/财政供给",
-        "OIS 政策路径"
+        "VIX 期限结构",
+        "期权隐含分布",
+        "波动率仓位",
+        "无法形成两个可区分且可检验的竞争解释"
       ],
       "falsification_conditions": [
         {
-          "hypothesis_id": "H-RTUS-REAL",
-          "test": "实际利率/通胀分解",
-          "threshold": "sign consistent 60d",
-          "data": "local TIPS/breakeven",
+          "hypothesis_id": "H-VOL-VOL",
+          "test": "VIX 均值回归/期限结构",
+          "threshold": "term structure sign consistent",
+          "data": "VIX term",
           "data_status": "obtainable"
         },
         {
-          "hypothesis_id": "H-RTUS-TERM",
-          "test": "本地曲线斜率与长端拍卖",
-          "threshold": "2s10s move > 2σ",
-          "data": "local curve/auction",
-          "data_status": "available"
-        },
-        {
-          "hypothesis_id": "H-RTUS-POL",
-          "test": "短端与本地政策利率预期",
-          "threshold": "short-end leads",
-          "data": "local policy path",
-          "data_status": "available"
+          "hypothesis_id": "H-VOL-POS",
+          "test": "VIX 期货/期权仓位反转",
+          "threshold": ">90% or <10%",
+          "data": "CFTC/options",
+          "data_status": "obtainable"
         }
       ],
       "required_data": [
@@ -5622,22 +5627,23 @@
         "信用 OAS（仅有 HYG/IEF 代理）"
       ],
       "research_cost": {
-        "hours": 10,
+        "hours": 12,
         "data_access": "medium"
       },
       "decision_impact": {
-        "if_true": "若实际利率/期限溢价解释成立，研究久期与曲线交易，而非方向性信用判断。",
-        "if_false": "若政策路径解释成立，交 B 评估利率路径与久期风险。"
+        "if_true": "若波动率状态解释成立，研究波动率风险溢价与期限结构。",
+        "if_false": "若无稳定关系，保留为市场情报，不宣称错误定价。"
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=rates, materiality L2, gap L0, distinguishability L0, impact L1, open_hypotheses=3, discriminating=0, worthiness=low, evidence=missing, cost=10h",
+      "rationale": "tier intelligence: case=volatility, materiality L2, gap L0, distinguishability L0, impact L1, open_hypotheses=2, discriminating=0, worthiness=low, evidence=missing, cost=12h",
       "data_quality": {
         "score": 0.4666666666666666,
         "gaps": [
-          "实时盈亏平衡通胀",
-          "拍卖/财政供给",
-          "OIS 政策路径"
+          "VIX 期限结构",
+          "期权隐含分布",
+          "波动率仓位",
+          "无法形成两个可区分且可检验的竞争解释"
         ],
         "cross_asset": {
           "available": true,
@@ -5669,9 +5675,10 @@
         "discriminating_hypotheses": 0
       },
       "evidence_gaps": [
-        "实时盈亏平衡通胀",
-        "拍卖/财政供给",
-        "OIS 政策路径"
+        "VIX 期限结构",
+        "期权隐含分布",
+        "波动率仓位",
+        "无法形成两个可区分且可检验的竞争解释"
       ],
       "research_readiness": "evidence_gap",
       "research_worthiness": "low",
@@ -5680,54 +5687,55 @@
       "research_queue": "archive",
       "evidence_for": [
         {
-          "claim": "名义利率变动可观察",
+          "claim": "同日跨资产全球因子回归",
+          "value": "R²=0.47, beta=-11.20, residual_z=-0.34, n=252",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-VOL-GLOBAL",
+          "discriminating": true
+        },
+        {
+          "claim": "波动率指数出现变化",
           "value": "1m=10.8%",
           "class": "observed_fact",
           "source": "prices",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-RTUS-REAL"
+          "hypothesis_id": "H-VOL-VOL"
         },
         {
-          "claim": "本地曲线水平可观察",
-          "value": "US curve",
+          "claim": "仓位分位",
+          "value": "0.07335907335907343",
           "class": "observed_fact",
-          "source": "curve",
+          "source": "CFTC",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-RTUS-TERM"
-        },
-        {
-          "claim": "区域政策利率序列可用",
-          "value": "US policy rate",
-          "class": "observed_fact",
-          "source": "macro",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-RTUS-POL"
+          "hypothesis_id": "H-VOL-POS"
         }
       ],
       "evidence_against": [
         {
-          "claim": "缺少实时盈亏平衡通胀",
-          "value": "local breakeven unavailable",
+          "claim": "缺少 VIX 期限结构与期权隐含分布",
+          "value": "term structure missing",
           "class": "unknown",
           "source": "data_gap",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-RTUS-REAL"
+          "hypothesis_id": "H-VOL-VOL"
         },
         {
-          "claim": "拍卖/财政供给数据未接入",
-          "value": "auction data missing",
+          "claim": "VIX 仓位/期权数据缺失",
+          "value": "vix positioning missing",
           "class": "unknown",
           "source": "data_gap",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-RTUS-TERM"
+          "hypothesis_id": "H-VOL-POS"
         },
         {
-          "claim": "市场隐含政策路径缺失",
-          "value": "OIS missing",
-          "class": "unknown",
-          "source": "data_gap",
+          "claim": "未记录价格清洗问题",
+          "value": "no price_data_issue",
+          "class": "observed_fact",
+          "source": "data_quality",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-RTUS-POL"
+          "hypothesis_id": "H-VOL-ART"
         }
       ],
       "evaluation_id": "D:2026-11-13:US_VOL_VIX",

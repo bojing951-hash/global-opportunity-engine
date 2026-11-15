@@ -106,3 +106,13 @@ ENGINEERING ACCEPTED and continue Phase 2 without reopening release-gate hardeni
 - PIT future vintage/observation/curve date/publication/available rejected; archived/completed cannot reopen.
 - Current: 0 research / 4 watch / 16 archive / 0 eligible; N225 high/partial/watch.
 - Accepted P2: OIS staleness uses available_at not curve date; archived->research_complete terminal transition; rerun log not separately archived.
+
+
+## Research product stage (2026-11-15)
+- CURRENT_GOAL: convert anomalies into checkable research dossiers; separate worthiness/readiness/queue/handoff.
+- Built `goe/dossier.py` (18 sections), `goe/integration/capabilities.py` (B router),
+  `goe/research_quality.py` (descriptive four-track audit).
+- Generated real dossiers: A N225, B VIX explained, C TAIEX/QQQ/XLV evidence gap,
+  D 2026-04-30 continuous-futures roll artifact. Index `research_dossiers/README.md`.
+- Current: 0 research / 4 watch / 16 archive / 0 handoff eligible; DISCOVERY NOT VALIDATED.
+- Stage: research workflow functional; next is independent review/evidence acquisition, not gate tuning.

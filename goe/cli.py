@@ -350,6 +350,43 @@ def cmd_release(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_dossier(args: argparse.Namespace) -> int:
+    """Generate source-bound Research Dossiers from a frozen candidate artifact."""
+    import json as _json
+    from .dossier import build_dossier, write_dossier
+
+    artifact = Path(args.artifact) if args.artifact else (
+        project_root() / "evaluation" / "v2_candidates_20_2026-11-13.json")
+    doc = _json.loads(artifact.read_text(encoding="utf-8"))
+    scan_meta = {}
+    report_json = project_root() / "reports" / f"scan_{doc.get('as_of')}.json"
+    if report_json.exists():
+        try:
+            scan_meta = _json.loads(report_json.read_text(encoding="utf-8")).get("meta") or {}
+        except Exception:
+            scan_meta = {}
+    wanted = set(args.id or [])
+    rows = []
+    for c in doc.get("candidates") or []:
+        if wanted and c.get("research_id") not in wanted:
+            continue
+        if not wanted and not args.all and c.get("research_queue") not in ("research", "watch"):
+            continue
+        if c.get("research_worthiness") == "high":
+            label = "CASE_A_RESEARCH_WORTHY"
+        elif float((c.get("materiality") or {}).get("gap_score") or 0.0) == 0.0:
+            label = "CASE_B_EXPLAINED"
+        else:
+            label = "CASE_C_EVIDENCE_GAP"
+        d = build_dossier(c, artifact_path=str(artifact), scan_meta=scan_meta, case_label=label)
+        paths = write_dossier(d, args.out)
+        rows.append((d["dossier_id"], paths["markdown"]))
+    for did, path in rows:
+        print(f"{did} -> {path}")
+    print(f"dossiers={len(rows)} artifact={artifact}")
+    return 0 if rows else 1
+
+
 def cmd_verify_release(args: argparse.Namespace) -> int:
     """Standalone, portable proof verification (safe on a fresh clone)."""
     from .release import ReleaseError, verify_test_proof
@@ -520,6 +557,13 @@ def build_parser() -> argparse.ArgumentParser:
     t.add_argument("--ia-out", default=None)
     t.add_argument("--ia-timeout", type=int, default=300)
     t.set_defaults(func=cmd_triage)
+
+    d = sub.add_parser("dossier", help="生成可检查的 Research Dossier")
+    d.add_argument("--artifact", default=None)
+    d.add_argument("--out", default="research_dossiers")
+    d.add_argument("--all", action="store_true")
+    d.add_argument("--id", action="append")
+    d.set_defaults(func=cmd_dossier)
 
     rel = sub.add_parser("release", help="用可验证测试证明冻结发布清单")
     rel.add_argument("--db", default=None)

@@ -1,0 +1,284 @@
+{
+  "dossier_id": "RD-RC-20261113-US_VOL_VIX-c1092d4e5bea",
+  "research_id": "RC-20261113-US_VOL_VIX-c1092d4e5bea",
+  "research_theme_id": "RT-bfb7d7f74d4ea817",
+  "case_label": "CASE_B_EXPLAINED",
+  "decision_as_of": "2026-11-13",
+  "market": "US",
+  "asset_class": "volatility",
+  "instruments": [
+    "US_VOL_VIX"
+  ],
+  "sections": {
+    "Observed Facts": [
+      {
+        "claim": "同日跨资产全球因子回归",
+        "value": "R²=0.47, beta=-11.20, residual_z=-0.34, n=252",
+        "source": "derived/cross_asset",
+        "available_at": "2026-11-13",
+        "class": "statistical_association"
+      },
+      {
+        "claim": "波动率指数出现变化",
+        "value": "1m=10.8%",
+        "source": "prices",
+        "available_at": "2026-11-13",
+        "class": "observed_fact"
+      },
+      {
+        "claim": "仓位分位",
+        "value": "0.07335907335907343",
+        "source": "CFTC",
+        "available_at": "2026-11-13",
+        "class": "observed_fact"
+      }
+    ],
+    "Why This Matters": {
+      "materiality": {
+        "level": 2,
+        "importance": 0.9,
+        "anomaly_score": 0.2494478558529104,
+        "return_1m": 0.10847657573615233,
+        "gap_score": 0.0,
+        "gap_level": 0,
+        "mechanism_conflict": false,
+        "distinguishability_level": 0,
+        "decision_impact_level": 1,
+        "has_change": true
+      },
+      "decision_relevance": {
+        "if_true": "若波动率状态解释成立，研究波动率风险溢价与期限结构。",
+        "if_false": "若无稳定关系，保留为市场情报，不宣称错误定价。"
+      },
+      "observed_phenomenon": "CBOE Volatility Index 近期 price_return_shock（down，分数 0.25）；1 个月收益 +10.8%；回撤分位 0.74。"
+    },
+    "Research Question": "What explains: CBOE Volatility Index 近期 price_return_shock（down，分数 0.25）；1 个月收益 +10.8%；回撤分位 0.74。",
+    "Competing Hypotheses": [
+      {
+        "id": "H-VOL-GLOBAL",
+        "label": "全球共同风险/美元流动性冲击",
+        "type": "global_risk",
+        "status": "supported",
+        "implications": "同日股票、信用、商品和美元应同向；控制全球因子后本地残差消失。",
+        "evidence_for": [
+          {
+            "claim": "同日跨资产全球因子回归",
+            "value": "R²=0.47, beta=-11.20, residual_z=-0.34, n=252",
+            "class": "statistical_association",
+            "source": "derived/cross_asset",
+            "available_at": "2026-11-13",
+            "hypothesis_id": "H-VOL-GLOBAL",
+            "discriminating": true
+          }
+        ],
+        "evidence_against": []
+      },
+      {
+        "id": "H-VOL-VOL",
+        "label": "波动率/风险溢价状态变化",
+        "type": "risk_premium",
+        "status": "open",
+        "implications": "波动率应均值回归；期限结构/实现波动与隐含波动的关系应可检验。",
+        "evidence_for": [
+          {
+            "claim": "波动率指数出现变化",
+            "value": "1m=10.8%",
+            "class": "observed_fact",
+            "source": "prices",
+            "available_at": "2026-11-13",
+            "hypothesis_id": "H-VOL-VOL"
+          }
+        ],
+        "evidence_against": [
+          {
+            "claim": "缺少 VIX 期限结构与期权隐含分布",
+            "value": "term structure missing",
+            "class": "unknown",
+            "source": "data_gap",
+            "available_at": "2026-11-13",
+            "hypothesis_id": "H-VOL-VOL"
+          }
+        ]
+      },
+      {
+        "id": "H-VOL-POS",
+        "label": "仓位/波动率交易拥挤",
+        "type": "positioning_flow",
+        "status": "open",
+        "implications": "VIX 期货/期权仓位极端应预示反转；需要持仓与期权数据。",
+        "evidence_for": [
+          {
+            "claim": "仓位分位",
+            "value": "0.07335907335907343",
+            "class": "observed_fact",
+            "source": "CFTC",
+            "available_at": "2026-11-13",
+            "hypothesis_id": "H-VOL-POS"
+          }
+        ],
+        "evidence_against": [
+          {
+            "claim": "VIX 仓位/期权数据缺失",
+            "value": "vix positioning missing",
+            "class": "unknown",
+            "source": "data_gap",
+            "available_at": "2026-11-13",
+            "hypothesis_id": "H-VOL-POS"
+          }
+        ]
+      },
+      {
+        "id": "H-VOL-ART",
+        "label": "数据伪影（换月/拆股/盘中/陈旧）",
+        "type": "data_artifact",
+        "status": "untestable",
+        "implications": "原始合约/拆分调整/抓取时点应能解释跳变；清洗后异常应消失。",
+        "evidence_for": [],
+        "evidence_against": [
+          {
+            "claim": "未记录价格清洗问题",
+            "value": "no price_data_issue",
+            "class": "observed_fact",
+            "source": "data_quality",
+            "available_at": "2026-11-13",
+            "hypothesis_id": "H-VOL-ART"
+          }
+        ]
+      }
+    ],
+    "Different Predictions": [
+      "同日股票、信用、商品和美元应同向；控制全球因子后本地残差消失。",
+      "波动率应均值回归；期限结构/实现波动与隐含波动的关系应可检验。",
+      "VIX 期货/期权仓位极端应预示反转；需要持仓与期权数据。",
+      "原始合约/拆分调整/抓取时点应能解释跳变；清洗后异常应消失。"
+    ],
+    "Supporting Evidence": [
+      {
+        "claim": "同日跨资产全球因子回归",
+        "value": "R²=0.47, beta=-11.20, residual_z=-0.34, n=252",
+        "class": "statistical_association",
+        "source": "derived/cross_asset",
+        "available_at": "2026-11-13",
+        "hypothesis_id": "H-VOL-GLOBAL",
+        "discriminating": true
+      },
+      {
+        "claim": "波动率指数出现变化",
+        "value": "1m=10.8%",
+        "class": "observed_fact",
+        "source": "prices",
+        "available_at": "2026-11-13",
+        "hypothesis_id": "H-VOL-VOL"
+      },
+      {
+        "claim": "仓位分位",
+        "value": "0.07335907335907343",
+        "class": "observed_fact",
+        "source": "CFTC",
+        "available_at": "2026-11-13",
+        "hypothesis_id": "H-VOL-POS"
+      }
+    ],
+    "Contradicting Evidence": [
+      {
+        "claim": "缺少 VIX 期限结构与期权隐含分布",
+        "value": "term structure missing",
+        "class": "unknown",
+        "source": "data_gap",
+        "available_at": "2026-11-13",
+        "hypothesis_id": "H-VOL-VOL"
+      },
+      {
+        "claim": "VIX 仓位/期权数据缺失",
+        "value": "vix positioning missing",
+        "class": "unknown",
+        "source": "data_gap",
+        "available_at": "2026-11-13",
+        "hypothesis_id": "H-VOL-POS"
+      },
+      {
+        "claim": "未记录价格清洗问题",
+        "value": "no price_data_issue",
+        "class": "observed_fact",
+        "source": "data_quality",
+        "available_at": "2026-11-13",
+        "hypothesis_id": "H-VOL-ART"
+      }
+    ],
+    "Critical Unknowns": [
+      "VIX 期限结构",
+      "期权隐含分布",
+      "波动率仓位",
+      "无法形成两个可区分且可检验的竞争解释"
+    ],
+    "Evidence Acquisition Plan": [
+      "明确数据源、发布日期与可得时点：VIX 期限结构",
+      "取得历史期权隐含分布；否则保留为 unknown",
+      "使用 CFTC/ETF 资金流并检查发布日期",
+      "明确数据源、发布日期与可得时点：无法形成两个可区分且可检验的竞争解释"
+    ],
+    "Falsification Conditions": [
+      {
+        "hypothesis_id": "H-VOL-VOL",
+        "test": "VIX 均值回归/期限结构",
+        "threshold": "term structure sign consistent",
+        "data": "VIX term",
+        "data_status": "obtainable"
+      },
+      {
+        "hypothesis_id": "H-VOL-POS",
+        "test": "VIX 期货/期权仓位反转",
+        "threshold": ">90% or <10%",
+        "data": "CFTC/options",
+        "data_status": "obtainable"
+      }
+    ],
+    "Research Worthiness": {
+      "rating": "low",
+      "rationale": "tier intelligence: case=volatility, materiality L2, gap L0, distinguishability L0, impact L1, open_hypotheses=2, discriminating=0, worthiness=low, evidence=missing, cost=12h"
+    },
+    "Evidence Readiness": {
+      "rating": "missing",
+      "research_readiness": "evidence_gap",
+      "measured_note": "Only measured, discriminating evidence counts; availability notes do not."
+    },
+    "Research Cost": {
+      "hours": 12,
+      "data_access": "medium"
+    },
+    "Next Research Action": "No further research allocation; retain as market intelligence",
+    "B Capability / Handoff": {
+      "supported": false,
+      "kind": "deep_asset_research_unsupported",
+      "reason": "B is a macro fact workbench, not a general equity/sector/commodity valuation or mispricing engine; keep in A",
+      "eligibility": "a_retained",
+      "research_queue": "archive",
+      "tier": "intelligence"
+    },
+    "Result / Open Questions": {
+      "result": "NOT_EXECUTED",
+      "open_questions": [
+        "VIX 期限结构",
+        "期权隐含分布",
+        "波动率仓位",
+        "无法形成两个可区分且可检验的竞争解释"
+      ],
+      "learned": "No research result is claimed; unresolved unknowns remain explicit."
+    },
+    "Independent Quality Review": {
+      "status": "NOT_INDEPENDENTLY_REVIEWED",
+      "note": "No human/expert review was performed for this dossier. Do not treat the dossier as validated research value."
+    },
+    "Source & Version References": {
+      "artifact_path": "evaluation/v2_candidates_20_2026-11-13.json",
+      "scan_id": "scan-20261115T044634Z-b68802",
+      "config_hash": "7d4d8ae1a7ca110204f522359f57e8c627c89cdec753eea29b51af4a486fc187",
+      "data_hash": "9350b109d05e0131412fc8631a6620eae73072ba17c208271b43b1d384c04054",
+      "theme_id": "RT-bfb7d7f74d4ea817",
+      "evidence_count": 3,
+      "source_note": "All evidence retains source and available_at; unavailable facts are unknown."
+    }
+  },
+  "discovery_value": "NOT VALIDATED",
+  "content_sha256": "3b62b0e21d7992e82d2d2cb4fd449691ec06686f892888a13cb0da63bf2375d5"
+}

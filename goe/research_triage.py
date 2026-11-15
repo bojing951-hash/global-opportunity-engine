@@ -18,6 +18,7 @@ import pandas as pd
 from .config import load_themes, load_universe
 from .evidence.cross_asset import compute_fits, count_discriminating, evidence_for_bundle
 from .evidence.external import attach_external
+from .integration.capabilities import handoff_eligibility as route_handoff
 from .expectations import compute_expectation_gap
 from .hypotheses import build_hypotheses
 from .research_identity import research_id as make_research_id
@@ -292,7 +293,9 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
                           "cross_asset": fits, "discriminating_hypotheses": discriminating_count},
             research_readiness="evidence_ok" if discriminating_count >= 2 else "evidence_gap",
             research_worthiness=worthiness, evidence_readiness=readiness,
-            handoff_eligibility=("eligible" if tier in ("A", "B", "C") else "a_retained"),
+            handoff_eligibility=route_handoff(
+                {"asset_class": spec.asset_class, "market": spec.region,
+                 "instruments": [iid]}, tier=tier, evidence_readiness=readiness),
             research_queue=("research" if tier in ("A", "B", "C")
                             else ("watch" if worthiness != "low" else "archive")),
             evidence_gaps=unknowns, theme=theme,
