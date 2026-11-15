@@ -70,6 +70,6 @@ demotes — which may well be the correct current answer, but should be a delibe
 
 ## Update 2026-11-15 (gate applied)
 The recommended gate is now implemented. Cross-asset regressions supply measured discriminating
-evidence; missing consensus/OIS feeds add nothing. Current real result: 20 candidates -> 1 research
+evidence; missing consensus/OIS feeds add nothing. Current real result: 20 candidates -> 0 research
 (N225, evidence_ok), 19 intelligence (evidence_gap). No candidate is deleted or handed to B.
 See `audit/EVIDENCE_GATE_DECISION.md`.

@@ -3,398 +3,6 @@
   "as_of": "2026-11-13",
   "candidates": [
     {
-      "research_id": "RC-20261113-12",
-      "as_of": "2026-11-13",
-      "market": "JP",
-      "asset_class": "equity_index",
-      "instruments": [
-        "JP_EQ_N225"
-      ],
-      "observed_phenomenon": "Nikkei 225 近期 drawdown_extreme（deep_drawdown，分数 0.98）；1 个月收益 -9.7%；回撤分位 0.03。",
-      "materiality": {
-        "level": 3,
-        "importance": 0.8,
-        "anomaly_score": 0.9841143764892772,
-        "return_1m": -0.09745378675255034,
-        "gap_score": 0.709,
-        "gap_level": 2,
-        "mechanism_conflict": true,
-        "distinguishability_level": 2,
-        "decision_impact_level": 2,
-        "has_change": true
-      },
-      "competing_hypotheses": [
-        {
-          "id": "H-EQJP-LOCAL",
-          "label": "JP 本地市场/区域风险因子",
-          "type": "global_risk",
-          "status": "open",
-          "implications": "本地基准与全球因子应能解释大部分变动；剔除后残差应显著缩小。",
-          "evidence_for": [
-            {
-              "claim": "本地基准回归",
-              "value": "R²=0.72, beta=1.18, residual_z=0.19, n=252",
-              "class": "statistical_association",
-              "source": "derived/cross_asset",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQJP-LOCAL",
-              "discriminating": true
-            }
-          ],
-          "evidence_against": []
-        },
-        {
-          "id": "H-EQJP-GLOBAL",
-          "label": "全球共同风险/美元流动性冲击",
-          "type": "global_risk",
-          "status": "open",
-          "implications": "同日股票、信用、商品和美元应同向；控制全球因子后本地残差消失。",
-          "evidence_for": [],
-          "evidence_against": [
-            {
-              "claim": "全球因子解释力不足",
-              "value": "R²=0.07 < 0.30; residual_z=0.28",
-              "class": "statistical_association",
-              "source": "derived/cross_asset",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQJP-GLOBAL",
-              "discriminating": true
-            }
-          ]
-        },
-        {
-          "id": "H-EQJP-FUND",
-          "label": "JP 盈利/基本面预期变化",
-          "type": "fundamental",
-          "status": "untestable",
-          "implications": "盈利修正/现金流预期应领先或同步；需要一致预期或财报数据。",
-          "evidence_for": [],
-          "evidence_against": [
-            {
-              "claim": "一致预期/财报修正未接入",
-              "value": "cannot test directly",
-              "class": "unknown",
-              "source": "data_gap",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQJP-FUND"
-            }
-          ]
-        },
-        {
-          "id": "H-EQJP-POLICY",
-          "label": "本地政策/监管冲击",
-          "type": "policy",
-          "status": "open",
-          "implications": "政策路径/事件应改变利率或风险溢价；事件前后应出现可定位的重新定价。",
-          "evidence_for": [
-            {
-              "claim": "区域属于政策敏感市场",
-              "value": "JP",
-              "class": "observed_fact",
-              "source": "config",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQJP-POLICY"
-            }
-          ],
-          "evidence_against": [
-            {
-              "claim": "没有可核验的决议/公告时点",
-              "value": "event date unknown",
-              "class": "unknown",
-              "source": "calendar",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQJP-POLICY"
-            }
-          ]
-        },
-        {
-          "id": "H-EQJP-FX",
-          "label": "本地汇率/资金流",
-          "type": "global_risk",
-          "status": "open",
-          "implications": "本币贬值应压制本地股票（外币投资者视角）；汇率与股市同向。",
-          "evidence_for": [
-            {
-              "claim": "本币汇率 beta",
-              "value": "R²=0.01, beta=-0.45, residual_z=0.25, n=252",
-              "class": "statistical_association",
-              "source": "derived/cross_asset",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQJP-FX",
-              "discriminating": true
-            }
-          ],
-          "evidence_against": [
-            {
-              "claim": "未做汇率 beta",
-              "value": "not estimated",
-              "class": "unknown",
-              "source": "derived",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQJP-FX"
-            }
-          ]
-        },
-        {
-          "id": "H-EQJP-POS",
-          "label": "仓位/资金流驱动的技术性移动",
-          "type": "positioning_flow",
-          "status": "untestable",
-          "implications": "CFTC/资金流极端仓位应随后均值回归；价格变动应集中在拥挤方向。",
-          "evidence_for": [],
-          "evidence_against": [
-            {
-              "claim": "仓位极端程度不足或缺失",
-              "value": "neutral/unknown",
-              "class": "unknown",
-              "source": "CFTC",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQJP-POS"
-            }
-          ]
-        },
-        {
-          "id": "H-EQJP-ART",
-          "label": "数据伪影（换月/拆股/盘中/陈旧）",
-          "type": "data_artifact",
-          "status": "untestable",
-          "implications": "原始合约/拆分调整/抓取时点应能解释跳变；清洗后异常应消失。",
-          "evidence_for": [],
-          "evidence_against": [
-            {
-              "claim": "未记录价格清洗问题",
-              "value": "no price_data_issue",
-              "class": "observed_fact",
-              "source": "data_quality",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-EQJP-ART"
-            }
-          ]
-        }
-      ],
-      "evidence": [
-        {
-          "claim": "本地基准回归",
-          "value": "R²=0.72, beta=1.18, residual_z=0.19, n=252",
-          "class": "statistical_association",
-          "source": "derived/cross_asset",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-LOCAL",
-          "discriminating": true
-        },
-        {
-          "claim": "区域属于政策敏感市场",
-          "value": "JP",
-          "class": "observed_fact",
-          "source": "config",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-POLICY"
-        },
-        {
-          "claim": "本币汇率 beta",
-          "value": "R²=0.01, beta=-0.45, residual_z=0.25, n=252",
-          "class": "statistical_association",
-          "source": "derived/cross_asset",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-FX",
-          "discriminating": true
-        }
-      ],
-      "critical_unknowns": [
-        "本地一致预期/盈利修正",
-        "汇率/资金流",
-        "政策决议精确时点"
-      ],
-      "falsification_conditions": [
-        {
-          "hypothesis_id": "H-EQJP-LOCAL",
-          "test": "对本地基准与全球因子回归后的残差",
-          "threshold": "|residual z| < 1.5",
-          "data": "prices/regional benchmark",
-          "data_status": "available"
-        },
-        {
-          "hypothesis_id": "H-EQJP-GLOBAL",
-          "test": "同日跨资产 beta 与残差",
-          "threshold": "R² > 0.5 且残差 |z|<1.5",
-          "data": "cross_asset",
-          "data_status": "available"
-        },
-        {
-          "hypothesis_id": "H-EQJP-POLICY",
-          "test": "事件窗口前后的利率/资产反应",
-          "threshold": "event-window abnormal return > 2σ",
-          "data": "policy calendar/rates",
-          "data_status": "obtainable"
-        },
-        {
-          "hypothesis_id": "H-EQJP-FX",
-          "test": "本币汇率 beta",
-          "threshold": "sign consistent",
-          "data": "local FX",
-          "data_status": "available"
-        }
-      ],
-      "required_data": [
-        "价格/成交量",
-        "CFTC 持仓（周度）",
-        "收益率曲线",
-        "宏观序列（按发布滞后）",
-        "分析师一致预期/修正",
-        "期权隐含分布",
-        "ETF 资金流",
-        "信用 OAS（仅有 HYG/IEF 代理）"
-      ],
-      "research_cost": {
-        "hours": 10,
-        "data_access": "medium"
-      },
-      "decision_impact": {
-        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
-        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
-      },
-      "priority_tier": "A",
-      "priority_rank": 1,
-      "rationale": "tier A: case=country_equity, materiality L3, gap L2, distinguishability L2, impact L2, open_hypotheses=4, discriminating=2, cost=10h",
-      "data_quality": {
-        "score": 0.4,
-        "gaps": [
-          "本地一致预期/盈利修正",
-          "汇率/资金流",
-          "政策决议精确时点"
-        ],
-        "cross_asset": {
-          "available": true,
-          "instrument": "JP_EQ_N225",
-          "as_of": "2026-11-13",
-          "global": {
-            "available": true,
-            "kind": "global",
-            "factor": "US_EQ_SPY,US_EQ_QQQ,US_FX_DXY,US_CR_HYG,CM_MET_GC,US_FI_IEF",
-            "n_obs": 252,
-            "r2": 0.0722,
-            "beta": 0.9131,
-            "residual_z": 0.2753,
-            "as_of": "2026-11-13",
-            "reason": ""
-          },
-          "local": {
-            "available": true,
-            "kind": "local",
-            "factor": "JP_EQ_TOPIX",
-            "n_obs": 252,
-            "r2": 0.7238,
-            "beta": 1.1757,
-            "residual_z": 0.1858,
-            "as_of": "2026-11-13",
-            "reason": ""
-          },
-          "fx": {
-            "available": true,
-            "kind": "fx",
-            "factor": "GX_FX_USDJPY",
-            "n_obs": 252,
-            "r2": 0.0133,
-            "beta": -0.454,
-            "residual_z": 0.2498,
-            "as_of": "2026-11-13",
-            "reason": ""
-          }
-        },
-        "discriminating_hypotheses": 2
-      },
-      "evidence_gaps": [
-        "本地一致预期/盈利修正",
-        "汇率/资金流",
-        "政策决议精确时点"
-      ],
-      "research_readiness": "evidence_ok",
-      "evidence_for": [
-        {
-          "claim": "本地基准回归",
-          "value": "R²=0.72, beta=1.18, residual_z=0.19, n=252",
-          "class": "statistical_association",
-          "source": "derived/cross_asset",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-LOCAL",
-          "discriminating": true
-        },
-        {
-          "claim": "区域属于政策敏感市场",
-          "value": "JP",
-          "class": "observed_fact",
-          "source": "config",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-POLICY"
-        },
-        {
-          "claim": "本币汇率 beta",
-          "value": "R²=0.01, beta=-0.45, residual_z=0.25, n=252",
-          "class": "statistical_association",
-          "source": "derived/cross_asset",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-FX",
-          "discriminating": true
-        }
-      ],
-      "evidence_against": [
-        {
-          "claim": "全球因子解释力不足",
-          "value": "R²=0.07 < 0.30; residual_z=0.28",
-          "class": "statistical_association",
-          "source": "derived/cross_asset",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-GLOBAL",
-          "discriminating": true
-        },
-        {
-          "claim": "一致预期/财报修正未接入",
-          "value": "cannot test directly",
-          "class": "unknown",
-          "source": "data_gap",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-FUND"
-        },
-        {
-          "claim": "没有可核验的决议/公告时点",
-          "value": "event date unknown",
-          "class": "unknown",
-          "source": "calendar",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-POLICY"
-        },
-        {
-          "claim": "未做汇率 beta",
-          "value": "not estimated",
-          "class": "unknown",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-FX"
-        },
-        {
-          "claim": "仓位极端程度不足或缺失",
-          "value": "neutral/unknown",
-          "class": "unknown",
-          "source": "CFTC",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-POS"
-        },
-        {
-          "claim": "未记录价格清洗问题",
-          "value": "no price_data_issue",
-          "class": "observed_fact",
-          "source": "data_quality",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-EQJP-ART"
-        }
-      ],
-      "evaluation_id": "D:2026-11-13:JP_EQ_N225",
-      "method": "D_v2_triage",
-      "v1_score": 0.5577,
-      "v1_status": "watch",
-      "theme": "japan_equity"
-    },
-    {
       "research_id": "RC-20261113-01",
       "as_of": "2026-11-13",
       "market": "CH",
@@ -712,24 +320,16 @@
           "type": "global_risk",
           "status": "open",
           "implications": "全球增长/工业产出应与商品同向；美元与利率同向确认。",
-          "evidence_for": [
-            {
-              "claim": "全球风险代理可观察",
-              "value": "global growth proxies",
-              "class": "observed_fact",
-              "source": "derived",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-AGRI-DEMAND"
-            }
-          ],
+          "evidence_for": [],
           "evidence_against": [
             {
-              "claim": "没有工业产出/PMI 实时数据",
-              "value": "PMI missing",
-              "class": "unknown",
-              "source": "data_gap",
+              "claim": "全球因子解释力不足",
+              "value": "R²=0.01 < 0.30; residual_z=0.13",
+              "class": "statistical_association",
+              "source": "derived/cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-AGRI-DEMAND"
+              "hypothesis_id": "H-AGRI-DEMAND",
+              "discriminating": true
             }
           ]
         },
@@ -798,14 +398,6 @@
         }
       ],
       "evidence": [
-        {
-          "claim": "全球风险代理可观察",
-          "value": "global growth proxies",
-          "class": "observed_fact",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-AGRI-DEMAND"
-        },
         {
           "claim": "DXY/UST 可用",
           "value": "DXY, UST",
@@ -890,14 +482,6 @@
       "research_readiness": "evidence_gap",
       "evidence_for": [
         {
-          "claim": "全球风险代理可观察",
-          "value": "global growth proxies",
-          "class": "observed_fact",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-AGRI-DEMAND"
-        },
-        {
           "claim": "DXY/UST 可用",
           "value": "DXY, UST",
           "class": "observed_fact",
@@ -916,12 +500,13 @@
           "hypothesis_id": "H-AGRI-SUPPLY"
         },
         {
-          "claim": "没有工业产出/PMI 实时数据",
-          "value": "PMI missing",
-          "class": "unknown",
-          "source": "data_gap",
+          "claim": "全球因子解释力不足",
+          "value": "R²=0.01 < 0.30; residual_z=0.13",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-AGRI-DEMAND"
+          "hypothesis_id": "H-AGRI-DEMAND",
+          "discriminating": true
         },
         {
           "claim": "未做实时回归",
@@ -1000,24 +585,16 @@
           "type": "global_risk",
           "status": "open",
           "implications": "全球增长/工业产出应与商品同向；美元与利率同向确认。",
-          "evidence_for": [
-            {
-              "claim": "全球风险代理可观察",
-              "value": "global growth proxies",
-              "class": "observed_fact",
-              "source": "derived",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-AGRI-DEMAND"
-            }
-          ],
+          "evidence_for": [],
           "evidence_against": [
             {
-              "claim": "没有工业产出/PMI 实时数据",
-              "value": "PMI missing",
-              "class": "unknown",
-              "source": "data_gap",
+              "claim": "全球因子解释力不足",
+              "value": "R²=0.00 < 0.30; residual_z=-0.86",
+              "class": "statistical_association",
+              "source": "derived/cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-AGRI-DEMAND"
+              "hypothesis_id": "H-AGRI-DEMAND",
+              "discriminating": true
             }
           ]
         },
@@ -1086,14 +663,6 @@
         }
       ],
       "evidence": [
-        {
-          "claim": "全球风险代理可观察",
-          "value": "global growth proxies",
-          "class": "observed_fact",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-AGRI-DEMAND"
-        },
         {
           "claim": "DXY/UST 可用",
           "value": "DXY, UST",
@@ -1178,14 +747,6 @@
       "research_readiness": "evidence_gap",
       "evidence_for": [
         {
-          "claim": "全球风险代理可观察",
-          "value": "global growth proxies",
-          "class": "observed_fact",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-AGRI-DEMAND"
-        },
-        {
           "claim": "DXY/UST 可用",
           "value": "DXY, UST",
           "class": "observed_fact",
@@ -1204,12 +765,13 @@
           "hypothesis_id": "H-AGRI-SUPPLY"
         },
         {
-          "claim": "没有工业产出/PMI 实时数据",
-          "value": "PMI missing",
-          "class": "unknown",
-          "source": "data_gap",
+          "claim": "全球因子解释力不足",
+          "value": "R²=0.00 < 0.30; residual_z=-0.86",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-AGRI-DEMAND"
+          "hypothesis_id": "H-AGRI-DEMAND",
+          "discriminating": true
         },
         {
           "claim": "未做实时回归",
@@ -1288,24 +850,16 @@
           "type": "global_risk",
           "status": "open",
           "implications": "全球增长/工业产出应与商品同向；美元与利率同向确认。",
-          "evidence_for": [
-            {
-              "claim": "全球风险代理可观察",
-              "value": "global growth proxies",
-              "class": "observed_fact",
-              "source": "derived",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-ENER-DEMAND"
-            }
-          ],
+          "evidence_for": [],
           "evidence_against": [
             {
-              "claim": "没有工业产出/PMI 实时数据",
-              "value": "PMI missing",
-              "class": "unknown",
-              "source": "data_gap",
+              "claim": "全球因子解释力不足",
+              "value": "R²=0.08 < 0.30; residual_z=0.36",
+              "class": "statistical_association",
+              "source": "derived/cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-ENER-DEMAND"
+              "hypothesis_id": "H-ENER-DEMAND",
+              "discriminating": true
             }
           ]
         },
@@ -1383,14 +937,6 @@
         }
       ],
       "evidence": [
-        {
-          "claim": "全球风险代理可观察",
-          "value": "global growth proxies",
-          "class": "observed_fact",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-ENER-DEMAND"
-        },
         {
           "claim": "DXY/UST 可用",
           "value": "DXY, UST",
@@ -1490,14 +1036,6 @@
       "research_readiness": "evidence_gap",
       "evidence_for": [
         {
-          "claim": "全球风险代理可观察",
-          "value": "global growth proxies",
-          "class": "observed_fact",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-ENER-DEMAND"
-        },
-        {
           "claim": "DXY/UST 可用",
           "value": "DXY, UST",
           "class": "observed_fact",
@@ -1524,12 +1062,13 @@
           "hypothesis_id": "H-ENER-SUPPLY"
         },
         {
-          "claim": "没有工业产出/PMI 实时数据",
-          "value": "PMI missing",
-          "class": "unknown",
-          "source": "data_gap",
+          "claim": "全球因子解释力不足",
+          "value": "R²=0.08 < 0.30; residual_z=0.36",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-ENER-DEMAND"
+          "hypothesis_id": "H-ENER-DEMAND",
+          "discriminating": true
         },
         {
           "claim": "未做实时回归",
@@ -1606,28 +1145,20 @@
           "id": "H-SILV-DEMAND",
           "label": "全球需求/增长预期",
           "type": "global_risk",
-          "status": "open",
+          "status": "supported",
           "implications": "全球增长/工业产出应与商品同向；美元与利率同向确认。",
           "evidence_for": [
             {
-              "claim": "全球风险代理可观察",
-              "value": "global growth proxies",
-              "class": "observed_fact",
-              "source": "derived",
+              "claim": "同日跨资产全球因子回归",
+              "value": "R²=0.47, beta=4.91, residual_z=0.17, n=252",
+              "class": "statistical_association",
+              "source": "derived/cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-SILV-DEMAND"
+              "hypothesis_id": "H-SILV-DEMAND",
+              "discriminating": true
             }
           ],
-          "evidence_against": [
-            {
-              "claim": "没有工业产出/PMI 实时数据",
-              "value": "PMI missing",
-              "class": "unknown",
-              "source": "data_gap",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-SILV-DEMAND"
-            }
-          ]
+          "evidence_against": []
         },
         {
           "id": "H-SILV-USD",
@@ -1704,12 +1235,13 @@
       ],
       "evidence": [
         {
-          "claim": "全球风险代理可观察",
-          "value": "global growth proxies",
-          "class": "observed_fact",
-          "source": "derived",
+          "claim": "同日跨资产全球因子回归",
+          "value": "R²=0.47, beta=4.91, residual_z=0.17, n=252",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-SILV-DEMAND"
+          "hypothesis_id": "H-SILV-DEMAND",
+          "discriminating": true
         },
         {
           "claim": "DXY/UST 可用",
@@ -1810,12 +1342,13 @@
       "research_readiness": "evidence_gap",
       "evidence_for": [
         {
-          "claim": "全球风险代理可观察",
-          "value": "global growth proxies",
-          "class": "observed_fact",
-          "source": "derived",
+          "claim": "同日跨资产全球因子回归",
+          "value": "R²=0.47, beta=4.91, residual_z=0.17, n=252",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-SILV-DEMAND"
+          "hypothesis_id": "H-SILV-DEMAND",
+          "discriminating": true
         },
         {
           "claim": "DXY/UST 可用",
@@ -1842,14 +1375,6 @@
           "source": "data_gap",
           "available_at": "2026-11-13",
           "hypothesis_id": "H-SILV-SUPPLY"
-        },
-        {
-          "claim": "没有工业产出/PMI 实时数据",
-          "value": "PMI missing",
-          "class": "unknown",
-          "source": "data_gap",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-SILV-DEMAND"
         },
         {
           "claim": "未做实时回归",
@@ -2333,18 +1858,18 @@
           "type": "global_risk",
           "status": "open",
           "implications": "同日防御/周期行业应反向；相对表现应由共同因子解释。",
-          "evidence_for": [],
-          "evidence_against": [
+          "evidence_for": [
             {
-              "claim": "全球因子解释力不足",
-              "value": "R²=0.03 < 0.30; residual_z=-0.90",
+              "claim": "本地基准回归",
+              "value": "R²=0.48, beta=1.18, residual_z=-0.69, n=252",
               "class": "statistical_association",
               "source": "derived/cross_asset",
               "available_at": "2026-11-13",
               "hypothesis_id": "H-SECCE-GLOBAL",
               "discriminating": true
             }
-          ]
+          ],
+          "evidence_against": []
         },
         {
           "id": "H-SECCE-POS",
@@ -2373,6 +1898,15 @@
           "source": "prices",
           "available_at": "2026-11-13",
           "hypothesis_id": "H-SECCE-STYLE"
+        },
+        {
+          "claim": "本地基准回归",
+          "value": "R²=0.48, beta=1.18, residual_z=-0.69, n=252",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-SECCE-GLOBAL",
+          "discriminating": true
         }
       ],
       "critical_unknowns": [
@@ -2416,7 +1950,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L0, distinguishability L1, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L0, distinguishability L1, impact L0, open_hypotheses=2, discriminating=1, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -2451,7 +1985,7 @@
             "reason": ""
           }
         },
-        "discriminating_hypotheses": 0
+        "discriminating_hypotheses": 1
       },
       "evidence_gaps": [
         "行业一致预期/需求",
@@ -2467,6 +2001,15 @@
           "source": "prices",
           "available_at": "2026-11-13",
           "hypothesis_id": "H-SECCE-STYLE"
+        },
+        {
+          "claim": "本地基准回归",
+          "value": "R²=0.48, beta=1.18, residual_z=-0.69, n=252",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-SECCE-GLOBAL",
+          "discriminating": true
         }
       ],
       "evidence_against": [
@@ -2485,15 +2028,6 @@
           "source": "derived",
           "available_at": "2026-11-13",
           "hypothesis_id": "H-SECCE-STYLE"
-        },
-        {
-          "claim": "全球因子解释力不足",
-          "value": "R²=0.03 < 0.30; residual_z=-0.90",
-          "class": "statistical_association",
-          "source": "derived/cross_asset",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-SECCE-GLOBAL",
-          "discriminating": true
         },
         {
           "claim": "行业资金流未接入",
@@ -2864,24 +2398,16 @@
           "type": "global_risk",
           "status": "open",
           "implications": "VIX/信用利差与美元应同向；风险资产下跌时美元走强。",
-          "evidence_for": [
-            {
-              "claim": "VIX/信用代理可观察",
-              "value": "VIX/CREDIT_RISK",
-              "class": "observed_fact",
-              "source": "derived",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-FXBR-RISK"
-            }
-          ],
+          "evidence_for": [],
           "evidence_against": [
             {
-              "claim": "未做同日横截面",
-              "value": "no same-day cross-section",
-              "class": "unknown",
-              "source": "cross_asset",
+              "claim": "全球因子解释力不足",
+              "value": "R²=0.00 < 0.30; residual_z=1.02",
+              "class": "statistical_association",
+              "source": "derived/cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-FXBR-RISK"
+              "hypothesis_id": "H-FXBR-RISK",
+              "discriminating": true
             }
           ]
         },
@@ -2930,14 +2456,6 @@
           "source": "prices",
           "available_at": "2026-11-13",
           "hypothesis_id": "H-FXBR-CARRY"
-        },
-        {
-          "claim": "VIX/信用代理可观察",
-          "value": "VIX/CREDIT_RISK",
-          "class": "observed_fact",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-FXBR-RISK"
         }
       ],
       "critical_unknowns": [
@@ -3021,14 +2539,6 @@
           "source": "prices",
           "available_at": "2026-11-13",
           "hypothesis_id": "H-FXBR-CARRY"
-        },
-        {
-          "claim": "VIX/信用代理可观察",
-          "value": "VIX/CREDIT_RISK",
-          "class": "observed_fact",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-FXBR-RISK"
         }
       ],
       "evidence_against": [
@@ -3041,12 +2551,13 @@
           "hypothesis_id": "H-FXBR-CARRY"
         },
         {
-          "claim": "未做同日横截面",
-          "value": "no same-day cross-section",
-          "class": "unknown",
-          "source": "cross_asset",
+          "claim": "全球因子解释力不足",
+          "value": "R²=0.00 < 0.30; residual_z=1.02",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-FXBR-RISK"
+          "hypothesis_id": "H-FXBR-RISK",
+          "discriminating": true
         },
         {
           "claim": "干预数据不可得",
@@ -3126,24 +2637,16 @@
           "type": "global_risk",
           "status": "open",
           "implications": "VIX/信用利差与美元应同向；风险资产下跌时美元走强。",
-          "evidence_for": [
-            {
-              "claim": "VIX/信用代理可观察",
-              "value": "VIX/CREDIT_RISK",
-              "class": "observed_fact",
-              "source": "derived",
-              "available_at": "2026-11-13",
-              "hypothesis_id": "H-FXKR-RISK"
-            }
-          ],
+          "evidence_for": [],
           "evidence_against": [
             {
-              "claim": "未做同日横截面",
-              "value": "no same-day cross-section",
-              "class": "unknown",
-              "source": "cross_asset",
+              "claim": "全球因子解释力不足",
+              "value": "R²=0.00 < 0.30; residual_z=-0.00",
+              "class": "statistical_association",
+              "source": "derived/cross_asset",
               "available_at": "2026-11-13",
-              "hypothesis_id": "H-FXKR-RISK"
+              "hypothesis_id": "H-FXKR-RISK",
+              "discriminating": true
             }
           ]
         },
@@ -3192,14 +2695,6 @@
           "source": "prices",
           "available_at": "2026-11-13",
           "hypothesis_id": "H-FXKR-CARRY"
-        },
-        {
-          "claim": "VIX/信用代理可观察",
-          "value": "VIX/CREDIT_RISK",
-          "class": "observed_fact",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-FXKR-RISK"
         }
       ],
       "critical_unknowns": [
@@ -3283,14 +2778,6 @@
           "source": "prices",
           "available_at": "2026-11-13",
           "hypothesis_id": "H-FXKR-CARRY"
-        },
-        {
-          "claim": "VIX/信用代理可观察",
-          "value": "VIX/CREDIT_RISK",
-          "class": "observed_fact",
-          "source": "derived",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-FXKR-RISK"
         }
       ],
       "evidence_against": [
@@ -3303,12 +2790,13 @@
           "hypothesis_id": "H-FXKR-CARRY"
         },
         {
-          "claim": "未做同日横截面",
-          "value": "no same-day cross-section",
-          "class": "unknown",
-          "source": "cross_asset",
+          "claim": "全球因子解释力不足",
+          "value": "R²=0.00 < 0.30; residual_z=-0.00",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
           "available_at": "2026-11-13",
-          "hypothesis_id": "H-FXKR-RISK"
+          "hypothesis_id": "H-FXKR-RISK",
+          "discriminating": true
         },
         {
           "claim": "干预数据不可得",
@@ -3604,6 +3092,395 @@
       "v1_score": null,
       "v1_status": null,
       "theme": "india_equity"
+    },
+    {
+      "research_id": "RC-20261113-12",
+      "as_of": "2026-11-13",
+      "market": "JP",
+      "asset_class": "equity_index",
+      "instruments": [
+        "JP_EQ_N225"
+      ],
+      "observed_phenomenon": "Nikkei 225 近期 drawdown_extreme（deep_drawdown，分数 0.98）；1 个月收益 -9.7%；回撤分位 0.03。",
+      "materiality": {
+        "level": 3,
+        "importance": 0.8,
+        "anomaly_score": 0.9841143764892772,
+        "return_1m": -0.09745378675255034,
+        "gap_score": 0.709,
+        "gap_level": 2,
+        "mechanism_conflict": true,
+        "distinguishability_level": 2,
+        "decision_impact_level": 2,
+        "has_change": true
+      },
+      "competing_hypotheses": [
+        {
+          "id": "H-EQJP-LOCAL",
+          "label": "JP 本地市场/区域风险因子",
+          "type": "global_risk",
+          "status": "open",
+          "implications": "本地基准与全球因子应能解释大部分变动；剔除后残差应显著缩小。",
+          "evidence_for": [
+            {
+              "claim": "本地基准回归",
+              "value": "R²=0.72, beta=1.18, residual_z=0.19, n=252",
+              "class": "statistical_association",
+              "source": "derived/cross_asset",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-EQJP-LOCAL",
+              "discriminating": true
+            }
+          ],
+          "evidence_against": []
+        },
+        {
+          "id": "H-EQJP-GLOBAL",
+          "label": "全球共同风险/美元流动性冲击",
+          "type": "global_risk",
+          "status": "open",
+          "implications": "同日股票、信用、商品和美元应同向；控制全球因子后本地残差消失。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "全球因子解释力不足",
+              "value": "R²=0.07 < 0.30; residual_z=0.28",
+              "class": "statistical_association",
+              "source": "derived/cross_asset",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-EQJP-GLOBAL",
+              "discriminating": true
+            }
+          ]
+        },
+        {
+          "id": "H-EQJP-FUND",
+          "label": "JP 盈利/基本面预期变化",
+          "type": "fundamental",
+          "status": "untestable",
+          "implications": "盈利修正/现金流预期应领先或同步；需要一致预期或财报数据。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "一致预期/财报修正未接入",
+              "value": "cannot test directly",
+              "class": "unknown",
+              "source": "data_gap",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-EQJP-FUND"
+            }
+          ]
+        },
+        {
+          "id": "H-EQJP-POLICY",
+          "label": "本地政策/监管冲击",
+          "type": "policy",
+          "status": "open",
+          "implications": "政策路径/事件应改变利率或风险溢价；事件前后应出现可定位的重新定价。",
+          "evidence_for": [
+            {
+              "claim": "区域属于政策敏感市场",
+              "value": "JP",
+              "class": "observed_fact",
+              "source": "config",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-EQJP-POLICY"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "没有可核验的决议/公告时点",
+              "value": "event date unknown",
+              "class": "unknown",
+              "source": "calendar",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-EQJP-POLICY"
+            }
+          ]
+        },
+        {
+          "id": "H-EQJP-FX",
+          "label": "本地汇率/资金流",
+          "type": "global_risk",
+          "status": "open",
+          "implications": "本币贬值应压制本地股票（外币投资者视角）；汇率与股市同向。",
+          "evidence_for": [
+            {
+              "claim": "本地汇率可观察",
+              "value": "local FX",
+              "class": "observed_fact",
+              "source": "prices",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-EQJP-FX"
+            }
+          ],
+          "evidence_against": [
+            {
+              "claim": "未做汇率 beta",
+              "value": "not estimated",
+              "class": "unknown",
+              "source": "derived",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-EQJP-FX"
+            }
+          ]
+        },
+        {
+          "id": "H-EQJP-POS",
+          "label": "仓位/资金流驱动的技术性移动",
+          "type": "positioning_flow",
+          "status": "untestable",
+          "implications": "CFTC/资金流极端仓位应随后均值回归；价格变动应集中在拥挤方向。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "仓位极端程度不足或缺失",
+              "value": "neutral/unknown",
+              "class": "unknown",
+              "source": "CFTC",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-EQJP-POS"
+            }
+          ]
+        },
+        {
+          "id": "H-EQJP-ART",
+          "label": "数据伪影（换月/拆股/盘中/陈旧）",
+          "type": "data_artifact",
+          "status": "untestable",
+          "implications": "原始合约/拆分调整/抓取时点应能解释跳变；清洗后异常应消失。",
+          "evidence_for": [],
+          "evidence_against": [
+            {
+              "claim": "未记录价格清洗问题",
+              "value": "no price_data_issue",
+              "class": "observed_fact",
+              "source": "data_quality",
+              "available_at": "2026-11-13",
+              "hypothesis_id": "H-EQJP-ART"
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "claim": "本地基准回归",
+          "value": "R²=0.72, beta=1.18, residual_z=0.19, n=252",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-EQJP-LOCAL",
+          "discriminating": true
+        },
+        {
+          "claim": "区域属于政策敏感市场",
+          "value": "JP",
+          "class": "observed_fact",
+          "source": "config",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-EQJP-POLICY"
+        },
+        {
+          "claim": "本地汇率可观察",
+          "value": "local FX",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-EQJP-FX"
+        }
+      ],
+      "critical_unknowns": [
+        "本地一致预期/盈利修正",
+        "汇率/资金流",
+        "政策决议精确时点"
+      ],
+      "falsification_conditions": [
+        {
+          "hypothesis_id": "H-EQJP-LOCAL",
+          "test": "对本地基准与全球因子回归后的残差",
+          "threshold": "|residual z| < 1.5",
+          "data": "prices/regional benchmark",
+          "data_status": "available"
+        },
+        {
+          "hypothesis_id": "H-EQJP-GLOBAL",
+          "test": "同日跨资产 beta 与残差",
+          "threshold": "R² > 0.5 且残差 |z|<1.5",
+          "data": "cross_asset",
+          "data_status": "available"
+        },
+        {
+          "hypothesis_id": "H-EQJP-POLICY",
+          "test": "事件窗口前后的利率/资产反应",
+          "threshold": "event-window abnormal return > 2σ",
+          "data": "policy calendar/rates",
+          "data_status": "obtainable"
+        },
+        {
+          "hypothesis_id": "H-EQJP-FX",
+          "test": "本币汇率 beta",
+          "threshold": "sign consistent",
+          "data": "local FX",
+          "data_status": "available"
+        }
+      ],
+      "required_data": [
+        "价格/成交量",
+        "CFTC 持仓（周度）",
+        "收益率曲线",
+        "宏观序列（按发布滞后）",
+        "分析师一致预期/修正",
+        "期权隐含分布",
+        "ETF 资金流",
+        "信用 OAS（仅有 HYG/IEF 代理）"
+      ],
+      "research_cost": {
+        "hours": 10,
+        "data_access": "medium"
+      },
+      "decision_impact": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      },
+      "priority_tier": "intelligence",
+      "priority_rank": 0,
+      "rationale": "tier intelligence: case=country_equity, materiality L3, gap L2, distinguishability L2, impact L2, open_hypotheses=4, discriminating=1, cost=10h",
+      "data_quality": {
+        "score": 0.4,
+        "gaps": [
+          "本地一致预期/盈利修正",
+          "汇率/资金流",
+          "政策决议精确时点"
+        ],
+        "cross_asset": {
+          "available": true,
+          "instrument": "JP_EQ_N225",
+          "as_of": "2026-11-13",
+          "global": {
+            "available": true,
+            "kind": "global",
+            "factor": "US_EQ_SPY,US_EQ_QQQ,US_FX_DXY,US_CR_HYG,CM_MET_GC,US_FI_IEF",
+            "n_obs": 252,
+            "r2": 0.0722,
+            "beta": 0.9131,
+            "residual_z": 0.2753,
+            "as_of": "2026-11-13",
+            "reason": ""
+          },
+          "local": {
+            "available": true,
+            "kind": "local",
+            "factor": "JP_EQ_TOPIX",
+            "n_obs": 252,
+            "r2": 0.7238,
+            "beta": 1.1757,
+            "residual_z": 0.1858,
+            "as_of": "2026-11-13",
+            "reason": ""
+          },
+          "fx": {
+            "available": true,
+            "kind": "fx",
+            "factor": "GX_FX_USDJPY",
+            "n_obs": 252,
+            "r2": 0.0133,
+            "beta": -0.454,
+            "residual_z": 0.2498,
+            "as_of": "2026-11-13",
+            "reason": ""
+          }
+        },
+        "discriminating_hypotheses": 1
+      },
+      "evidence_gaps": [
+        "本地一致预期/盈利修正",
+        "汇率/资金流",
+        "政策决议精确时点"
+      ],
+      "research_readiness": "evidence_gap",
+      "evidence_for": [
+        {
+          "claim": "本地基准回归",
+          "value": "R²=0.72, beta=1.18, residual_z=0.19, n=252",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-EQJP-LOCAL",
+          "discriminating": true
+        },
+        {
+          "claim": "区域属于政策敏感市场",
+          "value": "JP",
+          "class": "observed_fact",
+          "source": "config",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-EQJP-POLICY"
+        },
+        {
+          "claim": "本地汇率可观察",
+          "value": "local FX",
+          "class": "observed_fact",
+          "source": "prices",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-EQJP-FX"
+        }
+      ],
+      "evidence_against": [
+        {
+          "claim": "全球因子解释力不足",
+          "value": "R²=0.07 < 0.30; residual_z=0.28",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-EQJP-GLOBAL",
+          "discriminating": true
+        },
+        {
+          "claim": "一致预期/财报修正未接入",
+          "value": "cannot test directly",
+          "class": "unknown",
+          "source": "data_gap",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-EQJP-FUND"
+        },
+        {
+          "claim": "没有可核验的决议/公告时点",
+          "value": "event date unknown",
+          "class": "unknown",
+          "source": "calendar",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-EQJP-POLICY"
+        },
+        {
+          "claim": "未做汇率 beta",
+          "value": "not estimated",
+          "class": "unknown",
+          "source": "derived",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-EQJP-FX"
+        },
+        {
+          "claim": "仓位极端程度不足或缺失",
+          "value": "neutral/unknown",
+          "class": "unknown",
+          "source": "CFTC",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-EQJP-POS"
+        },
+        {
+          "claim": "未记录价格清洗问题",
+          "value": "no price_data_issue",
+          "class": "observed_fact",
+          "source": "data_quality",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-EQJP-ART"
+        }
+      ],
+      "evaluation_id": "D:2026-11-13:JP_EQ_N225",
+      "method": "D_v2_triage",
+      "v1_score": 0.5577,
+      "v1_status": "watch",
+      "theme": "japan_equity"
     },
     {
       "research_id": "RC-20261113-13",
@@ -4475,8 +4352,8 @@
           "implications": "同日股票、信用、商品和美元应同向；控制全球因子后本地残差消失。",
           "evidence_for": [
             {
-              "claim": "同日跨资产全球因子回归",
-              "value": "R²=0.53, beta=2.46, residual_z=1.57, n=252",
+              "claim": "本地基准回归",
+              "value": "R²=0.62, beta=1.70, residual_z=0.67, n=252",
               "class": "statistical_association",
               "source": "derived/cross_asset",
               "available_at": "2026-11-13",
@@ -4570,8 +4447,8 @@
       ],
       "evidence": [
         {
-          "claim": "同日跨资产全球因子回归",
-          "value": "R²=0.53, beta=2.46, residual_z=1.57, n=252",
+          "claim": "本地基准回归",
+          "value": "R²=0.62, beta=1.70, residual_z=0.67, n=252",
           "class": "statistical_association",
           "source": "derived/cross_asset",
           "available_at": "2026-11-13",
@@ -4673,8 +4550,8 @@
       "research_readiness": "evidence_gap",
       "evidence_for": [
         {
-          "claim": "同日跨资产全球因子回归",
-          "value": "R²=0.53, beta=2.46, residual_z=1.57, n=252",
+          "claim": "本地基准回归",
+          "value": "R²=0.62, beta=1.70, residual_z=0.67, n=252",
           "class": "statistical_association",
           "source": "derived/cross_asset",
           "available_at": "2026-11-13",
@@ -5065,8 +4942,8 @@
           "evidence_for": [],
           "evidence_against": [
             {
-              "claim": "全球因子解释力不足",
-              "value": "R²=0.01 < 0.30; residual_z=-0.62",
+              "claim": "本地基准解释力不足",
+              "value": "R²=0.00 < 0.30",
               "class": "statistical_association",
               "source": "derived/cross_asset",
               "available_at": "2026-11-13",
@@ -5216,8 +5093,8 @@
           "hypothesis_id": "H-SECCS-STYLE"
         },
         {
-          "claim": "全球因子解释力不足",
-          "value": "R²=0.01 < 0.30; residual_z=-0.62",
+          "claim": "本地基准解释力不足",
+          "value": "R²=0.00 < 0.30",
           "class": "statistical_association",
           "source": "derived/cross_asset",
           "available_at": "2026-11-13",
@@ -5315,8 +5192,8 @@
           "evidence_for": [],
           "evidence_against": [
             {
-              "claim": "全球因子解释力不足",
-              "value": "R²=0.03 < 0.30; residual_z=-0.40",
+              "claim": "本地基准解释力不足",
+              "value": "R²=0.06 < 0.30",
               "class": "statistical_association",
               "source": "derived/cross_asset",
               "available_at": "2026-11-13",
@@ -5466,8 +5343,8 @@
           "hypothesis_id": "H-SECHC-STYLE"
         },
         {
-          "claim": "全球因子解释力不足",
-          "value": "R²=0.03 < 0.30; residual_z=-0.40",
+          "claim": "本地基准解释力不足",
+          "value": "R²=0.06 < 0.30",
           "class": "statistical_association",
           "source": "derived/cross_asset",
           "available_at": "2026-11-13",

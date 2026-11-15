@@ -21,5 +21,5 @@ The file rates are not committed (`data/` is ignored), so a clone without them m
 `goe/research_triage.py` now counts only **measured** discriminating evidence (class != unknown and
 `discriminating=true`) per open hypothesis. A candidate with fewer than 2 such hypotheses is
 demoted to `intelligence` with `research_readiness="evidence_gap"`. With the current data:
-- 20 candidates -> **1 research candidate (N225), 19 intelligence**.
+- 20 candidates -> **0 research candidates, 20 intelligence**.
 - This is the intended honest result until consensus/OIS files are supplied.

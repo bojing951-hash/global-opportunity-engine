@@ -40,3 +40,26 @@ def test_cross_asset_insufficient_data_is_untestable_not_support():
     out = evidence_for_bundle(bundle, fits)
     assert out["hypotheses"][0]["evidence_for"] == []
     assert count_discriminating(out) == 0
+
+
+def test_low_r2_fx_is_not_discriminating():
+    rng = np.random.default_rng(3)
+    idx = pd.bdate_range("2024-01-01", periods=300)
+    rets = pd.DataFrame({
+        "US_EQ_SPY": rng.normal(0, 0.01, len(idx)),
+        "US_EQ_QQQ": rng.normal(0, 0.01, len(idx)),
+        "GX_FX_USDJPY": rng.normal(0, 0.004, len(idx)),
+        "JP_EQ_N225": rng.normal(0, 0.01, len(idx)),
+    }, index=idx)
+    fs = SimpleNamespace(returns=rets, as_of="2025-12-31")
+    spec = SimpleNamespace(region="JP", asset_class="equity_index")
+    fits = compute_fits(fs, "JP_EQ_N225", spec, "2025-12-31")
+    bundle = {"hypotheses": [
+        {"id": "H-EQJP-GLOBAL", "type": "global_risk", "status": "open",
+         "evidence_for": [], "evidence_against": []},
+        {"id": "H-EQJP-FX", "type": "global_risk", "status": "open",
+         "evidence_for": [], "evidence_against": []}]}
+    out = evidence_for_bundle(bundle, fits)
+    fx = out["hypotheses"][1]
+    assert not any(e.get("discriminating") for e in fx["evidence_for"])
+    assert count_discriminating(out) <= 1

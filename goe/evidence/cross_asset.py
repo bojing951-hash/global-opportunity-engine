@@ -107,8 +107,12 @@ def evidence_for_bundle(bundle: dict[str, Any], fits: dict[str, Any]) -> dict[st
     Items marked ``discriminating=True`` are measurements, not availability
     notes. The research-readiness gate counts only these.
     """
-    by_suffix = lambda suf: next((h for h in bundle["hypotheses"]
-                                 if h["id"].endswith(suf)), None)
+    def by_suffix(suf: str, typ: str | None = None):
+        h = next((h for h in bundle["hypotheses"] if h["id"].endswith(suf)), None)
+        if h is None and typ:
+            h = next((h for h in bundle["hypotheses"]
+                      if h.get("type") == typ and h.get("status") == "open"), None)
+        return h
     as_of = fits.get("as_of", "")
 
     def item(claim: str, value: str, hid: str, source: str) -> dict[str, Any]:
@@ -118,7 +122,7 @@ def evidence_for_bundle(bundle: dict[str, Any], fits: dict[str, Any]) -> dict[st
 
     g = fits.get("global")
     if g and g.get("available"):
-        h = by_suffix("-GLOBAL")
+        h = by_suffix("-GLOBAL", "global_risk")
         if h:
             support = g["r2"] >= 0.30
             h["evidence_for"] = [item(
@@ -132,7 +136,7 @@ def evidence_for_bundle(bundle: dict[str, Any], fits: dict[str, Any]) -> dict[st
             h["status"] = "open" if not support or abs(g["residual_z"] or 0) >= 1.5 else "supported"
     l = fits.get("local")
     if l and l.get("available"):
-        h = by_suffix("-LOCAL")
+        h = by_suffix("-LOCAL", "global_risk")
         if h:
             support = l["r2"] >= 0.30
             h["evidence_for"] = [item(
@@ -142,8 +146,10 @@ def evidence_for_bundle(bundle: dict[str, Any], fits: dict[str, Any]) -> dict[st
             h["evidence_against"] = [] if support else [item(
                 "本地基准解释力不足", f"R²={l['r2']:.2f} < 0.30", h["id"], "derived/cross_asset")]
     f = fits.get("fx")
-    if f and f.get("available"):
-        h = by_suffix("-FX") or by_suffix("-RISK")
+    # A 1% R² FX fit is not evidence that FX explains the move. Only a fit that
+    # meets the same explanatory threshold as global/local is marked discriminating.
+    if f and f.get("available") and float(f.get("r2") or 0.0) >= 0.30:
+        h = by_suffix("-FX", "global_risk") or by_suffix("-RISK", "global_risk")
         if h:
             h["evidence_for"] = [item(
                 "本币汇率 beta",

@@ -12,7 +12,7 @@ Implementation:
 - `goe/contracts.py` rejects a research-tier candidate without `evidence_ok` and >=2 such hypotheses.
 
 Current real result (2026-11-13, 20 candidates):
-- **1 research candidate: N225 (tier A, 2 measured hypotheses).**
+- **0 research candidates: no candidate has two measured discriminating hypotheses.**
 - **19 intelligence** (evidence gap); they stay visible, are not deleted, and are not handed to B.
 - Same-day cross-asset evidence is active; OIS is only a policy-path proxy; consensus remains
   BLOCKED (no licensed public history) and is not fabricated.
