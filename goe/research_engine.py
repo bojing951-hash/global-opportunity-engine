@@ -162,7 +162,9 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         tests["asia_regional_test"] = {
             "regional_a_return": taiex, "regional_b_return": kospi,
             "pass": bool(taiex is not None and kospi is not None and taiex < -0.03 and kospi < -0.03),
-            "interpretation": "North Asia co-move supported; tech-specific attribution not identified"}
+            "interpretation": ("North Asia co-move supported; tech-specific attribution not identified"
+                              if tests["asia_regional_test"]["pass"] else
+                              "Regional peers did not both meet the pre-set threshold")}
         tests["fx_test"] = {"prior_usdjpy_return": fx,
                             "pass": bool(fx is not None and abs(fx) >= 0.20 * abs(n225 or 0.01)),
                             "interpretation": "small FX move cannot explain the equity move"}
@@ -212,7 +214,9 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         }
         learned = [f"{spec.asset} event {event}: {p(n225)}; {local_label} {p(topix)}.",
                    f"Prior US session {prior}: {p(spy)}, {p(qqq)}, {p(vix)}; global lead consistent.",
-                   f"{tw_label} {p(taiex)}, {kr_label} {p(kospi)}; regional co-move supported.",
+                   (f"{tw_label} {p(taiex)}, {kr_label} {p(kospi)}; regional co-move supported."
+                    if regional_ok else
+                    f"{tw_label} {p(taiex)}, {kr_label} {p(kospi)}; regional co-move did not meet threshold."),
                    f"{fx_label} {p(fx)}; too small to be primary.",
                    f"Three-session reversal {p(reversal)}.",
                    ("Local and regional explanations both survive; broad indices cannot separate."
