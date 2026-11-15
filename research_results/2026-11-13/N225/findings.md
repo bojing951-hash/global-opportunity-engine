@@ -3,8 +3,8 @@
 - Event date: 2026-11-06
 - Prior US session: 2026-11-05
 - Status: INCONCLUSIVE
-- Input SHA256: `cfd64d95a412635bd2a1d44e9af9745b808143650795cec64eaeb515d585967b`
-- Code commit: `5777886d2a696c83edee9373a7190e8a8dcede85` / feature v2
+- Input SHA256: `1ba5745e6816e0050422493759da5d735390c935cabae23664288a77075cfbb9`
+- Code commit: `8266fa6c3918c73849762c41ef7e626240c76cc6` / feature v2
 
 ## PIT alignment
 - Asia same-day; US/FX previous US session; no same-date future US close
@@ -32,7 +32,8 @@
 ## What we learned
 - On 2026-11-06, N225 returned -5.96%; TOPIX -6.50%.
 - Prior US session (2026-11-05) SPY -4.41%, QQQ -6.49%, VIX +69.66%: a US-global lead is consistent, not contradicted. Using the later same-date US close would be lookahead.
-- Taiwan -4.51% and Korea -6.02% fell; regional Asia co-move is supported, but tech-specific attribution is unavailable.
+- Taiwan -4.51% and Korea -6.02% fell; a North Asia co-move is supported, but tech-specific attribution is unavailable.
+- Hong Kong -1.27% and China -1.44% were much smaller, so broad 'Asia' is too strong; the evidence is North Asia/Japan-Taiwan-Korea.
 - Prior-session USDJPY -0.07%; too small to be the primary driver.
 - Three-session post-event N225 return +6.64%.
 - Japan-local and regional Asia explanations both survive; broad indices cannot separate them.

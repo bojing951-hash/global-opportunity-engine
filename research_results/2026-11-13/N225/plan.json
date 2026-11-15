@@ -14,9 +14,9 @@
   ],
   "decision_rule": {
     "local": "TOPIX same-day return < -3%",
-    "global": "prior US session SPY < -1% AND VIX > 0",
-    "regional": "TAIEX and KOSPI same-day both < -3%",
-    "fx": "prior-session |USDJPY| > 2%",
+    "global": "prior US session SPY < -1% AND VIX return > 0 (QQQ is reported, not a gate)",
+    "regional": "TAIEX and KOSPI same-day both < -3% (North Asia; HSI/CSI reported separately)",
+    "fx": "prior-session |USDJPY| >= 20% of |N225|",
     "reversal": "N225 cumulative return over next 3 sessions > 0",
     "alignment": "Asia same-day; US/FX previous US session; no same-date future US close"
   },
