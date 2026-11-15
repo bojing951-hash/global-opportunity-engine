@@ -186,7 +186,8 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
             hid("local", "H-EQ-LOCAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["local_asia_test"]["pass"] else "INCONCLUSIVE",
                              "label": "Local market factor", "type": "local_market",
                              "new_evidence": "TOPIX same-day", "value": topix,
-                             "note": "Broad co-move; not an independent instrument."},
+                             "note": ("Local peer co-moved; not an independent instrument." if local_pass
+                                      else "Local peer did not meet its pre-set threshold; no local support.")},
             hid("global", "H-EQ-GLOBAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["global_lead_test"]["pass"] else "WEAKENED_BY_EVIDENCE",
                               "label": "Global risk lead", "type": "global_risk",
                               "new_evidence": "prior US session SPY/QQQ/VIX", "value": {"SPY": spy, "QQQ": qqq, "VIX": vix},
@@ -212,7 +213,9 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
                    f"{tw_label} {p(taiex)}, {kr_label} {p(kospi)}; regional co-move supported.",
                    f"{fx_label} {p(fx)}; too small to be primary.",
                    f"Three-session reversal {p(reversal)}.",
-                   "Local and regional explanations both survive; broad indices cannot separate."]
+                   ("Local and regional explanations both survive; broad indices cannot separate."
+                    if local_pass and regional_pass else
+                    "Regional co-move survives; the local peer did not meet its pre-set threshold.")]
         unknown = [f"{local_label} sector/constituent breadth", "regional supply-chain exposure",
                    "consensus revisions", "event/news calendar"]
 
