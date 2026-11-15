@@ -159,6 +159,20 @@ CREATE TABLE IF NOT EXISTS research_v2_events (
   at TEXT NOT NULL, event_type TEXT NOT NULL, note TEXT, payload_json TEXT
 );
 
+CREATE TABLE IF NOT EXISTS research_v2_workflow (
+  research_id TEXT PRIMARY KEY REFERENCES research_v2_candidates(research_id) ON DELETE CASCADE,
+  state TEXT NOT NULL, updated_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS research_v2_hypothesis_revisions (
+  revision_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  research_id TEXT NOT NULL REFERENCES research_v2_candidates(research_id) ON DELETE CASCADE,
+  hypothesis_key TEXT NOT NULL, revision_hash TEXT NOT NULL, status TEXT, source TEXT,
+  payload_json TEXT, created_at TEXT, UNIQUE(research_id, hypothesis_key, revision_hash)
+);
+
+CREATE INDEX IF NOT EXISTS idx_hr_research ON research_v2_hypothesis_revisions(research_id, hypothesis_key);
+
 CREATE TABLE IF NOT EXISTS research_v2_findings (
   finding_id TEXT PRIMARY KEY, research_id TEXT NOT NULL REFERENCES research_v2_candidates(research_id),
   status TEXT NOT NULL, payload_json TEXT, artifact_path TEXT, created_at TEXT
@@ -861,19 +875,27 @@ class Store:
                  json.dumps(candidate, ensure_ascii=False, default=str), now, now,
                  incoming_theme),
             )
-            # versioned snapshot: remove previous hypotheses/evidence first
-            c.execute("DELETE FROM research_v2_evidence WHERE research_id=?", (rid,))
-            c.execute("DELETE FROM research_v2_hypotheses WHERE research_id=?", (rid,))
+            # Append-only research memory: a rescan may add hypotheses/evidence,
+            # but it never deletes or resets research-updated statuses.
             for h in candidate.get("competing_hypotheses", []):
                 key = str(h.get("id"))
                 hid = f"{rid}:{key}"
+                current = c.execute(
+                    "SELECT status,payload_json FROM research_v2_hypotheses WHERE hypothesis_id=?",
+                    (hid,)).fetchone()
+                if current is None:
+                    c.execute(
+                        """INSERT INTO research_v2_hypotheses(hypothesis_id,research_id,hypothesis_key,
+                             type,status,label,payload_json,created_at) VALUES(?,?,?,?,?,?,?,?)""",
+                        (hid, rid, key, h.get("type"), h.get("status"), h.get("label"),
+                         json.dumps(h, ensure_ascii=False, default=str), now),
+                    )
+                revision = hash_json([h, current["status"] if current else None])
                 c.execute(
-                    """INSERT INTO research_v2_hypotheses(hypothesis_id,research_id,hypothesis_key,
-                         type,status,label,payload_json,created_at) VALUES(?,?,?,?,?,?,?,?)
-                       ON CONFLICT(research_id,hypothesis_key) DO UPDATE SET type=excluded.type,
-                         status=excluded.status, label=excluded.label, payload_json=excluded.payload_json""",
-                    (hid, rid, key, h.get("type"), h.get("status"), h.get("label"),
-                     json.dumps(h, ensure_ascii=False, default=str), now),
+                    """INSERT OR IGNORE INTO research_v2_hypothesis_revisions(research_id,hypothesis_key,
+                         revision_hash,status,source,payload_json,created_at) VALUES(?,?,?,?,?,?,?)""",
+                    (rid, key, revision, current["status"] if current else h.get("status"),
+                     "candidate_scan", json.dumps(h, ensure_ascii=False, default=str), now),
                 )
             for e in list(candidate.get("evidence", [])) + list(candidate.get("evidence_for", [])) + list(candidate.get("evidence_against", [])):
                 eid = hash_json([rid, e.get("claim"), e.get("source"), e.get("available_at"), e.get("class")])
@@ -885,6 +907,11 @@ class Store:
                      e.get("class", "unknown"), e.get("claim"), e.get("source"),
                      e.get("available_at"), json.dumps(e, ensure_ascii=False, default=str), now),
                 )
+            c.execute("""INSERT INTO research_v2_events(research_id,at,event_type,note,payload_json)
+                         VALUES(?,?,?,?,?)""",
+                      (rid, now, "candidate_scan", "immutable candidate upsert",
+                       json.dumps({"instruments": incoming_instruments, "as_of": incoming_as_of},
+                                  ensure_ascii=False)))
 
     def set_research_status(self, research_id: str, status: str, note: str = "",
                             task_id: str | None = None, payload: dict | None = None) -> None:
@@ -915,6 +942,17 @@ class Store:
                          new_id=excluded.new_id, reason=excluded.reason""",
                       (old_id, new_id, reason, utc_now()))
 
+    def set_research_workflow_state(self, research_id: str, state: str) -> None:
+        with self.transaction() as c:
+            c.execute("""INSERT INTO research_v2_workflow(research_id,state,updated_at) VALUES(?,?,?)
+                         ON CONFLICT(research_id) DO UPDATE SET state=excluded.state,
+                         updated_at=excluded.updated_at""", (research_id, state, utc_now()))
+
+    def research_workflow_state(self, research_id: str) -> str | None:
+        row = self.conn.execute("SELECT state FROM research_v2_workflow WHERE research_id=?",
+                                (research_id,)).fetchone()
+        return row[0] if row else None
+
     def update_research_hypotheses(self, research_id: str, updates: dict[str, dict[str, Any]]) -> None:
         """Persist evidence-driven hypothesis status/evidence into the research snapshot."""
         with self.transaction() as c:
@@ -933,6 +971,12 @@ class Store:
                               (upd.get("status"), upd.get("type") or payload.get("type"),
                                upd.get("label") or payload.get("label"),
                                json.dumps(payload, ensure_ascii=False, default=str), hid))
+                    rev = hash_json([payload, upd])
+                    c.execute("""INSERT OR IGNORE INTO research_v2_hypothesis_revisions(research_id,
+                                 hypothesis_key,revision_hash,status,source,payload_json,created_at)
+                                 VALUES(?,?,?,?,?,?,?)""",
+                              (research_id, key, rev, upd.get("status"), "research_execution",
+                               json.dumps(payload, ensure_ascii=False, default=str), utc_now()))
                 else:
                     payload = {**upd, "id": key, "status": upd.get("status"),
                                "label": upd.get("label") or key}
@@ -949,10 +993,9 @@ class Store:
             if not c.execute("SELECT 1 FROM research_v2_candidates WHERE research_id=?",
                              (research_id,)).fetchone():
                 raise ValueError(f"research candidate does not exist: {research_id}")
-            c.execute("""INSERT INTO research_v2_findings(finding_id,research_id,status,payload_json,
-                         artifact_path,created_at) VALUES(?,?,?,?,?,?)
-                       ON CONFLICT(finding_id) DO UPDATE SET status=excluded.status,
-                         payload_json=excluded.payload_json, artifact_path=excluded.artifact_path""",
+            # Findings are immutable: a rerun gets a new finding_id; an existing id is preserved.
+            c.execute("""INSERT OR IGNORE INTO research_v2_findings(finding_id,research_id,status,payload_json,
+                         artifact_path,created_at) VALUES(?,?,?,?,?,?)""",
                       (finding_id, research_id, status,
                        json.dumps(payload, ensure_ascii=False, default=str),
                        artifact_path, utc_now()))

@@ -350,6 +350,45 @@ def cmd_release(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_research(args: argparse.Namespace) -> int:
+    """Generalized autonomous research entry: run / next / status."""
+    from .research_orchestrator import (ResearchOrchestrator, case_nikkei, case_dxy,
+                                        case_silver)
+    store = Store(args.db or str(project_root() / "data" / "goe.db"))
+    orch = ResearchOrchestrator(store)
+    cases = {"nikkei": case_nikkei, "dxy": case_dxy, "silver": case_silver}
+    if args.action == "status":
+        for r in orch.status():
+            print(f"{r['research_id']} {r['asset_class']} state={r['workflow']} "
+                  f"findings={r['findings']} latest={r['latest_finding']}")
+        return 0
+    if args.action == "run":
+        if args.case == "next":
+            spec = orch.next_case()
+            if spec is None:
+                print("no research case available")
+                return 1
+        elif args.case == "all":
+            findings = []
+            for name in ("nikkei", "dxy", "silver"):
+                spec = cases[name]()
+                orch.register(spec)
+                f = orch.run(spec)
+                findings.append(f)
+                print(f"{name} {f.status} {f.finding_id}")
+            print(f"cases={len(findings)}")
+            return 0
+        else:
+            spec = cases[args.case]()
+            orch.register(spec)
+        f = orch.run(spec)
+        print(f"finding={f.finding_id} status={f.status} event={f.event_date}")
+        for line in f.learned:
+            print("  -", line)
+        return 0
+    return 2
+
+
 def cmd_research_case(args: argparse.Namespace) -> int:
     """Execute a real research case; never a plan-only dossier."""
     from .research_exec import execute_nikkei_case
@@ -577,6 +616,12 @@ def build_parser() -> argparse.ArgumentParser:
     t.add_argument("--ia-out", default=None)
     t.add_argument("--ia-timeout", type=int, default=300)
     t.set_defaults(func=cmd_triage)
+
+    rsub = sub.add_parser("research", help="通用研究执行/调度")
+    rsub.add_argument("action", choices=["run", "next", "status"])
+    rsub.add_argument("--case", default="next", choices=["nikkei", "dxy", "silver", "all", "next"])
+    rsub.add_argument("--db", default=None)
+    rsub.set_defaults(func=cmd_research)
 
     rc = sub.add_parser("research-case", help="执行真实研究案例并产出 Finding")
     rc.add_argument("--case", default="nikkei")

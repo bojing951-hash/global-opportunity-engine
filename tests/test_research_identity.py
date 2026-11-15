@@ -89,3 +89,31 @@ def test_theme_is_stable_across_dates_event_is_not():
     assert t1 == t2 and t1.startswith("RT-")
     assert rid("2026-11-13") != rid("2026-11-14")
     assert rid("2026-11-13") != rid(det="vol_regime_shift")
+
+
+def test_rescan_preserves_research_hypotheses_evidence_and_findings(store):
+    c = _cand(rid())
+    c["competing_hypotheses"] = [
+        {"id": "H-LOCAL", "status": "open", "type": "local"},
+        {"id": "H-GLOBAL", "status": "open", "type": "global"}]
+    c["evidence"] = [{"claim": "base", "source": "prices", "available_at": "2026-11-13",
+                      "class": "observed_fact"}]
+    store.upsert_research_candidate(c)
+    store.update_research_hypotheses(c["research_id"], {
+        "H-LOCAL": {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE", "label": "local", "type": "local"},
+        "H-NEW": {"status": "INSUFFICIENT_DATA", "label": "new", "type": "new"}})
+    store.add_research_finding("F1", c["research_id"], "INCONCLUSIVE", {"v": 1}, "f.json")
+    # A later scan sends the original open hypotheses; it must not reset anything.
+    store.upsert_research_candidate(c)
+    statuses = dict(store.conn.execute(
+        "SELECT hypothesis_key,status FROM research_v2_hypotheses WHERE research_id=?",
+        (c["research_id"],)).fetchall())
+    assert statuses["H-LOCAL"] == "SUPPORTED_BY_AVAILABLE_EVIDENCE"
+    assert statuses["H-NEW"] == "INSUFFICIENT_DATA"
+    assert store.conn.execute("SELECT COUNT(*) FROM research_v2_evidence WHERE research_id=?",
+                              (c["research_id"],)).fetchone()[0] == 1
+    assert store.conn.execute("SELECT COUNT(*) FROM research_v2_hypothesis_revisions WHERE research_id=?",
+                              (c["research_id"],)).fetchone()[0] >= 3
+    # Findings are append-only.
+    store.add_research_finding("F1", c["research_id"], "COMPLETED", {"v": 2}, "f2.json")
+    assert store.conn.execute("SELECT status FROM research_v2_findings WHERE finding_id='F1'").fetchone()[0] == "INCONCLUSIVE"

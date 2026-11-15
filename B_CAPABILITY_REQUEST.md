@@ -5,10 +5,12 @@
 **Do not modify B from A.** This is a request, not an implementation.
 
 ## Gap observed
-The real 2026-11-06 N225 event (-5.96%) is not a US-global risk-off event (SPY +0.31%,
-QQQ +1.40%, VIX -9.01%). TOPIX (-6.50%), TAIEX (-4.51%) and KOSPI (-6.02%) co-moved.
-Broad indices cannot distinguish a Japan-local shock from a regional Asia / technology
-channel. B currently exposes macro/rates/FX facts, not deep equity/sector attribution.
+For the 2026-11-06 N225 event (-5.96%), the PIT comparison is the PRIOR US session
+2026-11-05: SPY -4.41%, QQQ -6.49%, VIX +69.66%, so a US-global lead is consistent.
+The same-date 2026-11-06 US close is after Asia and must not be used. TOPIX -6.50%,
+TAIEX -4.51% and KOSPI -6.02% co-moved; HSI/CSI were much smaller (-1.27%/-1.44%).
+Broad indices cannot distinguish Japan-local from North Asia co-move, and do not identify
+a technology-specific channel. B currently exposes macro/rates/FX facts, not deep equity/sector attribution.
 
 ## Requested capability
 A factual, source-bound Japan equity sector/constituent attribution query for a frozen
