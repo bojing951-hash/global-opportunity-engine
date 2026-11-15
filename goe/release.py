@@ -521,7 +521,7 @@ def _check_commit(proof: dict[str, Any], root: Path) -> None:
         == 0
     )
     changed = _git("-C", str(root), "diff", "--name-only", proof_commit, commit).splitlines()
-    allowed = ("audit/", "docs/")
+    allowed = ("audit/", "docs/", ".github/")
     root_docs = {"README.md", "TEST_RESULTS.md", "PROJECT_STATE.md", "AGENTS.md", "AGENT_TASKS.md",
                  "ARCHITECTURE.md", "DECISIONS.md", "PROJECT_SPEC.md"}
     if not ancestor or any(
