@@ -2,7 +2,7 @@
   "dossier_id": "RD-RC-20261113-US_VOL_VIX-c1092d4e5bea",
   "research_id": "RC-20261113-US_VOL_VIX-c1092d4e5bea",
   "research_theme_id": "RT-bfb7d7f74d4ea817",
-  "case_label": "CASE_B_EXPLAINED",
+  "case_label": "CASE_B_NO_EXPLANATORY_GAP",
   "decision_as_of": "2026-11-13",
   "market": "US",
   "asset_class": "volatility",
@@ -161,22 +161,6 @@
         "available_at": "2026-11-13",
         "hypothesis_id": "H-VOL-GLOBAL",
         "discriminating": true
-      },
-      {
-        "claim": "波动率指数出现变化",
-        "value": "1m=10.8%",
-        "class": "observed_fact",
-        "source": "prices",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-VOL-VOL"
-      },
-      {
-        "claim": "仓位分位",
-        "value": "0.07335907335907343",
-        "class": "observed_fact",
-        "source": "CFTC",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-VOL-POS"
       }
     ],
     "Contradicting Evidence": [
@@ -280,5 +264,5 @@
     }
   },
   "discovery_value": "NOT VALIDATED",
-  "content_sha256": "3b62b0e21d7992e82d2d2cb4fd449691ec06686f892888a13cb0da63bf2375d5"
+  "content_sha256": "9d36972b1376df54999339624fa0b4e25902c97f6bccc2df258a56c81787b35a"
 }

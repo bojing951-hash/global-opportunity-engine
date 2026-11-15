@@ -8,7 +8,7 @@
 
 ## 1. Observed Facts
 
-- **近期异常**: price_return_shock down 分数 0.81 _(source: engine/anomalies)_
+- **近期异常**: price_return_shock down 分数 0.81 _(source: engine/anomalies, available: 2026-11-06)_
 
 ## 2. Why This Matters
 
@@ -44,12 +44,9 @@ _None recorded._
 
 ## 7. Contradicting Evidence
 
-- **未建立可执行的本地基准对照**: regional benchmark not loaded _(source: prices)_
-- **全球因子解释力不足**: R²=0.06 < 0.30; residual_z=0.69 _(source: derived/cross_asset)_
-- **一致预期/财报修正未接入**: cannot test directly _(source: data_gap)_
-- **没有可核验的决议/公告时点**: event date unknown _(source: calendar)_
-- **仓位极端程度不足或缺失**: neutral/unknown _(source: CFTC)_
-- **未记录价格清洗问题**: no price_data_issue _(source: data_quality)_
+- **全球因子解释力不足**: R²=0.06 < 0.30; residual_z=0.69 _(source: derived/cross_asset, available: 2026-11-13)_
+- **一致预期/财报修正未接入**: cannot test directly _(source: data_gap, available: 2026-11-13)_
+- **未记录价格清洗问题**: no price_data_issue _(source: data_quality, available: 2026-11-13)_
 
 ## 8. Critical Unknowns
 
@@ -119,5 +116,5 @@ Collect the listed evidence / wait for the stated trigger; do not hand off yet
 - **source_note**: All evidence retains source and available_at; unavailable facts are unknown.
 
 ---
-Content SHA-256: `f12dce92fa1c98474a151702f7234d198675c3cc280b997ebaf96b2b65f3bc58`
+Content SHA-256: `0f89af09f62d15ab34730c39c85727503488f51df6410d4e6eb8b7c0f0ea4c90`
 DISCOVERY VALUE: NOT VALIDATED

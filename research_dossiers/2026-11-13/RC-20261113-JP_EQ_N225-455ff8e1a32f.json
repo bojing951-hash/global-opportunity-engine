@@ -219,22 +219,6 @@
         "available_at": "2026-11-13",
         "hypothesis_id": "H-EQJP-LOCAL",
         "discriminating": true
-      },
-      {
-        "claim": "区域属于政策敏感市场",
-        "value": "JP",
-        "class": "observed_fact",
-        "source": "config",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-EQJP-POLICY"
-      },
-      {
-        "claim": "本地汇率可观察",
-        "value": "local FX",
-        "class": "observed_fact",
-        "source": "prices",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-EQJP-FX"
       }
     ],
     "Contradicting Evidence": [
@@ -254,30 +238,6 @@
         "source": "data_gap",
         "available_at": "2026-11-13",
         "hypothesis_id": "H-EQJP-FUND"
-      },
-      {
-        "claim": "没有可核验的决议/公告时点",
-        "value": "event date unknown",
-        "class": "unknown",
-        "source": "calendar",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-EQJP-POLICY"
-      },
-      {
-        "claim": "未做汇率 beta",
-        "value": "not estimated",
-        "class": "unknown",
-        "source": "derived",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-EQJP-FX"
-      },
-      {
-        "claim": "仓位极端程度不足或缺失",
-        "value": "neutral/unknown",
-        "class": "unknown",
-        "source": "CFTC",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-EQJP-POS"
       },
       {
         "claim": "未记录价格清洗问题",
@@ -374,5 +334,5 @@
     }
   },
   "discovery_value": "NOT VALIDATED",
-  "content_sha256": "c1c6944fe0f883d31fb705d594b25af36691f932bf53a74d57bb8746d70c52ec"
+  "content_sha256": "44c8400226574b0b12398295586e08dd875cef4bbb439678791d7155344f0a9f"
 }

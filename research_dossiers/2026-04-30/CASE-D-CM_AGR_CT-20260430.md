@@ -8,59 +8,58 @@
 
 ## 1. Observed Facts
 
-- **drawdown detector**: near_high 0.90 _(source: anomaly)_
-- **continuous futures / month end**: True / True _(source: anomaly evidence)_
+- **drawdown detector**: near_high 0.90 (not 0.98) _(source: anomaly, available: 2026-04-30)_
+- **continuous futures / month end**: True / True _(source: anomaly evidence, available: 2026-04-30)_
 
 ## 2. Why This Matters
 
 - **materiality**: `{"importance": 0.2, "gap_score": 0.0, "near_month_end": true, "is_continuous_futures": true}`
-- **decision_relevance**: `{"if_true": "No further research; mark data artifact.", "if_false": "Could investigate cattle fundamentals if raw data validates move."}`
-- **observed_phenomenon**: Live Cattle continuous futures near 5y high at month-end (drawdown percentile 0.98).
+- **decision_relevance**: `{"if_true": "No further research; mark data artifact.", "if_false": "Could investigate cotton fundamentals if raw data validates move."}`
+- **observed_phenomenon**: Cotton continuous futures near 5y high at month-end (drawdown percentile 0.98).
 
 ## 3. Research Question
 
-What explains: Live Cattle continuous futures near 5y high at month-end (drawdown percentile 0.98).
+What explains: Cotton continuous futures near 5y high at month-end (drawdown percentile 0.98).
 
 ## 4. Competing Hypotheses
 
 - **Continuous-futures roll / month-end data artifact**: If roll artifact, raw contract ratio/roll date explains the jump and no economic question remains.
-- **Cattle supply/demand shock**: Inventories/slaughter data should move before price; not available in current dataset.
+- **Cotton supply/demand shock**: Cotton inventories/China demand should move before price; not available in current dataset.
 
 ## 5. Different Predictions
 
 - If roll artifact, raw contract ratio/roll date explains the jump and no economic question remains.
-- Inventories/slaughter data should move before price; not available in current dataset.
+- Cotton inventories/China demand should move before price; not available in current dataset.
 
 ## 6. Supporting Evidence
 
-- **near month end on continuous futures**: 2026-04-30 _(source: anomaly evidence)_
+- **near month end on continuous futures**: 2026-04-30 _(source: anomaly evidence, available: 2026-04-30)_
 
 ## 7. Contradicting Evidence
 
-- **roll metadata unavailable**: unknown _(source: provider)_
-- **no inventory/slaughter data**: unknown _(source: data_gap)_
+- **no cotton inventory/China demand data**: unknown _(source: data_gap, available: 2026-04-30)_
 
 ## 8. Critical Unknowns
 
-- raw contract price and roll date
-- CFTC cattle positioning
-- slaughter/inventory data
+- raw cotton contract price and roll date
+- CFTC cotton positioning
+- USDA cotton inventory/China demand
 
 ## 9. Evidence Acquisition Plan
 
-- 明确数据源、发布日期与可得时点：raw contract price and roll date
-- 明确数据源、发布日期与可得时点：CFTC cattle positioning
-- 明确数据源、发布日期与可得时点：slaughter/inventory data
+- 明确数据源、发布日期与可得时点：raw cotton contract price and roll date
+- 明确数据源、发布日期与可得时点：CFTC cotton positioning
+- 明确数据源、发布日期与可得时点：USDA cotton inventory/China demand
 
 ## 10. Falsification Conditions
 
-- **compare raw front/next contract around roll**: ratio jumps at roll
-- **inventory/slaughter change**: supply shock precedes price
+- **compare raw front/next cotton contract around roll**: ratio jumps at roll
+- **cotton inventory/China demand change**: supply/demand shock precedes price
 
 ## 11. Research Worthiness
 
 - **rating**: low
-- **rationale**: Case D: continuous futures near month end; likely roll artifact, no economic research claim.
+- **rationale**: Case D: cotton continuous futures near month end; likely roll artifact, no economic research claim.
 
 ## 12. Evidence Readiness
 
@@ -89,7 +88,7 @@ No further research allocation; retain as market intelligence
 ## 16. Result / Open Questions
 
 - **result**: NOT_EXECUTED
-- **open_questions**: `["raw contract price and roll date", "CFTC cattle positioning", "slaughter/inventory data"]`
+- **open_questions**: `["raw cotton contract price and roll date", "CFTC cotton positioning", "USDA cotton inventory/China demand"]`
 - **learned**: No research result is claimed; unresolved unknowns remain explicit.
 
 ## 17. Independent Quality Review
@@ -100,13 +99,13 @@ No further research allocation; retain as market intelligence
 ## 18. Source & Version References
 
 - **artifact_path**: data/goe.db#anomalies/AN-ef670579d660c2
-- **scan_id**: None
-- **config_hash**: None
-- **data_hash**: None
+- **scan_id**: scan-20261115T044634Z-b68802
+- **config_hash**: 7d4d8ae1a7ca110204f522359f57e8c627c89cdec753eea29b51af4a486fc187
+- **data_hash**: 9350b109d05e0131412fc8631a6620eae73072ba17c208271b43b1d384c04054
 - **theme_id**: RT-DATA-ROLL-CM_AGR_CT
 - **evidence_count**: 2
 - **source_note**: All evidence retains source and available_at; unavailable facts are unknown.
 
 ---
-Content SHA-256: `36d09a6284dd3bd631019906651c70d75fb00726d0d52c32907654a437256206`
+Content SHA-256: `9b41232398e78b3dfde03f1b0f0c9a6dad07727ccf5496fbb39810bd8db9c8c3`
 DISCOVERY VALUE: NOT VALIDATED

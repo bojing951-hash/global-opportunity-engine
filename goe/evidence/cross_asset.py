@@ -124,7 +124,8 @@ def evidence_for_bundle(bundle: dict[str, Any], fits: dict[str, Any]) -> dict[st
     if g and g.get("available"):
         h = by_suffix("-GLOBAL", "global_risk")
         if h:
-            support = g["r2"] >= 0.30
+            # Match the documented H-GLOBAL test: R² > 0.5 AND |residual z| < 1.5.
+            support = g["r2"] > 0.50 and abs(g["residual_z"] or 0) < 1.5
             h["evidence_for"] = [item(
                 "同日跨资产全球因子回归",
                 f"R²={g['r2']:.2f}, beta={g['beta']:.2f}, residual_z={g['residual_z']:.2f}, n={g['n_obs']}",

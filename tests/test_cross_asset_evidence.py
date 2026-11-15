@@ -63,3 +63,16 @@ def test_low_r2_fx_is_not_discriminating():
     fx = out["hypotheses"][1]
     assert not any(e.get("discriminating") for e in fx["evidence_for"])
     assert count_discriminating(out) <= 1
+
+
+def test_global_support_requires_r2_above_documented_threshold():
+    fits = {"available": True, "as_of": "2026-01-01",
+            "global": {"available": True, "r2": 0.40, "beta": 1.0, "residual_z": 0.5,
+                       "n_obs": 252, "factor": "x", "kind": "global", "reason": ""}}
+    bundle = {"hypotheses": [{"id": "H-USEQ-GLOBAL", "type": "global_risk", "status": "open",
+                              "evidence_for": [], "evidence_against": []}]}
+    out = evidence_for_bundle(bundle, fits)
+    h = out["hypotheses"][0]
+    assert h["status"] == "open"
+    assert h["evidence_for"] == []
+    assert count_discriminating(out) == 0

@@ -357,6 +357,10 @@ def cmd_dossier(args: argparse.Namespace) -> int:
 
     artifact = Path(args.artifact) if args.artifact else (
         project_root() / "evaluation" / "v2_candidates_20_2026-11-13.json")
+    try:
+        artifact_ref = artifact.resolve().relative_to(project_root().resolve()).as_posix()
+    except Exception:
+        artifact_ref = str(artifact)
     doc = _json.loads(artifact.read_text(encoding="utf-8"))
     scan_meta = {}
     report_json = project_root() / "reports" / f"scan_{doc.get('as_of')}.json"
@@ -375,10 +379,10 @@ def cmd_dossier(args: argparse.Namespace) -> int:
         if c.get("research_worthiness") == "high":
             label = "CASE_A_RESEARCH_WORTHY"
         elif float((c.get("materiality") or {}).get("gap_score") or 0.0) == 0.0:
-            label = "CASE_B_EXPLAINED"
+            label = "CASE_B_NO_EXPLANATORY_GAP"
         else:
             label = "CASE_C_EVIDENCE_GAP"
-        d = build_dossier(c, artifact_path=str(artifact), scan_meta=scan_meta, case_label=label)
+        d = build_dossier(c, artifact_path=artifact_ref, scan_meta=scan_meta, case_label=label)
         paths = write_dossier(d, args.out)
         rows.append((d["dossier_id"], paths["markdown"]))
     for did, path in rows:

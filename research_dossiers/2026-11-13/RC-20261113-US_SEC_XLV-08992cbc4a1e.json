@@ -129,16 +129,7 @@
       "同日防御/周期行业应反向；相对表现应由共同因子解释。",
       "拥挤行业应出现反转；ETF 资金流与相对表现背离。"
     ],
-    "Supporting Evidence": [
-      {
-        "claim": "利率与相对强弱可观察",
-        "value": "1m=8.0%",
-        "class": "observed_fact",
-        "source": "prices",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-SECHC-STYLE"
-      }
-    ],
+    "Supporting Evidence": [],
     "Contradicting Evidence": [
       {
         "claim": "行业盈利/需求数据未接入",
@@ -147,14 +138,6 @@
         "source": "data_gap",
         "available_at": "2026-11-13",
         "hypothesis_id": "H-SECHC-SECTOR"
-      },
-      {
-        "claim": "未估计行业利率 beta",
-        "value": "beta not estimated",
-        "class": "unknown",
-        "source": "derived",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-SECHC-STYLE"
       },
       {
         "claim": "全球因子解释力不足",
@@ -246,5 +229,5 @@
     }
   },
   "discovery_value": "NOT VALIDATED",
-  "content_sha256": "d0b0b4a28065681600696494c865a93e363ee92ed8c509ede493b3ac521335e0"
+  "content_sha256": "b296b71fc2de8188fcf54745121aca3c8e9c2e943bfbe87f45981f6b507b3465"
 }

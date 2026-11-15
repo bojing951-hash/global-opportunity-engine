@@ -1,6 +1,6 @@
 # TEST EVIDENCE (Phase 1 scan gate)
 
-- Offline suite: **231 passed, 10 deselected** at commit `671f5fa` (scan-evidence v5; 
+- Offline suite: **235 passed, 10 deselected** at commit `671f5fa` (scan-evidence v5; 
   test was added; final)).
 - New scan-evidence cases: empty DB; fake config/data hash; same-row modified content; wrong as_of;
   stale/failed latest scan; partial ingest; missing report; report/scan-json/pipeline provenance or

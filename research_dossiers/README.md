@@ -7,7 +7,7 @@ futures anomaly for the data-artifact case.
 | Case | File | Status |
 |---|---|---|
 | A research-worthy | `2026-11-13/RC-20261113-JP_EQ_N225-455ff8e1a32f.md` | high worthiness, partial evidence, watch |
-| B explained | `2026-11-13/RC-20261113-US_VOL_VIX-c1092d4e5bea.md` | low worthiness, gap 0, archive |
+| B no explanatory gap | `2026-11-13/RC-20261113-US_VOL_VIX-c1092d4e5bea.md` | low worthiness, gap 0, archive |
 | C evidence gap | `2026-11-13/RC-20261113-TW_EQ_TAIEX-d1be6bcd3313.md`, `...QQQ...`, `...XLV...` | watch, collect evidence |
 | D data artifact | `2026-04-30/CASE-D-CM_AGR_CT-20260430.md` | roll/month-end artifact, no economic claim |
 

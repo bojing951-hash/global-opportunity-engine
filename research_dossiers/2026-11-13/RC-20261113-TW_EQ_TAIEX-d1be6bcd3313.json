@@ -161,14 +161,6 @@
     "Supporting Evidence": [],
     "Contradicting Evidence": [
       {
-        "claim": "未建立可执行的本地基准对照",
-        "value": "regional benchmark not loaded",
-        "class": "unknown",
-        "source": "prices",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-EQTW-LOCAL"
-      },
-      {
         "claim": "全球因子解释力不足",
         "value": "R²=0.06 < 0.30; residual_z=0.69",
         "class": "statistical_association",
@@ -184,22 +176,6 @@
         "source": "data_gap",
         "available_at": "2026-11-13",
         "hypothesis_id": "H-EQTW-FUND"
-      },
-      {
-        "claim": "没有可核验的决议/公告时点",
-        "value": "event date unknown",
-        "class": "unknown",
-        "source": "calendar",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-EQTW-POLICY"
-      },
-      {
-        "claim": "仓位极端程度不足或缺失",
-        "value": "neutral/unknown",
-        "class": "unknown",
-        "source": "CFTC",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-EQTW-POS"
       },
       {
         "claim": "未记录价格清洗问题",
@@ -282,5 +258,5 @@
     }
   },
   "discovery_value": "NOT VALIDATED",
-  "content_sha256": "f12dce92fa1c98474a151702f7234d198675c3cc280b997ebaf96b2b65f3bc58"
+  "content_sha256": "0f89af09f62d15ab34730c39c85727503488f51df6410d4e6eb8b7c0f0ea4c90"
 }

@@ -17,18 +17,19 @@ def route_candidate(candidate: dict[str, Any] | Any) -> dict[str, Any]:
     asset = str(get("asset_class") or "")
     market = str(get("market") or "")
     joined = " ".join(instruments)
-    # B's documented metrics are macro/rates/FX/AI-macro workbench facts.
+    # Asset class wins over instrument-name heuristics (an equity portfolio can
+    # contain a UST proxy and must not become a rates handoff).
+    if asset in ("equity_index", "equity_etf", "sector_equity", "commodity", "crypto", "volatility"):
+        return {"supported": False, "kind": "deep_asset_research_unsupported",
+                "reason": ("B is a macro fact workbench, not a general equity/sector/commodity "
+                           "valuation or mispricing engine; keep in A"),
+                "B": "investment-agent"}
     if asset in ("fx",) or any(x.startswith("GX_FX") or x.startswith("US_FX") for x in instruments):
         return {"supported": True, "kind": "fx_fact",
                 "reason": "B exposes FX level/trend and macro facts", "B": "investment-agent"}
     if asset in ("fixed_income", "credit") or "UST" in joined or "JGB" in joined:
         return {"supported": True, "kind": "rates_fact",
                 "reason": "B exposes yield levels, curve and macro facts", "B": "investment-agent"}
-    if asset in ("equity_index", "equity_etf", "sector_equity", "commodity", "crypto", "volatility"):
-        return {"supported": False, "kind": "deep_asset_research_unsupported",
-                "reason": ("B is a macro fact workbench, not a general equity/sector/commodity "
-                           "valuation or mispricing engine; keep in A"),
-                "B": "investment-agent"}
     return {"supported": False, "kind": "unknown_asset_class",
             "reason": f"no B capability mapping for {asset!r}", "B": "investment-agent"}
 

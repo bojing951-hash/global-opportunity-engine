@@ -4,13 +4,13 @@
 - Research Theme: `RT-bfb7d7f74d4ea817`
 - Decision as-of: `2026-11-13`
 - Market / Assets: US / US_VOL_VIX
-- Case: CASE_B_EXPLAINED
+- Case: CASE_B_NO_EXPLANATORY_GAP
 
 ## 1. Observed Facts
 
-- **同日跨资产全球因子回归**: R²=0.47, beta=-11.20, residual_z=-0.34, n=252 _(source: derived/cross_asset)_
-- **波动率指数出现变化**: 1m=10.8% _(source: prices)_
-- **仓位分位**: 0.07335907335907343 _(source: CFTC)_
+- **同日跨资产全球因子回归**: R²=0.47, beta=-11.20, residual_z=-0.34, n=252 _(source: derived/cross_asset, available: 2026-11-13)_
+- **波动率指数出现变化**: 1m=10.8% _(source: prices, available: 2026-11-13)_
+- **仓位分位**: 0.07335907335907343 _(source: CFTC, available: 2026-11-13)_
 
 ## 2. Why This Matters
 
@@ -38,15 +38,13 @@ What explains: CBOE Volatility Index 近期 price_return_shock（down，分数 0
 
 ## 6. Supporting Evidence
 
-- **同日跨资产全球因子回归**: R²=0.47, beta=-11.20, residual_z=-0.34, n=252 _(source: derived/cross_asset)_
-- **波动率指数出现变化**: 1m=10.8% _(source: prices)_
-- **仓位分位**: 0.07335907335907343 _(source: CFTC)_
+- **同日跨资产全球因子回归**: R²=0.47, beta=-11.20, residual_z=-0.34, n=252 _(source: derived/cross_asset, available: 2026-11-13)_
 
 ## 7. Contradicting Evidence
 
-- **缺少 VIX 期限结构与期权隐含分布**: term structure missing _(source: data_gap)_
-- **VIX 仓位/期权数据缺失**: vix positioning missing _(source: data_gap)_
-- **未记录价格清洗问题**: no price_data_issue _(source: data_quality)_
+- **缺少 VIX 期限结构与期权隐含分布**: term structure missing _(source: data_gap, available: 2026-11-13)_
+- **VIX 仓位/期权数据缺失**: vix positioning missing _(source: data_gap, available: 2026-11-13)_
+- **未记录价格清洗问题**: no price_data_issue _(source: data_quality, available: 2026-11-13)_
 
 ## 8. Critical Unknowns
 
@@ -118,5 +116,5 @@ No further research allocation; retain as market intelligence
 - **source_note**: All evidence retains source and available_at; unavailable facts are unknown.
 
 ---
-Content SHA-256: `3b62b0e21d7992e82d2d2cb4fd449691ec06686f892888a13cb0da63bf2375d5`
+Content SHA-256: `9d36972b1376df54999339624fa0b4e25902c97f6bccc2df258a56c81787b35a`
 DISCOVERY VALUE: NOT VALIDATED

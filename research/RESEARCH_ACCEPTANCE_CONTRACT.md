@@ -11,7 +11,7 @@ result/open questions, independent review status and source/version references.
 | Case | Candidate | Expected status | What acceptance demonstrates |
 |---|---|---|---|
 | A — research-worthy | N225 `RC-20261113-JP_EQ_N225-455ff8e1a32f` | high worthiness / partial readiness / watch / B unsupported | important phenomenon, local fit, real gaps, no forced conclusion |
-| B — explained | VIX `RC-20261113-US_VOL_VIX-c1092d4e5bea` | low worthiness / archive / gap 0 | existing global/local factors explain it; no economic story invented |
+| B — no explanatory gap | VIX `RC-20261113-US_VOL_VIX-c1092d4e5bea` | low worthiness / archive / gap 0 | no explanatory gap remains; no causal/explanatory claim is invented |
 | C — evidence gap | TAIEX/QQQ/XLV watch IDs | medium worthiness / missing or partial / watch | research value retained although evidence not ready |
 | D — data artifact | `CASE-D-CM_AGR_CT-20260430` (2026-04-30) | low / archive / data artifact | continuous futures near month-end; no false economic explanation |
 

@@ -164,25 +164,9 @@
         "available_at": "2026-11-13",
         "hypothesis_id": "H-USEQ-GLOBAL",
         "discriminating": true
-      },
-      {
-        "claim": "利率与估值代理可观察",
-        "value": "UST",
-        "class": "observed_fact",
-        "source": "curve",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-USEQ-RATES"
       }
     ],
     "Contradicting Evidence": [
-      {
-        "claim": "未估计实时利率 beta",
-        "value": "beta not estimated",
-        "class": "unknown",
-        "source": "derived",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-USEQ-RATES"
-      },
       {
         "claim": "一致预期/财报修正未接入",
         "value": "cannot test directly",
@@ -190,14 +174,6 @@
         "source": "data_gap",
         "available_at": "2026-11-13",
         "hypothesis_id": "H-USEQ-FUND"
-      },
-      {
-        "claim": "仓位极端程度不足或缺失",
-        "value": "neutral/unknown",
-        "class": "unknown",
-        "source": "CFTC",
-        "available_at": "2026-11-13",
-        "hypothesis_id": "H-USEQ-POS"
       },
       {
         "claim": "未记录价格清洗问题",
@@ -280,5 +256,5 @@
     }
   },
   "discovery_value": "NOT VALIDATED",
-  "content_sha256": "b13142d6e1b67d8b038706b37287ffbe53479a80958b1c28baaaacb061405a01"
+  "content_sha256": "c5c89a0e1da0d017cfed8a9ee5acf9425a24256b1434c35cd2ab9ef8a06012f1"
 }

@@ -60,8 +60,12 @@ def build_dossier(candidate: dict[str, Any], *, artifact_path: str = "",
                   case_label: str = "") -> dict[str, Any]:
     hyps = candidate.get("competing_hypotheses") or []
     evidence = _dedupe(list(candidate.get("evidence") or []))
-    supporting = _dedupe([e for h in hyps for e in (h.get("evidence_for") or [])])
-    contradicting = _dedupe([e for h in hyps for e in (h.get("evidence_against") or [])])
+    # Availability notes/config flags are not evidence for a hypothesis; only
+    # measured/discriminating or statistical-association items count as support.
+    supporting = _dedupe([e for h in hyps for e in (h.get("evidence_for") or [])
+                          if e.get("discriminating") or e.get("class") == "statistical_association"])
+    contradicting = _dedupe([e for h in hyps for e in (h.get("evidence_against") or [])
+                             if e.get("class") != "unknown" or e.get("source") == "data_gap"])
     predictions = []
     for h in hyps:
         pred = str(h.get("implications") or "")
@@ -167,7 +171,9 @@ def render_markdown(dossier: dict[str, Any]) -> str:
                     label = item.get("label") or item.get("claim") or item.get("test") or item.get("id")
                     extra = item.get("value") or item.get("implications") or item.get("threshold") or ""
                     src = item.get("source", "")
-                    lines.append(f"- **{label}**: {extra}" + (f" _(source: {src})_" if src else ""))
+                    avail = item.get("available_at", "")
+                    suffix = f" _(source: {src}" + (f", available: {avail}" if avail else "") + ")_" if src else ""
+                    lines.append(f"- **{label}**: {extra}" + suffix)
                 else:
                     lines.append(f"- {item}")
         elif isinstance(val, dict):
