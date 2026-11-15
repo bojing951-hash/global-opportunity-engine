@@ -993,9 +993,11 @@ class Store:
             if not c.execute("SELECT 1 FROM research_v2_candidates WHERE research_id=?",
                              (research_id,)).fetchone():
                 raise ValueError(f"research candidate does not exist: {research_id}")
-            # Findings are immutable: a rerun gets a new finding_id; an existing id is preserved.
-            c.execute("""INSERT OR IGNORE INTO research_v2_findings(finding_id,research_id,status,payload_json,
-                         artifact_path,created_at) VALUES(?,?,?,?,?,?)""",
+            # Findings are immutable in status/payload; only the artifact pointer may
+            # be migrated to a versioned directory if it moved.
+            c.execute("""INSERT INTO research_v2_findings(finding_id,research_id,status,payload_json,
+                         artifact_path,created_at) VALUES(?,?,?,?,?,?)
+                       ON CONFLICT(finding_id) DO UPDATE SET artifact_path=excluded.artifact_path""",
                       (finding_id, research_id, status,
                        json.dumps(payload, ensure_ascii=False, default=str),
                        artifact_path, utc_now()))
