@@ -36,4 +36,12 @@ jobs:
         run: |
           PROOF="$(ls -1 audit/test_evidence/*.proof.json | sort | tail -1)"
           echo "replaying $PROOF"
-          python -m goe.cli verify-release --proof "$PROOF"
+          set +e
+          python -m goe.cli verify-release --proof "$PROOF" > /tmp/verify.out 2>&1
+          rc=$?
+          cat /tmp/verify.out
+          if [ $rc -ne 0 ]; then
+            MSG=$(tail -c 700 /tmp/verify.out | tr '\n' ' ')
+            echo "::error title=verify-release-failed::$MSG"
+            exit $rc
+          fi
