@@ -25,6 +25,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e . pytest
+      - name: Remove ignored build artifacts
+        run: |
+          echo "before clean:"; git status --porcelain --untracked-files=all
+          # pip editable installs create ignored .egg-info/__pycache__/build dirs;
+          # remove only untracked/ignored build output, never tracked evidence.
+          git clean -fdx
+          echo "after clean:"; git status --porcelain --untracked-files=all
       - name: Replay latest release proof (cross-OS)
         run: |
           PROOF="$(ls -1t audit/test_evidence/*.proof.json | head -1)"
