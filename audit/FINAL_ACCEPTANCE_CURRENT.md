@@ -2,7 +2,7 @@
 
 - Date: 2026-11-15
 - Branch: `architecture/research-v2`
-- Engineering baseline: code `9d51769` + Phase-1 proof `release_9d51769823.json` (219 tests)
+- Engineering baseline: code `671f5fa` + Phase-2 proof `release_671f5faa5f.json` (222 tests)
 - Phase-2 additions: cross-asset measured evidence, evidence gate, research-quality audit, A→B guard
 - V1/main/B: unchanged
 
@@ -24,7 +24,7 @@
   frozen hashes verified; all output columns fingerprinted.
 - Adversarial cases: empty/fake/stale/partial/missing/mismatched/OHLCV/output/artifact modifications
   rejected; valid real scan accepted.
-- Test proof: 219/219; independent final QA G PASS and H PASS WITH ISSUES (P2 only); earlier P1s fixed.
+- Test proof: 222/222; independent final QA G PASS and H PASS WITH ISSUES (P2 only); earlier P1s fixed.
 - Accepted residuals: local DB/report/exports not in git; synthetic-consistent DB trust boundary;
   fabricated ingest-run row; artifact-vs-DB cross-check; CI unexecuted; no licensed consensus/OIS.
 
@@ -43,3 +43,11 @@
 **ENGINEERING ACCEPTED (Phase 1, with explicit P2 residuals)**  
 **PHASE 2: PARTIAL / RESEARCH NOT VALIDATED**  
 **CI CROSS-OS: BLOCKED**
+
+## Phase-2 independent QA
+- `audit/PHASE2_QA_ENGINEERING.md`: PASS WITH ISSUES; sole P1 was the uncommitted documentation
+  worktree (fixed by the freeze commit); scan gate/proof/222 tests verified.
+- `audit/PHASE2_QA_RESEARCH.md`: PASS WITH ISSUES (P2 only); A→B guard end-to-end exit 3; quality
+  audit recomputed exactly; no P0/P1; DISCOVERY VALUE NOT VALIDATED.
+- P2 notes: quality-audit metric names/denominators are descriptive, not validated; no CLI-level
+  handoff test; no independent human labels or fresh future window.
