@@ -159,11 +159,13 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
             "prior_us_session": prior, "spy_return": spy, "qqq_return": qqq, "vix_return": vix,
             "pass": bool(spy is not None and vix is not None and spy < -0.01 and vix > 0),
             "interpretation": "prior US session selloff/VIX spike is consistent with a global lead"}
+        regional_pass = bool(taiex is not None and kospi is not None
+                             and taiex < -0.03 and kospi < -0.03)
         tests["asia_regional_test"] = {
             "regional_a_return": taiex, "regional_b_return": kospi,
-            "pass": bool(taiex is not None and kospi is not None and taiex < -0.03 and kospi < -0.03),
+            "pass": regional_pass,
             "interpretation": ("North Asia co-move supported; tech-specific attribution not identified"
-                              if tests["asia_regional_test"]["pass"] else
+                              if regional_pass else
                               "Regional peers did not both meet the pre-set threshold")}
         tests["fx_test"] = {"prior_usdjpy_return": fx,
                             "pass": bool(fx is not None and abs(fx) >= 0.20 * abs(n225 or 0.01)),
@@ -173,6 +175,7 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         reversal = round(float((1 + nxt).prod() - 1), 6) if len(nxt) else None
         tests["reversal_test"] = {"n225_next_3d": reversal, "pass": bool(reversal is not None and reversal > 0),
                                   "interpretation": "only bars after event through as-of"}
+        local_ok = tests["local_asia_test"]["pass"]
         local_ok = tests["local_asia_test"]["pass"]
         regional_ok = tests["asia_regional_test"]["pass"]
         policy_event = None
