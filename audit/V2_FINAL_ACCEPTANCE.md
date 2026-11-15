@@ -1,6 +1,6 @@
 # V2 FINAL ACCEPTANCE — contract-driven refactor
 
-- Branch: `architecture/research-v2` (from frozen V1 `1f2b341`, tag `v1-frozen-1f2b341`); final code `d50c10d`, proof commit `b37bb22`, manifest `release_d50c10d308.json`.
+- Branch: `architecture/research-v2` (from frozen V1 `1f2b341`, tag `v1-frozen-1f2b341`); final code `2eb0f37`, proof commit `2348f68`, manifest `release_2eb0f37df7.json`.
 - V1 preserved: tag + `audit/V1_FREEZE.md`; V1 code/scoring not overwritten.
 - Tests: **209 offline passed**, 10 network/real-data deselected by default; verified test proof + rerun 209.
 - Real V2 triage after the evidence gate: **0 research candidates + 20 intelligence (evidence_gap)**; all 20 pass the research contract. No candidate is deleted or handoff-forced.
