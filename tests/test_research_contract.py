@@ -66,3 +66,45 @@ def test_missing_spy_vix_is_insufficient_not_refutation(tmp_path, monkeypatch):
         "competing_hypotheses": [], "evidence": []})
     f = eng.execute_spec(store, spec, out_dir=str(tmp_path / "out"))
     assert f.hypothesis_updates["H-GLOBAL"]["status"] == "INSUFFICIENT_DATA"
+
+
+def test_missing_risk_data_is_insufficient_for_fx_and_commodity(tmp_path, monkeypatch):
+    import types
+    import pandas as pd
+    import goe.research_engine as eng
+
+    idx = pd.bdate_range("2026-01-01", "2026-02-01")
+
+    class FakeBuilder:
+        def __init__(self, *a, **k): pass
+        def build(self): return types.SimpleNamespace(returns=FakeBuilder.rets)
+
+    monkeypatch.setattr(eng, "FeatureBuilder", FakeBuilder)
+    store = Store(str(tmp_path / "t.db"))
+
+    def run(asset, peers, roles, kind, cols):
+        FakeBuilder.rets = pd.DataFrame({c: [0.001] * len(idx) for c in cols}, index=idx)
+        FakeBuilder.rets.iloc[-5, 0] = 0.07
+        spec = eng.spec_for_asset(
+            asset=asset, market="US", asset_class=("fx" if kind == "fx_level" else "commodity"),
+            as_of="2026-02-01", question="q", peers=peers,
+            hypotheses=[("H-RISK", {"label": "risk", "type": "risk"})],
+            case_kind=kind, event_override="2026-01-27", roles=roles,
+            hypothesis_ids={"risk": "H-RISK"})
+        store.upsert_research_candidate({
+            "research_id": spec.research_id, "research_theme_id": spec.research_theme_id,
+            "as_of": spec.as_of, "market": "US", "asset_class": spec.asset_class,
+            "instruments": [asset], "observed_phenomenon": "q", "priority_tier": "intelligence",
+            "competing_hypotheses": [], "evidence": []})
+        f = eng.execute_spec(store, spec, out_dir=str(tmp_path / ("out_" + kind)))
+        assert f.hypothesis_updates["H-RISK"]["status"] == "INSUFFICIENT_DATA"
+
+    run("X_FX", {"GX_FX_EURUSD": ("EUR", "same_day"), "GX_FX_USDJPY": ("JPY", "same_day"),
+                 "US_FI_IEF": ("IEF", "same_day")},
+        {"cross1": "GX_FX_EURUSD", "cross2": "GX_FX_USDJPY", "rates": "US_FI_IEF",
+         "risk": "US_EQ_SPY", "vol": "US_VOL_VIX"}, "fx_level", ["X_FX", "GX_FX_EURUSD", "GX_FX_USDJPY", "US_FI_IEF"])
+    run("X_CMD", {"US_FX_DXY": ("DXY", "same_day"), "CM_MET_GC": ("Gold", "same_day"),
+                  "US_FI_IEF": ("IEF", "same_day")},
+        {"dollar": "US_FX_DXY", "gold": "CM_MET_GC", "rates": "US_FI_IEF",
+         "risk": "US_EQ_SPY", "vol": "US_VOL_VIX"}, "commodity_event",
+        ["X_CMD", "US_FX_DXY", "CM_MET_GC", "US_FI_IEF"])
