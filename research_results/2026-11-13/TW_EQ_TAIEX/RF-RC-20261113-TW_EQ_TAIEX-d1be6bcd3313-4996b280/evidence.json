@@ -1,0 +1,54 @@
+{
+  "source": "GOE prices DB",
+  "observed": {
+    "TW_EQ_TAIEX": {
+      "label": "TW_EQ_TAIEX",
+      "return": -0.045053,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "HK_EQ_HSI": {
+      "label": "local",
+      "return": -0.012708,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "CN_EQ_CSI300": {
+      "label": "regional A",
+      "return": -0.014376,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "JP_EQ_N225": {
+      "label": "regional B",
+      "return": -0.059647,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "US broad",
+      "return": -0.044092,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "US_EQ_QQQ": {
+      "label": "US growth",
+      "return": -0.064889,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "US_VOL_VIX": {
+      "label": "VIX",
+      "return": 0.696568,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "CN_FX_USDCNY": {
+      "label": "CNY",
+      "return": 0.00045,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    }
+  },
+  "data_hash": "55e06c14d1fe73ce2e9b370c1247cc18fcaee025fbfbf08cc196e1fa66f525e6"
+}
