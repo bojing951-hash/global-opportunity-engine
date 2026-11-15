@@ -46,3 +46,13 @@ ENGINEERING ACCEPTED and continue Phase 2 without reopening release-gate hardeni
    edits, but a DB+stats forger can stay consistent.
 5. CI workflow exists but GitHub Actions has not executed; Docker Linux replay failed on Keychain.
 6. No licensed consensus or term-OIS feed; OIS remains a policy-path proxy; consensus adapter only.
+
+## Phase 2 update (after Phase 1 freeze)
+- Added A→B eligibility guard: only A/B/C + `evidence_ok` can hand off; current 0 eligible, so
+  `goe triage --handoff` returns 3 and retains intelligence in A.
+- Added descriptive research-quality audit (`goe/research_quality.py`,
+  `evaluation/RESEARCH_QUALITY_AUDIT.md`): selection/question/evidence/decision are reported
+  separately; DISCOVERY VALUE remains NOT VALIDATED.
+- Current: 20 intelligence / 0 research; mean measured evidence coverage 0.075.
+- Data: cross-asset measured evidence active; consensus BLOCKED; OIS policy-path proxy only.
+- CI: workflow present, GitHub Actions not executed; Docker Linux replay blocked by Keychain.

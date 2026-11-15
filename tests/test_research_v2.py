@@ -179,3 +179,14 @@ def test_legacy_rc_rows_are_migrated_out_of_v1_tables(tmp_path):
     assert s2.research_candidate("RC-OLD") is not None
     assert s2.conn.execute("SELECT COUNT(*) FROM research_v2_tasks WHERE research_id='RC-OLD'").fetchone()[0] == 1
     assert all(v == 0 for v in s2.research_integrity().values())
+
+
+def test_handoff_eligibility_excludes_intelligence():
+    from goe.integration.research_handoff import eligible_for_handoff
+
+    rows = [
+        {"research_id": "I", "priority_tier": "intelligence", "research_readiness": "evidence_gap"},
+        {"research_id": "A", "priority_tier": "A", "research_readiness": "evidence_ok"},
+        {"research_id": "B", "priority_tier": "B", "research_readiness": "evidence_gap"},
+    ]
+    assert [r["research_id"] for r in eligible_for_handoff(rows)] == ["A"]

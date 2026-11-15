@@ -90,3 +90,15 @@ def persist_v2_result(store, candidate: dict[str, Any], res: dict[str, Any],
                               note=f"V2 handoff {sem}", task_id=task_id)
     return {"task_id": task_id, "status": "completed" if run_ok else f"not_completed:{sem}",
             "semantic_status": sem}
+
+
+def eligible_for_handoff(rows) -> list:
+    """Only evidence_ok research tiers may leave A; intelligence stays local."""
+    out = []
+    for r in rows or []:
+        tier = r.get("priority_tier") if isinstance(r, dict) else getattr(r, "priority_tier", None)
+        readiness = (r.get("research_readiness") if isinstance(r, dict)
+                     else getattr(r, "research_readiness", None))
+        if tier in ("A", "B", "C") and readiness == "evidence_ok":
+            out.append(r)
+    return out

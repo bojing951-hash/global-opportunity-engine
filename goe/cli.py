@@ -314,14 +314,21 @@ def cmd_triage(args: argparse.Namespace) -> int:
     for r in rows:
         print(f"  {r.research_id} tier={r.priority_tier} rank={r.priority_rank} "
               f"{','.join(r.instruments)} gap={r.materiality.get('gap_score')} cost={r.research_cost['hours']}h")
-    if getattr(args, "handoff", False) and rows:
+    if getattr(args, "handoff", False):
         from .integration.ia_adapter import IAAdapter
-        from .integration.research_handoff import handoff_v2, persist_v2_result
-        target = Path(args.ia_out or "exports/research_v2_ia") / rows[0].research_id
+        from .integration.research_handoff import (eligible_for_handoff, handoff_v2,
+                                                   persist_v2_result)
+        eligible = eligible_for_handoff(rows)
+        if not eligible:
+            print("no eligible research candidate (tier A/B/C with evidence_ok); "
+                  "intelligence is retained in A and not handed to B")
+            return 3
+        cand = eligible[0]
+        target = Path(args.ia_out or "exports/research_v2_ia") / cand.research_id
         adapter = IAAdapter(args.ia_path or str(Path.home() / "investment-agent-dev"))
-        res = handoff_v2(adapter, rows[0].to_dict(), target.parent, timeout=args.ia_timeout)
-        persist_v2_result(store, rows[0].to_dict(), res, target)
-        print(f"handoff {rows[0].research_id}: {res.get('status')} semantic={res.get('semantic_status')}")
+        res = handoff_v2(adapter, cand.to_dict(), target.parent, timeout=args.ia_timeout)
+        persist_v2_result(store, cand.to_dict(), res, target)
+        print(f"handoff {cand.research_id}: {res.get('status')} semantic={res.get('semantic_status')}")
         return 0 if res.get("status") == "ok" else 2
     return 0
 
