@@ -928,8 +928,11 @@ class Store:
                 if row:
                     payload = json.loads(row["payload_json"] or "{}")
                     payload.update({"status": upd.get("status"), "evidence_update": upd})
-                    c.execute("UPDATE research_v2_hypotheses SET status=?,payload_json=? WHERE hypothesis_id=?",
-                              (upd.get("status"), json.dumps(payload, ensure_ascii=False, default=str), hid))
+                    c.execute("""UPDATE research_v2_hypotheses SET status=?,type=?,label=?,payload_json=?
+                                 WHERE hypothesis_id=?""",
+                              (upd.get("status"), upd.get("type") or payload.get("type"),
+                               upd.get("label") or payload.get("label"),
+                               json.dumps(payload, ensure_ascii=False, default=str), hid))
                 else:
                     payload = {**upd, "id": key, "status": upd.get("status"),
                                "label": upd.get("label") or key}

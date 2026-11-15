@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from goe.research_exec import _event_date, _ret
+from goe.research_exec import _event_date, _prior_session, _ret
 
 
 def test_event_date_uses_only_bars_up_to_as_of():
@@ -21,3 +21,55 @@ def test_ret_returns_none_for_future_or_missing_date():
     assert _ret(r, "X", str(idx[1].date())) == 0.02
     assert _ret(r, "X", "2026-02-01") is None
     assert _ret(r, "Y", str(idx[1].date())) is None
+
+
+def test_prior_session_strictly_before_event():
+    idx = pd.bdate_range("2026-11-02", periods=5)
+    r = pd.DataFrame({"X": [0.0, 0.0, 0.0, 0.0, 0.0]}, index=idx)
+    assert _prior_session(r, "2026-11-04") == "2026-11-03"
+
+
+def test_execution_uses_prior_us_session_and_writes_db(tmp_path, monkeypatch):
+    import types
+    import goe.research_exec as rx
+    from goe.db import Store
+
+    idx = pd.bdate_range("2026-10-01", "2026-11-13")
+    n = len(idx)
+    data = {c: [0.001] * n for c in rx.EVENT_ASSETS}
+    event = pd.Timestamp("2026-11-06")
+    pos = idx.get_loc(event)
+    data["JP_EQ_N225"][pos] = -0.06
+    data["JP_EQ_TOPIX"][pos] = -0.065
+    data["TW_EQ_TAIEX"][pos] = -0.045
+    data["KR_EQ_KOSPI"][pos] = -0.06
+    # prior US session falls; same-date US close (after Asia) would be up and must not be used
+    data["US_EQ_SPY"][pos - 1] = -0.044
+    data["US_EQ_QQQ"][pos - 1] = -0.065
+    data["US_VOL_VIX"][pos - 1] = 0.70
+    data["US_EQ_SPY"][pos] = 0.10
+    data["US_EQ_QQQ"][pos] = 0.10
+    data["US_VOL_VIX"][pos] = -0.30
+    rets = pd.DataFrame(data, index=idx)
+
+    class FakeBuilder:
+        def __init__(self, *a, **k): pass
+        def build(self): return types.SimpleNamespace(returns=rets)
+
+    monkeypatch.setattr(rx, "FeatureBuilder", FakeBuilder)
+    store = Store(str(tmp_path / "t.db"))
+    store.upsert_research_candidate({
+        "research_id": rx.CASE_N225, "research_theme_id": "RT-N225",
+        "as_of": "2026-11-13", "market": "JP", "asset_class": "equity_index",
+        "instruments": ["JP_EQ_N225"], "observed_phenomenon": "x",
+        "priority_tier": "intelligence", "competing_hypotheses": [], "evidence": []})
+    f = rx.execute_nikkei_case(store, as_of="2026-11-13", out_dir=str(tmp_path / "out"))
+    assert f.event_date == "2026-11-06"
+    assert f.tests["global_lead_test"]["spy_return"] == -0.044
+    assert f.tests["global_lead_test"]["pass"] is True
+    assert f.hypothesis_updates["H-EQJP-GLOBAL"]["status"] == "SUPPORTED_BY_AVAILABLE_EVIDENCE"
+    row = store.conn.execute("SELECT status FROM research_v2_hypotheses WHERE hypothesis_id=?",
+                             (f.research_id + ":H-EQJP-GLOBAL",)).fetchone()
+    assert row and row["status"] == "SUPPORTED_BY_AVAILABLE_EVIDENCE"
+    assert store.conn.execute("SELECT 1 FROM research_v2_findings WHERE finding_id=?",
+                              (f.finding_id,)).fetchone()

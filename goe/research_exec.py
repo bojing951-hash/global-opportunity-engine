@@ -129,9 +129,9 @@ def execute_nikkei_case(store: Store, *, as_of: str = "2026-11-13",
 
     rules = {
         "local": "TOPIX same-day return < -3%",
-        "global": "prior US session SPY < -1% AND VIX > 0",
-        "regional": "TAIEX and KOSPI same-day both < -3%",
-        "fx": "prior-session |USDJPY| > 2%",
+        "global": "prior US session SPY < -1% AND VIX return > 0 (QQQ is reported, not a gate)",
+        "regional": "TAIEX and KOSPI same-day both < -3% (North Asia; HSI/CSI reported separately)",
+        "fx": "prior-session |USDJPY| >= 20% of |N225|",
         "reversal": "N225 cumulative return over next 3 sessions > 0",
         "alignment": "Asia same-day; US/FX previous US session; no same-date future US close",
     }
@@ -158,7 +158,8 @@ def execute_nikkei_case(store: Store, *, as_of: str = "2026-11-13",
     local_pass = topix is not None and topix < -0.03
     global_pass = bool(spy is not None and vix is not None and spy < -0.01 and vix > 0)
     regional_pass = bool(taiex is not None and kospi is not None and taiex < -0.03 and kospi < -0.03)
-    fx_pass = bool(fx is not None and abs(fx) > 0.02)
+    n225 = rv(iid)
+    fx_pass = bool(fx is not None and n225 is not None and abs(fx) >= 0.20 * abs(n225))
     idx = fs.returns.index
     pos = idx.get_loc(pd.Timestamp(event))
     nxt = fs.returns[iid].iloc[pos + 1: pos + 4]
@@ -229,8 +230,10 @@ def execute_nikkei_case(store: Store, *, as_of: str = "2026-11-13",
         f"On {event}, N225 returned {rv(iid):.2%}; TOPIX {topix:.2%}.",
         f"Prior US session ({prior}) SPY {spy:+.2%}, QQQ {qqq:+.2%}, VIX {vix:+.2%}: a US-global lead is "
         "consistent, not contradicted. Using the later same-date US close would be lookahead.",
-        f"Taiwan {taiex:+.2%} and Korea {kospi:+.2%} fell; regional Asia co-move is supported, "
+        f"Taiwan {taiex:+.2%} and Korea {kospi:+.2%} fell; a North Asia co-move is supported, "
         "but tech-specific attribution is unavailable.",
+        f"Hong Kong {rv('HK_EQ_HSI'):+.2%} and China {rv('CN_EQ_CSI300'):+.2%} were much smaller, "
+        "so broad 'Asia' is too strong; the evidence is North Asia/Japan-Taiwan-Korea.",
         f"Prior-session USDJPY {fx:+.2%}; too small to be the primary driver.",
         f"Three-session post-event N225 return {reversal:+.2%}.",
         "Japan-local and regional Asia explanations both survive; broad indices cannot separate them.",
