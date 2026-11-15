@@ -171,6 +171,8 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         reversal = round(float((1 + nxt).prod() - 1), 6) if len(nxt) else None
         tests["reversal_test"] = {"n225_next_3d": reversal, "pass": bool(reversal is not None and reversal > 0),
                                   "interpretation": "only bars after event through as-of"}
+        local_ok = tests["local_asia_test"]["pass"]
+        regional_ok = tests["asia_regional_test"]["pass"]
         policy_event = None
         try:
             import yaml
@@ -186,7 +188,7 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
             hid("local", "H-EQ-LOCAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["local_asia_test"]["pass"] else "INCONCLUSIVE",
                              "label": "Local market factor", "type": "local_market",
                              "new_evidence": "TOPIX same-day", "value": topix,
-                             "note": ("Local peer co-moved; not an independent instrument." if local_pass
+                             "note": ("Local peer co-moved; not an independent instrument." if local_ok
                                       else "Local peer did not meet its pre-set threshold; no local support.")},
             hid("global", "H-EQ-GLOBAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["global_lead_test"]["pass"] else "WEAKENED_BY_EVIDENCE",
                               "label": "Global risk lead", "type": "global_risk",
@@ -214,7 +216,7 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
                    f"{fx_label} {p(fx)}; too small to be primary.",
                    f"Three-session reversal {p(reversal)}.",
                    ("Local and regional explanations both survive; broad indices cannot separate."
-                    if local_pass and regional_pass else
+                    if local_ok and regional_ok else
                     "Regional co-move survives; the local peer did not meet its pre-set threshold.")]
         unknown = [f"{local_label} sector/constituent breadth", "regional supply-chain exposure",
                    "consensus revisions", "event/news calendar"]
