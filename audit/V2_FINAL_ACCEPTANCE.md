@@ -15,7 +15,7 @@
 | ENGINEERING VALIDATION | **PASS** | fresh clone 209 passed/10 deselected; real test-proof release gate; V2 lifecycle/orphan/FK tests; independent red-team found P1s that were fixed |
 | RESEARCH METHODOLOGY | **PARTIAL** | competing hypotheses/unknowns/falsifiers now explicit; expectation data still proxies; V2 selection not proven better |
 | DISCOVERY VALUE | **NOT VALIDATED** | exploratory 2025-12-31 (already used in V1 cases, not independent): D 1.000 vs C 1.500/B 0.917/A 1.083, P@3 D 0.00; earlier reused 2021 data also D 0.833 < C 0.979. Research-question quality still unmeasured; no tuning. |
-| A→B INTEGRATION | **PARTIAL** | fact-only V2 brief; latest real run B returned `refused` (S8 no_registry_identity), A persisted `not_completed:refused` (never success); no real `ok_valid`; V2 CLI `goe triage --handoff` works. An earlier run failed at process level and is now mapped to `error`, not B rejection. |
+| A→B INTEGRATION | **PARTIAL** | fact-only V2 brief; before the gate reset, the real run returned `refused` (S8 no_registry_identity), A persisted `not_completed:refused` (never success); after the gate reset **no candidate is eligible**, so no new handoff is attempted. V2 CLI `goe triage --handoff` remains wired; no real `ok_valid`. |
 
 ## V2 blind evaluation (final)
 - 4 dates: 2022-10-31, 2023-03-31, 2024-09-30 (development), 2021-12-31 (exploratory/reused).
