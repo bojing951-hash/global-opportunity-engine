@@ -52,16 +52,25 @@ class EventContract:
 def resolve_event(candidate: dict[str, Any], conn) -> EventContract:
     """Bind a candidate to one stored anomaly; never silently pick another event."""
     asset = str((candidate.get("instruments") or [""])[0])
-    detector, direction, window = _phenomenon(candidate)
+    inferred_det, inferred_dir, window = _phenomenon(candidate)
+    detector = str(candidate.get("detector_id") or inferred_det)
+    direction = str(candidate.get("direction") or inferred_dir)
     if not detector:
         raise EventNotResolved(f"EVENT_NOT_RESOLVED: no phenomenon detector for {candidate.get('research_id')}")
-    row = conn.execute(
-        """SELECT as_of,detector,direction,evidence_json FROM anomalies
-           WHERE instrument_id=? AND detector=? AND as_of<=?
-             AND (?='' OR direction LIKE ?)
-           ORDER BY as_of DESC, score DESC LIMIT 1""",
-        (asset, detector, candidate.get("as_of"), direction,
-         "%" + direction + "%" if direction else "%")).fetchone()
+    hint = candidate.get("event_date")
+    if hint:
+        row = conn.execute(
+            """SELECT as_of,detector,direction,evidence_json FROM anomalies
+               WHERE instrument_id=? AND detector=? AND as_of=?""",
+            (asset, detector, str(hint))).fetchone()
+    else:
+        row = conn.execute(
+            """SELECT as_of,detector,direction,evidence_json FROM anomalies
+               WHERE instrument_id=? AND detector=? AND as_of<=?
+                 AND (?='' OR direction LIKE ?)
+               ORDER BY as_of DESC, score DESC LIMIT 1""",
+            (asset, detector, candidate.get("as_of"), direction,
+             "%" + direction + "%" if direction else "%")).fetchone()
     if not row:
         raise EventNotResolved(f"EVENT_NOT_RESOLVED: no matching anomaly for {asset} {detector} {direction}")
     date = str(row["as_of"])
