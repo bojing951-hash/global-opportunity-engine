@@ -56,6 +56,8 @@ class ResearchSpec:
     hypotheses: list[dict[str, Any]]
     event_window: int = 180
     event_override: str | None = None
+    roles: dict[str, str] = field(default_factory=dict)
+    hypothesis_ids: dict[str, str] = field(default_factory=dict)
     extra: dict[str, Any] = field(default_factory=dict)
 
 
@@ -63,13 +65,16 @@ def spec_for_asset(*, asset: str, market: str, asset_class: str, as_of: str,
                    question: str, peers: dict[str, tuple[str, str]],
                    hypotheses: list[dict[str, Any]], case_kind: str,
                    detector: str = "research_event", direction: str = "event",
-                   event_override: str | None = None) -> ResearchSpec:
+                   event_override: str | None = None,
+                   roles: dict[str, str] | None = None,
+                   hypothesis_ids: dict[str, str] | None = None) -> ResearchSpec:
     rid = make_rid(as_of=as_of, instrument_id=asset, detector=detector,
                    direction=direction, window="event")
     return ResearchSpec(rid, make_theme(instrument_id=asset, detector=detector,
                                        direction=direction, window="event"),
                         as_of, asset, market, asset_class, question, case_kind, peers, hypotheses,
-                        event_override=event_override)
+                        event_override=event_override, roles=roles or {},
+                        hypothesis_ids=hypothesis_ids or {})
 
 
 def _event_date(returns: pd.DataFrame, asset: str, as_of: str, window: int) -> str:
@@ -110,6 +115,16 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
     hist = returns[spec.asset].dropna()
     hist = hist[hist.index <= pd.Timestamp(event)].tail(252)
     pct = float((hist < n225).mean()) if len(hist) and n225 is not None else None
+    R, H = spec.roles, spec.hypothesis_ids
+
+    def role(k: str):
+        return rv(R.get(k, ""))
+
+    def p(v) -> str:
+        return "n/a" if v is None else f"{v:+.2%}"
+
+    def hid(k: str, default: str) -> str:
+        return H.get(k, default)
     tests: dict[str, Any] = {"historical_percentile": {
         "event_return": n225, "percentile": pct,
         "pass": bool(pct is not None and (pct <= 0.05 or pct >= 0.95)),
@@ -119,9 +134,9 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
     unknown: list[str] = []
 
     if spec.case_kind == "equity_event":
-        topix, taiex, kospi = rv("JP_EQ_TOPIX"), rv("TW_EQ_TAIEX"), rv("KR_EQ_KOSPI")
-        spy, qqq, vix = rv("US_EQ_SPY"), rv("US_EQ_QQQ"), rv("US_VOL_VIX")
-        fx = rv("GX_FX_USDJPY")
+        topix, taiex, kospi = role("local"), role("regional_tw"), role("regional_kr")
+        spy, qqq, vix = role("global_equity"), role("global_growth"), role("global_vol")
+        fx = role("fx")
         tests["local_asia_test"] = {
             "topix_return": topix, "pass": bool(topix is not None and topix < -0.03),
             "interpretation": "TOPIX co-move supports broad Japan/local; association only"}
@@ -153,40 +168,40 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         except Exception:
             pass
         updates = {
-            "H-EQJP-LOCAL": {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["local_asia_test"]["pass"] else "INCONCLUSIVE",
+            hid("local", "H-EQ-LOCAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["local_asia_test"]["pass"] else "INCONCLUSIVE",
                              "label": "Japan broad local market factor", "type": "local_market",
                              "new_evidence": "TOPIX same-day", "value": topix,
                              "note": "Broad co-move; not an independent instrument."},
-            "H-EQJP-GLOBAL": {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["global_lead_test"]["pass"] else "WEAKENED_BY_EVIDENCE",
+            hid("global", "H-EQ-GLOBAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["global_lead_test"]["pass"] else "WEAKENED_BY_EVIDENCE",
                               "label": "US/global risk lead", "type": "global_risk",
                               "new_evidence": "prior US session SPY/QQQ/VIX", "value": {"SPY": spy, "QQQ": qqq, "VIX": vix},
                               "note": "Prior US selloff/VIX spike preceded Asia; same-date US close is not used."},
-            "H-EQJP-FX": {"status": "WEAKENED_BY_EVIDENCE" if not tests["fx_test"]["pass"] else "INCONCLUSIVE",
+            hid("fx", "H-EQ-FX"): {"status": "WEAKENED_BY_EVIDENCE" if not tests["fx_test"]["pass"] else "INCONCLUSIVE",
                           "label": "JPY/cross-border flow", "type": "fx", "new_evidence": "prior USDJPY", "value": fx,
                           "note": "Small FX move cannot explain the equity move by itself."},
-            "H-EQJP-POLICY": {"status": "INSUFFICIENT_DATA" if policy_event is None else "INCONCLUSIVE",
+            hid("policy", "H-EQ-POLICY"): {"status": "INSUFFICIENT_DATA" if policy_event is None else "INCONCLUSIVE",
                               "label": "Policy/regulatory event", "type": "policy",
                               "new_evidence": "config/events.yaml calendar check", "value": policy_event,
                               "note": ("No scheduled event in config/events.yaml; not proof no policy news."
                                        if policy_event is None else "Scheduled event exists; attribution not established.")},
-            "H-EQJP-FUND": {"status": "INSUFFICIENT_DATA", "label": "Japan fundamentals", "type": "fundamental",
+            hid("fund", "H-EQ-FUND"): {"status": "INSUFFICIENT_DATA", "label": "Japan fundamentals", "type": "fundamental",
                             "new_evidence": "consensus unavailable", "value": None,
                             "note": "No authorized consensus data; no fabrication."},
-            "H-EQJP-ASIA-REGIONAL": {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["asia_regional_test"]["pass"] else "INCONCLUSIVE",
+            hid("regional", "H-EQ-REGIONAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["asia_regional_test"]["pass"] else "INCONCLUSIVE",
                                      "label": "Regional North Asia co-move", "type": "regional_asia",
                                      "new_evidence": "Taiwan/Korea same-day", "value": {"TAIEX": taiex, "KOSPI": kospi},
                                      "note": "Regional co-move; sector/tech attribution unavailable."},
         }
-        learned = [f"{spec.asset} event {event}: {n225:+.2%}; TOPIX {topix:+.2%}.",
-                   f"Prior US session {prior}: SPY {spy:+.2%}, QQQ {qqq:+.2%}, VIX {vix:+.2%}; global lead consistent.",
-                   f"Taiwan {taiex:+.2%}, Korea {kospi:+.2%}; North Asia co-move supported.",
-                   f"Prior USDJPY {fx:+.2%}; too small to be primary.",
-                   f"Three-session reversal {reversal:+.2%}.",
+        learned = [f"{spec.asset} event {event}: {p(n225)}; TOPIX {p(topix)}.",
+                   f"Prior US session {prior}: SPY {p(spy)}, QQQ {p(qqq)}, VIX {p(vix)}; global lead consistent.",
+                   f"Taiwan {p(taiex)}, Korea {p(kospi)}; North Asia co-move supported.",
+                   f"Prior USDJPY {p(fx)}; too small to be primary.",
+                   f"Three-session reversal {p(reversal)}.",
                    "Local Japan and regional North Asia both survive; broad indices cannot separate."]
         unknown = ["TOPIX sector breadth", "Asia semiconductor exposure", "consensus revisions", "event/news calendar"]
 
     elif spec.case_kind == "fx_level":
-        eur, jpy, spy, vix, ief = rv("GX_FX_EURUSD"), rv("GX_FX_USDJPY"), rv("US_EQ_SPY"), rv("US_VOL_VIX"), rv("US_FI_IEF")
+        eur, jpy, spy, vix, ief = role("cross1"), role("cross2"), role("risk"), role("vol"), role("rates")
         tests["broad_usd_test"] = {"eurusd": eur, "usdjpy": jpy,
                                    "pass": bool(eur is not None and jpy is not None and eur < -0.002 and jpy > 0.002),
                                    "interpretation": "EUR lower and USDJPY higher confirms broad USD strength"}
@@ -197,29 +212,29 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
                               "pass": bool(spy is not None and vix is not None and spy < 0 and vix > 0),
                               "interpretation": "risk-off / safe-haven bid"}
         updates = {
-            "H-FX-RATES": {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["rate_test"]["pass"] else "INCONCLUSIVE",
+            hid("rates", "H-FX-RATES"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["rate_test"]["pass"] else "INCONCLUSIVE",
                            "label": "US rate differential", "type": "rates",
                            "new_evidence": "IEF and DXY same-day", "value": {"DXY": n225, "IEF": ief},
                            "note": "Duration down + USD up is consistent with yield support; association only."},
-            "H-FX-RISK": {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["risk_test"]["pass"] else "WEAKENED_BY_EVIDENCE",
+            hid("risk", "H-FX-RISK"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["risk_test"]["pass"] else "WEAKENED_BY_EVIDENCE",
                           "label": "Global risk-off/safe haven", "type": "risk",
                           "new_evidence": "SPY/VIX same-day", "value": {"SPY": spy, "VIX": vix},
                           "note": "Risk-off bid is a competing channel; cannot establish causality."},
-            "H-FX-BROAD": {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["broad_usd_test"]["pass"] else "INCONCLUSIVE",
+            hid("broad", "H-FX-BROAD"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["broad_usd_test"]["pass"] else "INCONCLUSIVE",
                            "label": "Broad USD move", "type": "cross_rate",
                            "new_evidence": "EURUSD/USDJPY same-day", "value": {"EURUSD": eur, "USDJPY": jpy},
                            "note": "Cross-rate confirmation; no claim about equilibrium."},
-            "H-FX-DATA": {"status": "INSUFFICIENT_DATA", "label": "Data artifact", "type": "data_artifact",
+            hid("artifact", "H-FX-DATA"): {"status": "INSUFFICIENT_DATA", "label": "Data artifact", "type": "data_artifact",
                           "new_evidence": "no roll/split flag for DXY", "value": None,
                           "note": "Index data are not a futures roll; artifact not indicated but not fully ruled out."},
         }
-        learned = [f"{spec.asset} event {event}: {n225:+.2%}.",
-                   f"EURUSD {eur:+.2%}, USDJPY {jpy:+.2%}, IEF {ief:+.2%}, SPY {spy:+.2%}, VIX {vix:+.2%}.",
+        learned = [f"{spec.asset} event {event}: {p(n225)}.",
+                   f"EURUSD {p(eur)}, USDJPY {p(jpy)}, IEF {p(ief)}, SPY {p(spy)}, VIX {p(vix)}.",
                    "Rate/broad-USD co-move is supported; risk-off is weakened at this event; no causal identification."]
         unknown = ["2Y/10Y yield decomposition", "positioning", "policy calendar", "real-time news"]
 
     elif spec.case_kind == "commodity_event":
-        dxy, gold, ief, spy, vix = rv("US_FX_DXY"), rv("CM_MET_GC"), rv("US_FI_IEF"), rv("US_EQ_SPY"), rv("US_VOL_VIX")
+        dxy, gold, ief, spy, vix = role("dollar"), role("gold"), role("rates"), role("risk"), role("vol")
         tests["dollar_test"] = {"dxy_return": dxy,
                                 "pass": bool(dxy is not None and n225 < 0 and dxy > 0),
                                 "interpretation": "USD up with commodity down is consistent with dollar channel"}
@@ -233,24 +248,24 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
                               "pass": bool(gold is not None and gold < 0),
                               "interpretation": "gold co-move checks a broad commodity/metal factor"}
         updates = {
-            "H-CMD-DOLLAR": {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["dollar_test"]["pass"] else "INCONCLUSIVE",
+            hid("dollar", "H-CMD-DOLLAR"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["dollar_test"]["pass"] else "INCONCLUSIVE",
                              "label": "USD/dollar channel", "type": "dollar",
                              "new_evidence": "DXY same-day", "value": dxy,
                              "note": "Dollar co-move is association; no causal identification."},
-            "H-CMD-REALRATE": {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["real_rate_test"]["pass"] else "INCONCLUSIVE",
+            hid("rates", "H-CMD-REALRATE"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["real_rate_test"]["pass"] else "INCONCLUSIVE",
                                "label": "Real-rate channel", "type": "real_rate",
                                "new_evidence": "IEF proxy same-day", "value": ief,
                                "note": "IEF is a duration proxy, not a direct real-yield measure."},
-            "H-CMD-RISK": {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["risk_test"]["pass"] else "WEAKENED_BY_EVIDENCE",
+            hid("risk", "H-CMD-RISK"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["risk_test"]["pass"] else "WEAKENED_BY_EVIDENCE",
                            "label": "Risk-off channel", "type": "risk",
                            "new_evidence": "SPY/VIX same-day", "value": {"SPY": spy, "VIX": vix},
                            "note": "Risk channel is not separable from dollar/rates with these proxies."},
-            "H-CMD-SUPPLY": {"status": "INSUFFICIENT_DATA", "label": "Supply/inventory", "type": "supply",
+            hid("supply", "H-CMD-SUPPLY"): {"status": "INSUFFICIENT_DATA", "label": "Supply/inventory", "type": "supply",
                              "new_evidence": "no inventory/supply data", "value": None,
                              "note": "No supply data; not fabricated."},
         }
-        learned = [f"{spec.asset} event {event}: {n225:+.2%}.",
-                   f"DXY {dxy:+.2%}, gold {gold:+.2%}, IEF {ief:+.2%}, SPY {spy:+.2%}, VIX {vix:+.2%}.",
+        learned = [f"{spec.asset} event {event}: {p(n225)}.",
+                   f"DXY {p(dxy)}, gold {p(gold)}, IEF {p(ief)}, SPY {p(spy)}, VIX {p(vix)}.",
                    "Dollar/rate/risk channels overlap; none uniquely identified; supply data missing."]
         unknown = ["inventory/supply", "real yields", "positioning", "contract roll metadata"]
     else:

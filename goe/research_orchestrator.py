@@ -52,6 +52,9 @@ class ResearchOrchestrator:
 
     def next_case(self) -> ResearchSpec | None:
         for spec in (case_nikkei(), case_dxy(), case_silver()):
+            state = self.store.research_workflow_state(spec.research_id)
+            if state == "BLOCKED":
+                continue  # do not retry a failed case forever
             self.register(spec)
             row = self.store.conn.execute(
                 "SELECT 1 FROM research_v2_findings WHERE research_id=?", (spec.research_id,)).fetchone()
@@ -84,7 +87,13 @@ def case_nikkei(as_of: str = "2026-11-13") -> ResearchSpec:
                     ("H-EQJP-POLICY", {"label": "Policy", "type": "policy"}),
                     ("H-EQJP-FUND", {"label": "Fundamentals", "type": "fundamental"}),
                     ("H-EQJP-ASIA-REGIONAL", {"label": "North Asia", "type": "regional_asia"})],
-        case_kind="equity_event", detector="drawdown_extreme", direction="deep_drawdown", event_override="2026-11-06")
+        case_kind="equity_event", detector="drawdown_extreme", direction="deep_drawdown",
+        event_override="2026-11-06",
+        roles={"local": "JP_EQ_TOPIX", "regional_tw": "TW_EQ_TAIEX", "regional_kr": "KR_EQ_KOSPI",
+               "global_equity": "US_EQ_SPY", "global_growth": "US_EQ_QQQ",
+               "global_vol": "US_VOL_VIX", "fx": "GX_FX_USDJPY"},
+        hypothesis_ids={"local": "H-EQJP-LOCAL", "global": "H-EQJP-GLOBAL", "fx": "H-EQJP-FX",
+                        "policy": "H-EQJP-POLICY", "fund": "H-EQJP-FUND", "regional": "H-EQJP-ASIA-REGIONAL"})
 
 
 def case_dxy(as_of: str = "2026-11-13") -> ResearchSpec:
@@ -98,7 +107,12 @@ def case_dxy(as_of: str = "2026-11-13") -> ResearchSpec:
                     ("H-FX-RISK", {"label": "Global risk-off/safe haven", "type": "risk"}),
                     ("H-FX-BROAD", {"label": "Broad USD move", "type": "cross_rate"}),
                     ("H-FX-DATA", {"label": "Data artifact", "type": "data_artifact"})],
-        case_kind="fx_level", detector="dxy_high", direction="near_high", event_override="2026-11-11")
+        case_kind="fx_level", detector="dxy_high", direction="near_high",
+        event_override="2026-11-11",
+        roles={"cross1": "GX_FX_EURUSD", "cross2": "GX_FX_USDJPY", "risk": "US_EQ_SPY",
+               "vol": "US_VOL_VIX", "rates": "US_FI_IEF"},
+        hypothesis_ids={"rates": "H-FX-RATES", "risk": "H-FX-RISK", "broad": "H-FX-BROAD",
+                        "artifact": "H-FX-DATA"})
 
 
 def case_silver(as_of: str = "2026-11-13") -> ResearchSpec:
@@ -112,4 +126,9 @@ def case_silver(as_of: str = "2026-11-13") -> ResearchSpec:
                     ("H-CMD-REALRATE", {"label": "Real-rate channel", "type": "real_rate"}),
                     ("H-CMD-RISK", {"label": "Risk-off channel", "type": "risk"}),
                     ("H-CMD-SUPPLY", {"label": "Supply/inventory", "type": "supply"})],
-        case_kind="commodity_event", detector="silver_drawdown", direction="deep_drawdown", event_override="2026-06-09")
+        case_kind="commodity_event", detector="silver_drawdown", direction="deep_drawdown",
+        event_override="2026-06-09",
+        roles={"dollar": "US_FX_DXY", "gold": "CM_MET_GC", "rates": "US_FI_IEF",
+               "risk": "US_EQ_SPY", "vol": "US_VOL_VIX"},
+        hypothesis_ids={"dollar": "H-CMD-DOLLAR", "rates": "H-CMD-REALRATE",
+                        "risk": "H-CMD-RISK", "supply": "H-CMD-SUPPLY"})
