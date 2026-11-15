@@ -317,6 +317,7 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         finding_id="RF-" + spec.research_id + "-" + input_hash[:8], research_id=spec.research_id,
         decision_as_of=spec.as_of, event_date=event, observed=observed,
         plan={"question": spec.question, "case_kind": spec.case_kind,
+              "test_id": definition.test_id, "event_contract": spec.event_contract,
               "peers": spec.peers, "missing": unknown,
               "pit": "same-day for event market; prior US session for US/FX in equity case"},
         evidence={"source": "GOE prices DB", "event_available_at": event,
