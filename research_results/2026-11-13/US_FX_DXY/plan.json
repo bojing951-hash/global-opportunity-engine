@@ -1,0 +1,33 @@
+{
+  "question": "What explains the US dollar index near its 5y high on 2026-11-11: rate differential, risk-off, broad USD, or data artifact?",
+  "case_kind": "fx_level",
+  "peers": {
+    "GX_FX_EURUSD": [
+      "EURUSD",
+      "same_day"
+    ],
+    "GX_FX_USDJPY": [
+      "USDJPY",
+      "same_day"
+    ],
+    "US_EQ_SPY": [
+      "SPY",
+      "same_day"
+    ],
+    "US_VOL_VIX": [
+      "VIX",
+      "same_day"
+    ],
+    "US_FI_IEF": [
+      "IEF duration",
+      "same_day"
+    ]
+  },
+  "missing": [
+    "2Y/10Y yield decomposition",
+    "positioning",
+    "policy calendar",
+    "real-time news"
+  ],
+  "pit": "same-day for event market; prior US session for US/FX in equity case"
+}

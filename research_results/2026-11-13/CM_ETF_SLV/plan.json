@@ -1,0 +1,33 @@
+{
+  "question": "What explains the silver drawdown on 2026-06-09: dollar, real rates, risk-off, or data artifact?",
+  "case_kind": "commodity_event",
+  "peers": {
+    "US_FX_DXY": [
+      "DXY",
+      "same_day"
+    ],
+    "CM_MET_GC": [
+      "Gold",
+      "same_day"
+    ],
+    "US_FI_IEF": [
+      "IEF duration",
+      "same_day"
+    ],
+    "US_EQ_SPY": [
+      "SPY",
+      "same_day"
+    ],
+    "US_VOL_VIX": [
+      "VIX",
+      "same_day"
+    ]
+  },
+  "missing": [
+    "inventory/supply",
+    "real yields",
+    "positioning",
+    "contract roll metadata"
+  ],
+  "pit": "same-day for event market; prior US session for US/FX in equity case"
+}

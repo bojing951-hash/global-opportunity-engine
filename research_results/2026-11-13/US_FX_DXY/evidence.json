@@ -1,0 +1,42 @@
+{
+  "source": "GOE prices DB",
+  "observed": {
+    "US_FX_DXY": {
+      "label": "US_FX_DXY",
+      "return": 0.006652,
+      "data_date": "2026-11-11",
+      "alignment": "same_day"
+    },
+    "GX_FX_EURUSD": {
+      "label": "EURUSD",
+      "return": -0.004769,
+      "data_date": "2026-11-11",
+      "alignment": "same_day"
+    },
+    "GX_FX_USDJPY": {
+      "label": "USDJPY",
+      "return": 0.00457,
+      "data_date": "2026-11-11",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "SPY",
+      "return": 0.013188,
+      "data_date": "2026-11-11",
+      "alignment": "same_day"
+    },
+    "US_VOL_VIX": {
+      "label": "VIX",
+      "return": -0.101233,
+      "data_date": "2026-11-11",
+      "alignment": "same_day"
+    },
+    "US_FI_IEF": {
+      "label": "IEF duration",
+      "return": -0.000769,
+      "data_date": "2026-11-11",
+      "alignment": "same_day"
+    }
+  },
+  "data_hash": "17b5e6d1cf2c23c0f72c5a9365494aced336440c71407da440a2159978ee2759"
+}

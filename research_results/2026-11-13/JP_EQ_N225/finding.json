@@ -1,0 +1,245 @@
+{
+  "finding_id": "RF-RC-20261113-JP_EQ_N225-e4953e300c07-d23f1f99",
+  "research_id": "RC-20261113-JP_EQ_N225-e4953e300c07",
+  "decision_as_of": "2026-11-13",
+  "event_date": "2026-11-06",
+  "observed": {
+    "JP_EQ_N225": {
+      "label": "JP_EQ_N225",
+      "return": -0.059647,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "JP_EQ_TOPIX": {
+      "label": "TOPIX",
+      "return": -0.064966,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "TW_EQ_TAIEX": {
+      "label": "TAIEX",
+      "return": -0.045053,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "KR_EQ_KOSPI": {
+      "label": "KOSPI",
+      "return": -0.060201,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "SPY",
+      "return": -0.044092,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "US_EQ_QQQ": {
+      "label": "QQQ",
+      "return": -0.064889,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "US_VOL_VIX": {
+      "label": "VIX",
+      "return": 0.696568,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "GX_FX_USDJPY": {
+      "label": "USDJPY",
+      "return": -0.000707,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    }
+  },
+  "plan": {
+    "question": "What explains the N225 2026-11-06 selloff: Japan-local, regional North Asia, US/global, JPY, policy, or fundamentals?",
+    "case_kind": "equity_event",
+    "peers": {
+      "JP_EQ_TOPIX": [
+        "TOPIX",
+        "same_day"
+      ],
+      "TW_EQ_TAIEX": [
+        "TAIEX",
+        "same_day"
+      ],
+      "KR_EQ_KOSPI": [
+        "KOSPI",
+        "same_day"
+      ],
+      "US_EQ_SPY": [
+        "SPY",
+        "prior_us_session"
+      ],
+      "US_EQ_QQQ": [
+        "QQQ",
+        "prior_us_session"
+      ],
+      "US_VOL_VIX": [
+        "VIX",
+        "prior_us_session"
+      ],
+      "GX_FX_USDJPY": [
+        "USDJPY",
+        "prior_us_session"
+      ]
+    },
+    "missing": [
+      "TOPIX sector breadth",
+      "Asia semiconductor exposure",
+      "consensus revisions",
+      "event/news calendar"
+    ],
+    "pit": "same-day for event market; prior US session for US/FX in equity case"
+  },
+  "evidence": {
+    "source": "GOE prices DB",
+    "event_available_at": "2026-11-06",
+    "decision_as_of": "2026-11-13",
+    "data_hash": "55e06c14d1fe73ce2e9b370c1247cc18fcaee025fbfbf08cc196e1fa66f525e6",
+    "data_dates": {
+      "JP_EQ_N225": "2026-11-06",
+      "JP_EQ_TOPIX": "2026-11-06",
+      "TW_EQ_TAIEX": "2026-11-06",
+      "KR_EQ_KOSPI": "2026-11-06",
+      "US_EQ_SPY": "2026-11-05",
+      "US_EQ_QQQ": "2026-11-05",
+      "US_VOL_VIX": "2026-11-05",
+      "GX_FX_USDJPY": "2026-11-05"
+    },
+    "input_rows": 780
+  },
+  "tests": {
+    "historical_percentile": {
+      "event_return": -0.059647,
+      "percentile": 0.003968253968253968,
+      "pass": true,
+      "interpretation": "two-sided 5% tail of the trailing 252-session return distribution"
+    },
+    "local_asia_test": {
+      "topix_return": -0.064966,
+      "pass": true,
+      "interpretation": "TOPIX co-move supports broad Japan/local; association only"
+    },
+    "global_lead_test": {
+      "prior_us_session": "2026-11-05",
+      "spy_return": -0.044092,
+      "qqq_return": -0.064889,
+      "vix_return": 0.696568,
+      "pass": true,
+      "interpretation": "prior US session selloff/VIX spike is consistent with a global lead"
+    },
+    "asia_regional_test": {
+      "taiex_return": -0.045053,
+      "kospi_return": -0.060201,
+      "pass": true,
+      "interpretation": "North Asia co-move supported; tech-specific attribution not identified"
+    },
+    "fx_test": {
+      "prior_usdjpy_return": -0.000707,
+      "pass": false,
+      "interpretation": "small FX move cannot explain the equity move"
+    },
+    "reversal_test": {
+      "n225_next_3d": 0.066403,
+      "pass": true,
+      "interpretation": "only bars after event through as-of"
+    }
+  },
+  "hypothesis_updates": {
+    "H-EQJP-LOCAL": {
+      "status": "SUPPORTED_BY_AVAILABLE_EVIDENCE",
+      "label": "Japan broad local market factor",
+      "type": "local_market",
+      "new_evidence": "TOPIX same-day",
+      "value": -0.064966,
+      "note": "Broad co-move; not an independent instrument."
+    },
+    "H-EQJP-GLOBAL": {
+      "status": "SUPPORTED_BY_AVAILABLE_EVIDENCE",
+      "label": "US/global risk lead",
+      "type": "global_risk",
+      "new_evidence": "prior US session SPY/QQQ/VIX",
+      "value": {
+        "SPY": -0.044092,
+        "QQQ": -0.064889,
+        "VIX": 0.696568
+      },
+      "note": "Prior US selloff/VIX spike preceded Asia; same-date US close is not used."
+    },
+    "H-EQJP-FX": {
+      "status": "WEAKENED_BY_EVIDENCE",
+      "label": "JPY/cross-border flow",
+      "type": "fx",
+      "new_evidence": "prior USDJPY",
+      "value": -0.000707,
+      "note": "Small FX move cannot explain the equity move by itself."
+    },
+    "H-EQJP-POLICY": {
+      "status": "INSUFFICIENT_DATA",
+      "label": "Policy/regulatory event",
+      "type": "policy",
+      "new_evidence": "config/events.yaml calendar check",
+      "value": null,
+      "note": "No scheduled event in config/events.yaml; not proof no policy news."
+    },
+    "H-EQJP-FUND": {
+      "status": "INSUFFICIENT_DATA",
+      "label": "Japan fundamentals",
+      "type": "fundamental",
+      "new_evidence": "consensus unavailable",
+      "value": null,
+      "note": "No authorized consensus data; no fabrication."
+    },
+    "H-EQJP-ASIA-REGIONAL": {
+      "status": "SUPPORTED_BY_AVAILABLE_EVIDENCE",
+      "label": "Regional North Asia co-move",
+      "type": "regional_asia",
+      "new_evidence": "Taiwan/Korea same-day",
+      "value": {
+        "TAIEX": -0.045053,
+        "KOSPI": -0.060201
+      },
+      "note": "Regional co-move; sector/tech attribution unavailable."
+    }
+  },
+  "learned": [
+    "JP_EQ_N225 event 2026-11-06: -5.96%; TOPIX -6.50%.",
+    "Prior US session 2026-11-05: SPY -4.41%, QQQ -6.49%, VIX +69.66%; global lead consistent.",
+    "Taiwan -4.51%, Korea -6.02%; North Asia co-move supported.",
+    "Prior USDJPY -0.07%; too small to be primary.",
+    "Three-session reversal +6.64%.",
+    "Local Japan and regional North Asia both survive; broad indices cannot separate."
+  ],
+  "still_unknown": [
+    "TOPIX sector breadth",
+    "Asia semiconductor exposure",
+    "consensus revisions",
+    "event/news calendar"
+  ],
+  "next_action": "Retain in A; acquire the listed missing evidence. No B handoff for unsupported deep asset research.",
+  "input_sha256": "d23f1f9969a0b4a2bdb507055208ee82a91fac33025ca83f9b47d4a0ff3c9826",
+  "code_commit": "ad203d97f36890a135ff1b60b945f38f11bc1c31",
+  "feature_version": "v2",
+  "status": "INCONCLUSIVE",
+  "data_dates": {
+    "JP_EQ_N225": "2026-11-06",
+    "JP_EQ_TOPIX": "2026-11-06",
+    "TW_EQ_TAIEX": "2026-11-06",
+    "KR_EQ_KOSPI": "2026-11-06",
+    "US_EQ_SPY": "2026-11-05",
+    "US_EQ_QQQ": "2026-11-05",
+    "US_VOL_VIX": "2026-11-05",
+    "GX_FX_USDJPY": "2026-11-05"
+  },
+  "rules": {
+    "historical_percentile": "two-sided 5% tail of the trailing 252-session return distribution",
+    "local_asia_test": "TOPIX co-move supports broad Japan/local; association only",
+    "global_lead_test": "prior US session selloff/VIX spike is consistent with a global lead",
+    "asia_regional_test": "North Asia co-move supported; tech-specific attribution not identified",
+    "fx_test": "small FX move cannot explain the equity move",
+    "reversal_test": "only bars after event through as-of"
+  }
+}

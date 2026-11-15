@@ -146,3 +146,15 @@ ACCEPTANCE_STATUS: research A-D functional; E pending independent QA.
 - Finding `research_results/2026-11-13/N225/findings.md`; status INCONCLUSIVE; DB hypotheses/finding persisted.
 - Independent QA `audit/QA_RESEARCH_CLOSED_LOOP.md`: ACCEPTED (P0/P1 none).
 - Code `8266fa6`, proof `release_3905c181a6.json` 241 tests, CI run 31 green.
+
+
+## Generalized multi-case research (2026-11-15)
+CURRENT_GOAL: generalized executor + append-only memory + orchestrator.
+CURRENT_RESEARCH_CASES: N225 (equity), US_FX_DXY (FX), CM_ETF_SLV (commodity).
+LATEST_COMMIT: 4fa6086 code (findings regenerated at this code).
+RESEARCH_MEMORY_VERSION: append-only revisions/evidence/findings; workflow table.
+RESEARCH_FINDINGS: `research_results/2026-11-13/{JP_EQ_N225,US_FX_DXY,CM_ETF_SLV}/`.
+TESTS_EXECUTED: 243 offline; orchestration/memory regression included.
+OPEN_BLOCKERS: B deep Japan sector attribution; consensus/OIS/CFTC/inventory unavailable.
+NEXT_ACTION: independent QA, proof, CI, B request delivery.
+ACCEPTANCE_STATUS: multi-case functional; research value NOT VALIDATED.
