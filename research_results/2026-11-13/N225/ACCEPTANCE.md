@@ -6,7 +6,7 @@
 | B Actual test | `tests.json`: local, prior-US global lead, regional Asia, FX, reversal, with explicit thresholds | PASS |
 | C Hypothesis update | `finding.json` + DB `research_v2_hypotheses`: H-GLOBAL and H-LOCAL/H-ASIA supported; H-FX weakened; policy/fundamental insufficient | PASS (evidence evaluation, not causal proof) |
 | D Research finding | `findings.md`: N225 -5.96%, TOPIX -6.50%, prior US SPY -4.41/QQQ -6.49/VIX +69.66, regional Asia co-move, 3-day rebound +6.64%, unresolved local-vs-regional | PASS — `INCONCLUSIVE`, no alpha/mispricing claim |
-| E Independent QA | `audit/QA_RESEARCH_EXECUTION_2.md` (after re-audit) | pending / see report |
+| E Independent QA | `audit/QA_RESEARCH_CLOSED_LOOP.md` | PASS — P0/P1 none; closed loop accepted |
 
 ## Key correction
 The first execution compared N225's 2026-11-06 close with the **same-date** US close,
