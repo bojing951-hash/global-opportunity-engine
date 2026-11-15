@@ -95,7 +95,7 @@ patch by retuning thresholds.
   fix exists in this round. Treat the evidence-gate research status as **PARTIAL / NOT VALIDATED**.
 
 ## Addendum 2026-11-15 — verified scan evidence gate (v3, 217 tests)
-Latest proof `release_5bcaa5de06.json` (code 5bcaa5d): 217/217 tests, real scan
+Latest proof `release_9d51769823.json` (code 9d51769): 219/219 tests, real scan
 `scan-20261115T041932Z-50a761`, 358,310 prices / 159,508 indicators / 1,506 anomalies /
 5 transmissions / 11 opportunities. Heavy fields (OHLCV, output status/score) are content-hashed;
 stale/future/live-without-ingest scans are rejected.
@@ -104,3 +104,15 @@ proof. The scan gate independently recomputes config/data hashes, readiness, cor
 DB counts vs `stats_json`, report/scan-json/pipeline existence, provenance and counts. Empty,
 fake-success, fake-hash, content-modified, wrong-as_of, stale, partial-ingest, missing-report and
 count-mismatch scans are rejected. See `tests/test_scan_evidence.py`.
+
+
+### v5 update (2026-11-15)
+- Proof `release_9d51769823.json` at code `9d51769`: **219/219 tests**, scan
+  `scan-20261115T044634Z-b68802`, 358,310 prices / 159,508 indicators / 1,506 anomalies /
+  5 transmissions / 11 opportunities.
+- `scan_output_fingerprint` now hashes **every persisted output column**; artifact SHA-256 is frozen
+  in scan stats and re-checked against report/scan-json/pipeline, so post-scan content changes are
+  rejected even when manifest hashes are consistent.
+- Remaining accepted residuals: scan evidence depends on a local 101 MB DB (not committed); CI
+  replays the test proof only (no Linux run yet); a self-consistent synthetic DB is inside the trust
+  boundary; no licensed consensus/term-OIS feed.
