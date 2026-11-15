@@ -8,6 +8,8 @@ templates and hypotheses. All findings are evidence evaluations, not alpha/mispr
 | A Japan equity | `JP_EQ_N225` (`.../RF-RC-...-d23f1f99/`) | 2026-11-06 | Japan-local, North Asia, prior-US global, JPY, policy, fundamentals; same-day/lagged returns + percentile + reversal | INCONCLUSIVE; prior-US global, local and North Asia co-move supported; JPY weakened; policy/fundamentals missing |
 | B FX | `US_FX_DXY` | 2026-11-11 | near-5y high: rate differential, risk-off, broad USD, data artifact; cross-rate/rate/risk + percentile | INCONCLUSIVE; broad USD and rate co-move supported; risk-off weakened; data artifact not established |
 | C Commodity | `CM_ETF_SLV` | 2026-06-09 | silver drawdown: dollar, real-rate, risk-off, supply/data artifact; dollar/rate/risk/gold + percentile | INCONCLUSIVE; risk-off supported; dollar/rate co-move inconclusive; supply missing |
+| D Unseen/dynamic | `TW_EQ_TAIEX` | 2026-11-06 | candidate queue selection; local/global/regional/FX/policy/fund; event + percentile + reversal | INCONCLUSIVE; prior-US global and North Asia co-move supported; local HK/China did not meet threshold |
+| E Unseen/dynamic | `KR_EQ_KOSPI` | 2026-10-15 | candidate queue selection; local/global/regional/FX/policy/fund; event + percentile + reversal | INCONCLUSIVE; North Asia co-move supported; local peer did not meet threshold; global lead consistent |
 
 ## What is shared
 - `ResearchSpec` contract; PIT event selection/override; deterministic FeatureBuilder data;

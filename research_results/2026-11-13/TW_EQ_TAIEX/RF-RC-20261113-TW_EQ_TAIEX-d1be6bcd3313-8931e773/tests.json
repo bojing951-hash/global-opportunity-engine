@@ -1,0 +1,37 @@
+{
+  "historical_percentile": {
+    "event_return": 0.079794,
+    "percentile": 0.996031746031746,
+    "pass": true,
+    "interpretation": "two-sided 5% tail of the trailing 252-session return distribution"
+  },
+  "local_asia_test": {
+    "topix_return": 0.000988,
+    "pass": false,
+    "interpretation": "TOPIX co-move supports broad Japan/local; association only"
+  },
+  "global_lead_test": {
+    "prior_us_session": "2026-07-30",
+    "spy_return": 0.016766,
+    "qqq_return": 0.032974,
+    "vix_return": -0.172798,
+    "pass": false,
+    "interpretation": "prior US session selloff/VIX spike is consistent with a global lead"
+  },
+  "asia_regional_test": {
+    "taiex_return": 0.040322,
+    "kospi_return": 0.179115,
+    "pass": false,
+    "interpretation": "North Asia co-move supported; tech-specific attribution not identified"
+  },
+  "fx_test": {
+    "prior_usdjpy_return": -0.000724,
+    "pass": false,
+    "interpretation": "small FX move cannot explain the equity move"
+  },
+  "reversal_test": {
+    "n225_next_3d": 0.034598,
+    "pass": true,
+    "interpretation": "only bars after event through as-of"
+  }
+}

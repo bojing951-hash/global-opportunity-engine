@@ -1,0 +1,41 @@
+{
+  "question": "TAIEX 近期 price_return_shock（down，分数 0.81）；1 个月收益 -9.7%；回撤分位 0.20。",
+  "case_kind": "equity_event",
+  "peers": {
+    "HK_EQ_HSI": [
+      "HK/China",
+      "same_day"
+    ],
+    "JP_EQ_N225": [
+      "Japan",
+      "same_day"
+    ],
+    "KR_EQ_KOSPI": [
+      "Korea",
+      "same_day"
+    ],
+    "US_EQ_SPY": [
+      "US broad",
+      "prior_us_session"
+    ],
+    "US_EQ_QQQ": [
+      "US growth",
+      "prior_us_session"
+    ],
+    "US_VOL_VIX": [
+      "VIX",
+      "prior_us_session"
+    ],
+    "CN_FX_USDCNY": [
+      "CNY",
+      "prior_us_session"
+    ]
+  },
+  "missing": [
+    "HK/China sector/constituent breadth",
+    "regional supply-chain exposure",
+    "consensus revisions",
+    "event/news calendar"
+  ],
+  "pit": "same-day for event market; prior US session for US/FX in equity case"
+}
