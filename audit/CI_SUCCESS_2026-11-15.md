@@ -7,7 +7,8 @@
 | 21 | `d2096b7` | 227 | SUCCESS | https://github.com/bojing951-hash/global-opportunity-engine/actions/runs/43687214464 |
 | 24 | `2488955` | 231 | SUCCESS |
 | 29 | `ffe4ba8` | 237 | SUCCESS |
-| 31 | `c849701` | 241 | SUCCESS | https://github.com/bojing951-hash/global-opportunity-engine/actions/runs/43716382733 | https://github.com/bojing951-hash/global-opportunity-engine/actions/runs/43706048825 | https://github.com/bojing951-hash/global-opportunity-engine/actions/runs/43697258390 |
+| 31 | `c849701` | 241 | SUCCESS |
+| 34 | `d5f48c9` | 243 | SUCCESS | https://github.com/bojing951-hash/global-opportunity-engine/actions/runs/43721641973 | https://github.com/bojing951-hash/global-opportunity-engine/actions/runs/43716382733 | https://github.com/bojing951-hash/global-opportunity-engine/actions/runs/43706048825 | https://github.com/bojing951-hash/global-opportunity-engine/actions/runs/43697258390 |
 
 Run 20 is the first green run after the `.github/` post-proof allow-list fix and the CI cleanup step.
 Earlier runs 1–18 all failed (egg-info dirty worktree, then `.github` post-proof change).

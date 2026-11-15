@@ -1,0 +1,25 @@
+{
+  "historical_percentile": {
+    "event_return": 0.006652,
+    "percentile": 0.9761904761904762,
+    "pass": true,
+    "interpretation": "two-sided 5% tail of the trailing 252-session return distribution"
+  },
+  "broad_usd_test": {
+    "eurusd": -0.004769,
+    "usdjpy": 0.00457,
+    "pass": true,
+    "interpretation": "EUR lower and USDJPY higher confirms broad USD strength"
+  },
+  "rate_test": {
+    "ief_return": -0.000769,
+    "pass": true,
+    "interpretation": "US duration down (yields up) alongside USD up is consistent with rate differential"
+  },
+  "risk_test": {
+    "spy": 0.013188,
+    "vix": -0.101233,
+    "pass": false,
+    "interpretation": "risk-off / safe-haven bid"
+  }
+}

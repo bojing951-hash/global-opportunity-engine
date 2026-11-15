@@ -1,0 +1,54 @@
+{
+  "source": "GOE prices DB",
+  "observed": {
+    "JP_EQ_N225": {
+      "label": "JP_EQ_N225",
+      "return": -0.059647,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "JP_EQ_TOPIX": {
+      "label": "TOPIX",
+      "return": -0.064966,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "TW_EQ_TAIEX": {
+      "label": "TAIEX",
+      "return": -0.045053,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "KR_EQ_KOSPI": {
+      "label": "KOSPI",
+      "return": -0.060201,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "SPY",
+      "return": -0.044092,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "US_EQ_QQQ": {
+      "label": "QQQ",
+      "return": -0.064889,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "US_VOL_VIX": {
+      "label": "VIX",
+      "return": 0.696568,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "GX_FX_USDJPY": {
+      "label": "USDJPY",
+      "return": -0.000707,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    }
+  },
+  "data_hash": "55e06c14d1fe73ce2e9b370c1247cc18fcaee025fbfbf08cc196e1fa66f525e6"
+}

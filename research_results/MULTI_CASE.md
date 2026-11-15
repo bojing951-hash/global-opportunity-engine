@@ -5,7 +5,7 @@ templates and hypotheses. All findings are evidence evaluations, not alpha/mispr
 
 | Case | Asset | Event | Question / tests | Result |
 |---|---|---|---|---|
-| A Japan equity | `JP_EQ_N225` | 2026-11-06 | Japan-local, North Asia, prior-US global, JPY, policy, fundamentals; same-day/lagged returns + percentile + reversal | INCONCLUSIVE; prior-US global, local and North Asia co-move supported; JPY weakened; policy/fundamentals missing |
+| A Japan equity | `JP_EQ_N225` (`.../RF-RC-...-d23f1f99/`) | 2026-11-06 | Japan-local, North Asia, prior-US global, JPY, policy, fundamentals; same-day/lagged returns + percentile + reversal | INCONCLUSIVE; prior-US global, local and North Asia co-move supported; JPY weakened; policy/fundamentals missing |
 | B FX | `US_FX_DXY` | 2026-11-11 | near-5y high: rate differential, risk-off, broad USD, data artifact; cross-rate/rate/risk + percentile | INCONCLUSIVE; broad USD and rate co-move supported; risk-off weakened; data artifact not established |
 | C Commodity | `CM_ETF_SLV` | 2026-06-09 | silver drawdown: dollar, real-rate, risk-off, supply/data artifact; dollar/rate/risk/gold + percentile | INCONCLUSIVE; risk-off supported; dollar/rate co-move inconclusive; supply missing |
 

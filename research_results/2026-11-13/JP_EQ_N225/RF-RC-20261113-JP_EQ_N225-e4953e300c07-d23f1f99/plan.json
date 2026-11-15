@@ -1,0 +1,41 @@
+{
+  "question": "What explains the N225 2026-11-06 selloff: Japan-local, regional North Asia, US/global, JPY, policy, or fundamentals?",
+  "case_kind": "equity_event",
+  "peers": {
+    "JP_EQ_TOPIX": [
+      "TOPIX",
+      "same_day"
+    ],
+    "TW_EQ_TAIEX": [
+      "TAIEX",
+      "same_day"
+    ],
+    "KR_EQ_KOSPI": [
+      "KOSPI",
+      "same_day"
+    ],
+    "US_EQ_SPY": [
+      "SPY",
+      "prior_us_session"
+    ],
+    "US_EQ_QQQ": [
+      "QQQ",
+      "prior_us_session"
+    ],
+    "US_VOL_VIX": [
+      "VIX",
+      "prior_us_session"
+    ],
+    "GX_FX_USDJPY": [
+      "USDJPY",
+      "prior_us_session"
+    ]
+  },
+  "missing": [
+    "TOPIX sector breadth",
+    "Asia semiconductor exposure",
+    "consensus revisions",
+    "event/news calendar"
+  ],
+  "pit": "same-day for event market; prior US session for US/FX in equity case"
+}

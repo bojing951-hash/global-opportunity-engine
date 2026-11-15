@@ -1,0 +1,42 @@
+{
+  "source": "GOE prices DB",
+  "observed": {
+    "CM_ETF_SLV": {
+      "label": "CM_ETF_SLV",
+      "return": -0.041734,
+      "data_date": "2026-06-09",
+      "alignment": "same_day"
+    },
+    "US_FX_DXY": {
+      "label": "DXY",
+      "return": -0.001399,
+      "data_date": "2026-06-09",
+      "alignment": "same_day"
+    },
+    "CM_MET_GC": {
+      "label": "Gold",
+      "return": -0.017647,
+      "data_date": "2026-06-09",
+      "alignment": "same_day"
+    },
+    "US_FI_IEF": {
+      "label": "IEF duration",
+      "return": 0.00278,
+      "data_date": "2026-06-09",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "SPY",
+      "return": -0.002936,
+      "data_date": "2026-06-09",
+      "alignment": "same_day"
+    },
+    "US_VOL_VIX": {
+      "label": "VIX",
+      "return": 0.050211,
+      "data_date": "2026-06-09",
+      "alignment": "same_day"
+    }
+  },
+  "data_hash": "1b9361878270ce0c16fbb19a565274b5eed2de8b94678b5b721f256d6d90966b"
+}

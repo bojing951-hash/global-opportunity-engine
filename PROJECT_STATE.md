@@ -158,3 +158,9 @@ TESTS_EXECUTED: 243 offline; orchestration/memory regression included.
 OPEN_BLOCKERS: B deep Japan sector attribution; consensus/OIS/CFTC/inventory unavailable.
 NEXT_ACTION: independent QA, proof, CI, B request delivery.
 ACCEPTANCE_STATUS: multi-case functional; research value NOT VALIDATED.
+
+
+## Generalized research final (2026-11-15)
+- Code `b93d5e6`; executor role-driven; append-only memory; orchestrator states.
+- Three cases: N225 / US_FX_DXY / CM_ETF_SLV, each versioned artifact directory under `<asset>/<finding_id>/`.
+- 243 offline tests; final proof/CI pending after docs.

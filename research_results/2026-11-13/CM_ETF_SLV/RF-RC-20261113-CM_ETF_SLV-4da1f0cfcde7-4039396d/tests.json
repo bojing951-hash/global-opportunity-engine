@@ -1,0 +1,29 @@
+{
+  "historical_percentile": {
+    "event_return": -0.041734,
+    "percentile": 0.07539682539682539,
+    "pass": false,
+    "interpretation": "two-sided 5% tail of the trailing 252-session return distribution"
+  },
+  "dollar_test": {
+    "dxy_return": -0.001399,
+    "pass": false,
+    "interpretation": "USD up with commodity down is consistent with dollar channel"
+  },
+  "real_rate_test": {
+    "ief_return": 0.00278,
+    "pass": false,
+    "interpretation": "duration down (yields up) with commodity down is consistent with real-rate channel"
+  },
+  "risk_test": {
+    "spy": -0.002936,
+    "vix": 0.050211,
+    "pass": true,
+    "interpretation": "risk-off channel"
+  },
+  "gold_test": {
+    "gold_return": -0.017647,
+    "pass": true,
+    "interpretation": "gold co-move checks a broad commodity/metal factor"
+  }
+}
