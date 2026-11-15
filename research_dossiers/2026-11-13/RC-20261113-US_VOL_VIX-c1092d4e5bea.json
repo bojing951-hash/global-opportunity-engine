@@ -57,7 +57,7 @@
         "evidence_against": [
           {
             "claim": "全球因子解释力不足",
-            "value": "R²=0.47 < 0.50; residual_z=-0.34",
+            "value": "R²=0.47 < 0.50",
             "class": "statistical_association",
             "source": "derived/cross_asset",
             "available_at": "2026-11-13",
@@ -149,7 +149,7 @@
     "Contradicting Evidence": [
       {
         "claim": "全球因子解释力不足",
-        "value": "R²=0.47 < 0.50; residual_z=-0.34",
+        "value": "R²=0.47 < 0.50",
         "class": "statistical_association",
         "source": "derived/cross_asset",
         "available_at": "2026-11-13",
@@ -256,5 +256,5 @@
     }
   },
   "discovery_value": "NOT VALIDATED",
-  "content_sha256": "a3033cd1ed99170463ccb80a367299799e79a3846e27897d00b44d63b12490cf"
+  "content_sha256": "ee7cc32b3fd2331beb35b4d1a3d82555d660ebbbabf0f54acbf0f1d14c77afef"
 }

@@ -130,11 +130,14 @@ def evidence_for_bundle(bundle: dict[str, Any], fits: dict[str, Any]) -> dict[st
                 "同日跨资产全球因子回归",
                 f"R²={g['r2']:.2f}, beta={g['beta']:.2f}, residual_z={g['residual_z']:.2f}, n={g['n_obs']}",
                 h["id"], "derived/cross_asset")] if support else []
-            h["evidence_against"] = [] if support else [item(
-                "全球因子解释力不足",
-                f"R²={g['r2']:.2f} < 0.50; residual_z={g['residual_z']:.2f}",
-                h["id"], "derived/cross_asset")]
-            h["status"] = "open" if not support or abs(g["residual_z"] or 0) >= 1.5 else "supported"
+            if not support:
+                reason = (f"R²={g['r2']:.2f} < 0.50" if g["r2"] <= 0.50
+                          else f"|residual_z|={abs(g['residual_z'] or 0):.2f} >= 1.5")
+                h["evidence_against"] = [item("全球因子解释力不足", reason,
+                                              h["id"], "derived/cross_asset")]
+            else:
+                h["evidence_against"] = []
+            h["status"] = "supported" if support else "open"
     l = fits.get("local")
     if l and l.get("available"):
         # Local benchmark evidence belongs only to a hypothesis explicitly about

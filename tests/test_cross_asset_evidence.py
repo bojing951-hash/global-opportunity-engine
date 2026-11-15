@@ -76,3 +76,16 @@ def test_global_support_requires_r2_above_documented_threshold():
     assert h["status"] == "open"
     assert h["evidence_for"] == []
     assert count_discriminating(out) == 0
+
+
+def test_high_r2_but_high_residual_is_reported_as_residual_failure():
+    fits = {"available": True, "as_of": "2026-01-01",
+            "global": {"available": True, "r2": 0.53, "beta": 1.0, "residual_z": 1.57,
+                       "n_obs": 252, "factor": "x", "kind": "global", "reason": ""}}
+    bundle = {"hypotheses": [{"id": "H-USEQ-GLOBAL", "type": "global_risk", "status": "open",
+                              "evidence_for": [], "evidence_against": []}]}
+    out = evidence_for_bundle(bundle, fits)
+    h = out["hypotheses"][0]
+    assert h["status"] == "open" and h["evidence_for"] == []
+    assert "residual_z" in h["evidence_against"][0]["value"]
+    assert h["evidence_against"][0]["value"].startswith("|residual_z|")

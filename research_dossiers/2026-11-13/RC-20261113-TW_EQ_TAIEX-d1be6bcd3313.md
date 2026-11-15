@@ -44,7 +44,7 @@ _None recorded._
 
 ## 7. Contradicting Evidence
 
-- **全球因子解释力不足**: R²=0.06 < 0.50; residual_z=0.69 _(source: derived/cross_asset, available: 2026-11-13)_
+- **全球因子解释力不足**: R²=0.06 < 0.50 _(source: derived/cross_asset, available: 2026-11-13)_
 - **一致预期/财报修正未接入**: cannot test directly _(source: data_gap, available: 2026-11-13)_
 - **未记录价格清洗问题**: no price_data_issue _(source: data_quality, available: 2026-11-13)_
 
@@ -116,5 +116,5 @@ Collect the listed evidence / wait for the stated trigger; do not hand off yet
 - **source_note**: All evidence retains source and available_at; unavailable facts are unknown.
 
 ---
-Content SHA-256: `6d68d2dbc2a9c683f0fa4b1f15055adf85490df8fa67740e53ba266b8f133a97`
+Content SHA-256: `23025bea362c648e7de5bf2e5b67cc66b458728e716787107951981b64c4a6df`
 DISCOVERY VALUE: NOT VALIDATED

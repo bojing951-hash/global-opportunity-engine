@@ -41,7 +41,7 @@ _None recorded._
 
 ## 7. Contradicting Evidence
 
-- **全球因子解释力不足**: R²=0.47 < 0.50; residual_z=-0.34 _(source: derived/cross_asset, available: 2026-11-13)_
+- **全球因子解释力不足**: R²=0.47 < 0.50 _(source: derived/cross_asset, available: 2026-11-13)_
 - **缺少 VIX 期限结构与期权隐含分布**: term structure missing _(source: data_gap, available: 2026-11-13)_
 - **VIX 仓位/期权数据缺失**: vix positioning missing _(source: data_gap, available: 2026-11-13)_
 - **未记录价格清洗问题**: no price_data_issue _(source: data_quality, available: 2026-11-13)_
@@ -116,5 +116,5 @@ No further research allocation; retain as market intelligence
 - **source_note**: All evidence retains source and available_at; unavailable facts are unknown.
 
 ---
-Content SHA-256: `a3033cd1ed99170463ccb80a367299799e79a3846e27897d00b44d63b12490cf`
+Content SHA-256: `ee7cc32b3fd2331beb35b4d1a3d82555d660ebbbabf0f54acbf0f1d14c77afef`
 DISCOVERY VALUE: NOT VALIDATED
