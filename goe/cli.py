@@ -362,8 +362,8 @@ def cmd_research(args: argparse.Namespace) -> int:
             print(f"{r['research_id']} {r['asset_class']} state={r['workflow']} "
                   f"findings={r['findings']} latest={r['latest_finding']}")
         return 0
-    if args.action == "run":
-        if args.case == "next":
+    if args.action in ("run", "next"):
+        if args.action == "next" or args.case == "next":
             spec = orch.next_case()
             if spec is None:
                 print("no research case available")
