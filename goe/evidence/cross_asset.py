@@ -132,7 +132,7 @@ def evidence_for_bundle(bundle: dict[str, Any], fits: dict[str, Any]) -> dict[st
                 h["id"], "derived/cross_asset")] if support else []
             h["evidence_against"] = [] if support else [item(
                 "全球因子解释力不足",
-                f"R²={g['r2']:.2f} < 0.30; residual_z={g['residual_z']:.2f}",
+                f"R²={g['r2']:.2f} < 0.50; residual_z={g['residual_z']:.2f}",
                 h["id"], "derived/cross_asset")]
             h["status"] = "open" if not support or abs(g["residual_z"] or 0) >= 1.5 else "supported"
     l = fits.get("local")

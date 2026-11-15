@@ -8,18 +8,18 @@
 
 ## 1. Observed Facts
 
-- **drawdown detector**: near_high 0.90 (not 0.98) _(source: anomaly, available: 2026-04-30)_
+- **drawdown detector**: score 0.90; percentile 0.98 _(source: anomaly, available: 2026-04-30)_
 - **continuous futures / month end**: True / True _(source: anomaly evidence, available: 2026-04-30)_
 
 ## 2. Why This Matters
 
 - **materiality**: `{"importance": 0.2, "gap_score": 0.0, "near_month_end": true, "is_continuous_futures": true}`
 - **decision_relevance**: `{"if_true": "No further research; mark data artifact.", "if_false": "Could investigate cotton fundamentals if raw data validates move."}`
-- **observed_phenomenon**: Cotton continuous futures near 5y high at month-end (drawdown percentile 0.98).
+- **observed_phenomenon**: Cotton continuous futures near 5y high at month-end (drawdown score 0.90; 5y percentile 0.98).
 
 ## 3. Research Question
 
-What explains: Cotton continuous futures near 5y high at month-end (drawdown percentile 0.98).
+What explains: Cotton continuous futures near 5y high at month-end (drawdown score 0.90; 5y percentile 0.98).
 
 ## 4. Competing Hypotheses
 
@@ -98,7 +98,7 @@ No further research allocation; retain as market intelligence
 
 ## 18. Source & Version References
 
-- **artifact_path**: data/goe.db#anomalies/AN-ef670579d660c2
+- **artifact_path**: scripts/build_case_d_dossier.py
 - **scan_id**: scan-20261115T044634Z-b68802
 - **config_hash**: 7d4d8ae1a7ca110204f522359f57e8c627c89cdec753eea29b51af4a486fc187
 - **data_hash**: 9350b109d05e0131412fc8631a6620eae73072ba17c208271b43b1d384c04054
@@ -107,5 +107,5 @@ No further research allocation; retain as market intelligence
 - **source_note**: All evidence retains source and available_at; unavailable facts are unknown.
 
 ---
-Content SHA-256: `9b41232398e78b3dfde03f1b0f0c9a6dad07727ccf5496fbb39810bd8db9c8c3`
+Content SHA-256: `09de4e8b905d148bda0d1636c6d8fce830b198d0b6477b1ee7002f0b4e0f177a`
 DISCOVERY VALUE: NOT VALIDATED

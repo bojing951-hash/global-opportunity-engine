@@ -8,7 +8,6 @@
 
 ## 1. Observed Facts
 
-- **同日跨资产全球因子回归**: R²=0.38, beta=1.81, residual_z=1.12, n=252 _(source: derived/cross_asset, available: 2026-11-13)_
 - **利率与估值代理可观察**: UST _(source: curve, available: 2026-11-13)_
 
 ## 2. Why This Matters
@@ -39,10 +38,11 @@ What explains: Invesco QQQ (Nasdaq 100) 近期 price_return_shock（up，分数 
 
 ## 6. Supporting Evidence
 
-- **同日跨资产全球因子回归**: R²=0.38, beta=1.81, residual_z=1.12, n=252 _(source: derived/cross_asset, available: 2026-11-13)_
+_None recorded._
 
 ## 7. Contradicting Evidence
 
+- **全球因子解释力不足**: R²=0.38 < 0.50; residual_z=1.12 _(source: derived/cross_asset, available: 2026-11-13)_
 - **一致预期/财报修正未接入**: cannot test directly _(source: data_gap, available: 2026-11-13)_
 - **未记录价格清洗问题**: no price_data_issue _(source: data_quality, available: 2026-11-13)_
 
@@ -110,9 +110,9 @@ Collect the listed evidence / wait for the stated trigger; do not hand off yet
 - **config_hash**: 7d4d8ae1a7ca110204f522359f57e8c627c89cdec753eea29b51af4a486fc187
 - **data_hash**: 9350b109d05e0131412fc8631a6620eae73072ba17c208271b43b1d384c04054
 - **theme_id**: RT-26fd92f4b393b82c
-- **evidence_count**: 2
+- **evidence_count**: 1
 - **source_note**: All evidence retains source and available_at; unavailable facts are unknown.
 
 ---
-Content SHA-256: `c5c89a0e1da0d017cfed8a9ee5acf9425a24256b1434c35cd2ab9ef8a06012f1`
+Content SHA-256: `febb763b21c1e642f1715f21bedec3e4b9148156cc2d7cd0d850b85b4a71dfdc`
 DISCOVERY VALUE: NOT VALIDATED

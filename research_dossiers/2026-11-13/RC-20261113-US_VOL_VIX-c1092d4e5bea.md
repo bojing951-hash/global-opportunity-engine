@@ -8,7 +8,6 @@
 
 ## 1. Observed Facts
 
-- **同日跨资产全球因子回归**: R²=0.47, beta=-11.20, residual_z=-0.34, n=252 _(source: derived/cross_asset, available: 2026-11-13)_
 - **波动率指数出现变化**: 1m=10.8% _(source: prices, available: 2026-11-13)_
 - **仓位分位**: 0.07335907335907343 _(source: CFTC, available: 2026-11-13)_
 
@@ -38,10 +37,11 @@ What explains: CBOE Volatility Index 近期 price_return_shock（down，分数 0
 
 ## 6. Supporting Evidence
 
-- **同日跨资产全球因子回归**: R²=0.47, beta=-11.20, residual_z=-0.34, n=252 _(source: derived/cross_asset, available: 2026-11-13)_
+_None recorded._
 
 ## 7. Contradicting Evidence
 
+- **全球因子解释力不足**: R²=0.47 < 0.50; residual_z=-0.34 _(source: derived/cross_asset, available: 2026-11-13)_
 - **缺少 VIX 期限结构与期权隐含分布**: term structure missing _(source: data_gap, available: 2026-11-13)_
 - **VIX 仓位/期权数据缺失**: vix positioning missing _(source: data_gap, available: 2026-11-13)_
 - **未记录价格清洗问题**: no price_data_issue _(source: data_quality, available: 2026-11-13)_
@@ -112,9 +112,9 @@ No further research allocation; retain as market intelligence
 - **config_hash**: 7d4d8ae1a7ca110204f522359f57e8c627c89cdec753eea29b51af4a486fc187
 - **data_hash**: 9350b109d05e0131412fc8631a6620eae73072ba17c208271b43b1d384c04054
 - **theme_id**: RT-bfb7d7f74d4ea817
-- **evidence_count**: 3
+- **evidence_count**: 2
 - **source_note**: All evidence retains source and available_at; unavailable facts are unknown.
 
 ---
-Content SHA-256: `9d36972b1376df54999339624fa0b4e25902c97f6bccc2df258a56c81787b35a`
+Content SHA-256: `a3033cd1ed99170463ccb80a367299799e79a3846e27897d00b44d63b12490cf`
 DISCOVERY VALUE: NOT VALIDATED

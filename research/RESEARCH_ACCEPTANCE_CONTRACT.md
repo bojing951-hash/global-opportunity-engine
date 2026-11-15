@@ -27,7 +27,7 @@ VIX in `2026-11-13`. Index: `research_dossiers/README.md`.
 - `Independent Quality Review` is `NOT_INDEPENDENTLY_REVIEWED` unless a real reviewer ran.
 
 ## Current acceptance
-- Engineering: PASS (231 proof, CI run 24/25 green; 50b60a1).
+- Engineering: PASS (236 proof, CI run 24/25 green; 50b60a1).
 - Research workflow: **FUNCTIONAL** on real dossiers (A–D).
 - Research value: **NOT VALIDATED** — no human/expert labels, no independent future window.
 - A→B: **PARTIAL/NO-GO** — 0 handoff-eligible; B supports macro/rates/FX facts only.
