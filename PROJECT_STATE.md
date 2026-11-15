@@ -82,7 +82,7 @@ ENGINEERING ACCEPTED and continue Phase 2 without reopening release-gate hardeni
 
 ## Final acceptance state (2026-11-15)
 - Final code `983854f`; proof `release_983854f9a3.json` (227/227); HEAD after docs commit.
-- GitHub Actions run 20 `43686642240` on `0d5d6ac`: **SUCCESS**; run 19 on `b888303`: **SUCCESS**.
+- GitHub Actions run 21 `43687214464` on `d2096b7`: **SUCCESS**; run 20 on `0d5d6ac`: **SUCCESS**; run 19 on `b888303`: **SUCCESS**.
 - Independent QA: `FINAL_ENG_P1_QA.md` PASS (no P0/P1); `FINAL_RESEARCH_P1_QA.md` PASS (no P0/P1, P2 only).
 - Phase 1 engineering accepted. Research: 0 research / 4 watch / 16 archive; 0 handoff eligible; N225 high-worthiness/partial-evidence/watch.
 - DISCOVERY VALUE: NOT VALIDATED. A-B: no eligible candidate, no task created.
