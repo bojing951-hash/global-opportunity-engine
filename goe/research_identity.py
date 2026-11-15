@@ -21,6 +21,13 @@ def phenomenon_fingerprint(*, as_of: str, instrument_id: str, detector: str,
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:12]
 
 
+def research_theme_id(*, instrument_id: str, detector: str,
+                      direction: str, window: str = "") -> str:
+    """Long-lived topic identity: same phenomenon across scan dates."""
+    raw = "|".join([str(instrument_id), str(detector), str(direction), str(window)])
+    return "RT-" + hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+
 def research_id(*, as_of: str, instrument_id: str, detector: str,
                 direction: str, window: str = "") -> str:
     safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(instrument_id))[:48]

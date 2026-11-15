@@ -17,4 +17,6 @@ def test_build_curve_marks_next_day_availability_and_proxy_source():
     assert all(r["available_at"] == "2026-01-03" for r in rows)
     assert {r["tenor"] for r in rows} == {"2Y", "10Y"}
     assert {r["curve_type"] for r in rows} == {"policy_path_proxy"}
+    assert {r["provider"] for r in rows} == {"FRED"}
+    assert {r["units"] for r in rows} == {"percent"}
     assert all("not term OIS" in r["source"] for r in rows)

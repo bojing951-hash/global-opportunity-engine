@@ -20,7 +20,7 @@ EVIDENCE_CLASSES = {"observed_fact", "statistical_association", "causal_hypothes
 HYPOTHESIS_TYPES = {"risk_premium", "fundamental", "positioning_flow", "global_risk",
                     "data_artifact", "policy"}
 HYPOTHESIS_STATUS = {"open", "supported", "contradicted", "untestable"}
-RESEARCH_REQUIRED = ["research_id", "as_of", "market", "asset_class", "instruments",
+RESEARCH_REQUIRED = ["research_id", "research_theme_id", "as_of", "market", "asset_class", "instruments",
                      "observed_phenomenon", "materiality", "competing_hypotheses",
                      "evidence", "critical_unknowns", "falsification_conditions",
                      "required_data", "research_cost", "decision_impact",

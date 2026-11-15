@@ -1,18 +1,19 @@
 # Optional local evidence feeds for the research readiness gate.
 # No vendor entitlement is assumed and no rows are fabricated. Missing/disabled
-# files leave the hypothesis unknown. Generate the policy-path proxy with
-#   python scripts/fetch_external_evidence.py
-# (FRED SOFR/2Y/10Y is a policy-path proxy, NOT a term OIS curve.)
+# files leave the hypothesis unknown. All feeds are point-in-time:
+#   publication_time <= available_at <= decision as_of
+# A forecast target may be in the future, but its publication may not.
 consensus:
   enabled: false
-  path: data/consensus_revisions.csv   # series_id,date,value,available_at,metric
+  path: data/consensus_revisions.csv
   max_age_days: 90
 ois:
   enabled: false
   path: data/policy_curve.csv
-  # One curve identity only; currencies/regions are never stitched.
   curve_id: US_TREASURY_POLICY_PROXY
   currency: USD
   region: US
-  curve_type: policy_path_proxy        # use "ois" only for a real OIS curve
+  curve_type: policy_path_proxy        # "ois" only for a licensed term-OIS curve
+  provider: FRED
+  units: percent
   max_age_days: 10

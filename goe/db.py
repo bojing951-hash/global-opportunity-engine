@@ -128,7 +128,8 @@ CREATE TABLE IF NOT EXISTS research_tasks (
 CREATE TABLE IF NOT EXISTS research_v2_candidates (
   research_id TEXT PRIMARY KEY, as_of TEXT NOT NULL, market TEXT, asset_class TEXT,
   instruments_json TEXT, phenomenon TEXT, tier TEXT, status TEXT NOT NULL DEFAULT 'active',
-  priority_rank INTEGER, payload_json TEXT, created_at TEXT, updated_at TEXT
+  priority_rank INTEGER, payload_json TEXT, created_at TEXT, updated_at TEXT,
+  research_theme_id TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_rc_status ON research_v2_candidates(status, priority_rank);
 
@@ -211,6 +212,9 @@ class Store:
         cols = {r[1] for r in self.conn.execute("PRAGMA table_info(anomalies)").fetchall()}
         if "available_date" not in cols:
             self.conn.execute("ALTER TABLE anomalies ADD COLUMN available_date TEXT")
+        rc_cols = {r[1] for r in self.conn.execute("PRAGMA table_info(research_v2_candidates)").fetchall()}
+        if rc_cols and "research_theme_id" not in rc_cols:
+            self.conn.execute("ALTER TABLE research_v2_candidates ADD COLUMN research_theme_id TEXT")
         if row is None:
             self.conn.execute(
                 "INSERT INTO schema_meta(key,value) VALUES('schema_version',?)", (SCHEMA_VERSION,)
@@ -807,26 +811,50 @@ class Store:
                          "research_complete", "archived"}
 
     def upsert_research_candidate(self, candidate: dict[str, Any], *, status: str = "active") -> None:
-        """Persist a V2 candidate + hypotheses/evidence; never touches V1 tables."""
+        """Persist a V2 candidate while enforcing immutable business identity.
+
+        The id is bound to as_of + instruments + theme. A re-scan may update
+        hypotheses/payload but cannot retarget the id to another asset/date.
+        Status is insert-only here: later transitions must use
+        set_research_status(), so a completed candidate is never silently reset.
+        """
         if status not in self.RESEARCH_STATUSES:
             raise ValueError(f"invalid research status {status}")
         rid = str(candidate["research_id"])
+        incoming_instruments = sorted(str(x) for x in (candidate.get("instruments") or []))
+        incoming_as_of = str(candidate.get("as_of"))
+        incoming_theme = candidate.get("research_theme_id")
         now = utc_now()
         with self.transaction() as c:
+            existing = c.execute(
+                "SELECT as_of,instruments_json,research_theme_id,status FROM research_v2_candidates "
+                "WHERE research_id=?", (rid,)).fetchone()
+            if existing:
+                old_instruments = sorted(json.loads(existing["instruments_json"] or "[]"))
+                if str(existing["as_of"]) != incoming_as_of or old_instruments != incoming_instruments:
+                    raise ValueError(
+                        f"immutable research identity conflict for {rid}: "
+                        f"as_of/instruments changed ({existing['as_of']} {old_instruments} -> "
+                        f"{incoming_as_of} {incoming_instruments})")
+                if existing["research_theme_id"] and incoming_theme and existing["research_theme_id"] != incoming_theme:
+                    raise ValueError(f"immutable research theme conflict for {rid}")
             c.execute(
                 """INSERT INTO research_v2_candidates(research_id,as_of,market,asset_class,
-                     instruments_json,phenomenon,tier,status,priority_rank,payload_json,created_at,updated_at)
-                   VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+                     instruments_json,phenomenon,tier,status,priority_rank,payload_json,created_at,updated_at,
+                     research_theme_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
                    ON CONFLICT(research_id) DO UPDATE SET as_of=excluded.as_of,
                      market=excluded.market, asset_class=excluded.asset_class,
                      instruments_json=excluded.instruments_json, phenomenon=excluded.phenomenon,
                      tier=excluded.tier, priority_rank=excluded.priority_rank,
-                     payload_json=excluded.payload_json, updated_at=excluded.updated_at""",
+                     payload_json=excluded.payload_json, updated_at=excluded.updated_at,
+                     research_theme_id=COALESCE(research_v2_candidates.research_theme_id,
+                                                excluded.research_theme_id)""",
                 (rid, candidate.get("as_of"), candidate.get("market"), candidate.get("asset_class"),
-                 json.dumps(candidate.get("instruments", []), ensure_ascii=False, default=str),
+                 json.dumps(incoming_instruments, ensure_ascii=False, default=str),
                  candidate.get("observed_phenomenon"), candidate.get("priority_tier"),
                  status, int(candidate.get("priority_rank", 0) or 0),
-                 json.dumps(candidate, ensure_ascii=False, default=str), now, now),
+                 json.dumps(candidate, ensure_ascii=False, default=str), now, now,
+                 incoming_theme),
             )
             # versioned snapshot: remove previous hypotheses/evidence first
             c.execute("DELETE FROM research_v2_evidence WHERE research_id=?", (rid,))
@@ -842,7 +870,6 @@ class Store:
                     (hid, rid, key, h.get("type"), h.get("status"), h.get("label"),
                      json.dumps(h, ensure_ascii=False, default=str), now),
                 )
-            # Evidence is versioned with the snapshot; tasks/results/events stay append-only.
             for e in list(candidate.get("evidence", [])) + list(candidate.get("evidence_for", [])) + list(candidate.get("evidence_against", [])):
                 eid = hash_json([rid, e.get("claim"), e.get("source"), e.get("available_at"), e.get("class")])
                 c.execute(
@@ -860,12 +887,20 @@ class Store:
             raise ValueError(f"invalid research status {status}")
         now = utc_now()
         with self.transaction() as c:
+            row = c.execute("SELECT status FROM research_v2_candidates WHERE research_id=?",
+                            (research_id,)).fetchone()
+            if not row:
+                raise ValueError(f"research candidate does not exist: {research_id}")
+            if row["status"] == "research_complete" and status in ("active", "intelligence",
+                                                                   "handoff_pending", "handoff_failed"):
+                raise ValueError("completed research cannot be reopened by a status update")
             c.execute("UPDATE research_v2_candidates SET status=?,updated_at=? WHERE research_id=?",
                       (status, now, research_id))
             c.execute("""INSERT INTO research_v2_events(research_id,task_id,at,event_type,note,payload_json)
                          VALUES(?,?,?,?,?,?)""",
                       (research_id, task_id, now, f"status:{status}", note,
                        json.dumps(payload or {}, ensure_ascii=False, default=str)))
+
 
     def record_identity_alias(self, old_id: str, new_id: str, reason: str = "") -> None:
         """Preserve legacy identity mapping without re-pointing old tasks/results."""

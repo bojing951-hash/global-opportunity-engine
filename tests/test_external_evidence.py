@@ -4,66 +4,80 @@ from types import SimpleNamespace
 
 from goe.evidence.external import attach_external, consensus_evidence, ois_evidence
 
-OIS_HEADER = "curve_id,currency,region,curve_type,tenor,date,value,available_at,source\n"
+CONS_HEADER = ("series_id,observation_date,forecast_target,publication_time,available_at,"
+               "vintage,value,metric,kind,source\n")
+OIS_HEADER = ("curve_id,currency,region,curve_type,provider,units,tenor,date,"
+              "publication_time,available_at,vintage,value,source\n")
+
+
+def cons_cfg(tmp_path, rows: str, age=90):
+    p = tmp_path / "c.csv"; p.write_text(CONS_HEADER + rows, encoding="utf-8")
+    return {"consensus": {"enabled": True, "path": str(p), "max_age_days": age}}
 
 
 def ois_cfg(tmp_path, rows: str):
     p = tmp_path / "ois.csv"; p.write_text(OIS_HEADER + rows, encoding="utf-8")
     return {"ois": {"enabled": True, "path": str(p), "curve_id": "US",
                     "currency": "USD", "region": "US", "curve_type": "ois",
-                    "max_age_days": 10}}
+                    "provider": "TEST", "units": "percent", "max_age_days": 10}}
 
 
-def test_consensus_is_point_in_time_and_stale_safe(tmp_path):
-    p = tmp_path / "consensus.csv"
-    p.write_text("series_id,date,value,available_at,metric\n"
-                 "US_EQ_SPY,2026-01-01,2.0,2026-01-02,eps_revision_pct\n"
-                 "US_EQ_SPY,2026-02-01,9.0,2026-03-01,eps_revision_pct\n", encoding="utf-8")
-    cfg = {"consensus": {"enabled": True, "path": str(p), "max_age_days": 90}}
-    got = consensus_evidence("2026-02-15", "US_EQ_SPY", cfg)
-    assert got and got["value"].endswith("2.0") and got["discriminating"]
-    assert consensus_evidence("2026-02-15", "US_EQ_SPY",
-                              {"consensus": {**cfg["consensus"], "max_age_days": 7}}) is None
-    assert consensus_evidence("2026-01-01", "US_EQ_SPY", cfg) is None
+def test_consensus_actual_and_forecast_are_pit(tmp_path):
+    rows = ("SPY,2026-01-01,2026-01-01,2026-01-02,2026-01-02,v1,2.0,eps_rev,actual,test\n"
+            "SPY,2026-01-01,2026-03-31,2026-01-02,2026-01-02,v1,8.0,eps_rev,forecast,test\n")
+    cfg = cons_cfg(tmp_path, rows)
+    got = consensus_evidence("2026-02-15", "SPY", cfg)
+    assert got and got["kind"] == "forecast" and got["forecast_target"] == "2026-03-31"
+    # future publication / future vintage must not be usable
+    future = ("SPY,2026-01-01,2026-01-01,2026-03-01,2026-03-01,v1,2.0,eps_rev,actual,test\n")
+    assert consensus_evidence("2026-02-15", "SPY", cons_cfg(tmp_path, future)) is None
+    # actual target in the future is invalid
+    bad_actual = ("SPY,2026-01-01,2026-04-01,2026-01-02,2026-01-02,v1,2.0,eps_rev,actual,test\n")
+    assert consensus_evidence("2026-02-15", "SPY", cons_cfg(tmp_path, bad_actual)) is None
+    assert consensus_evidence("2026-04-01", "SPY", cons_cfg(tmp_path, future)) is not None
 
 
 def test_same_curve_slope_and_cross_currency_rejected(tmp_path):
-    cfg = ois_cfg(tmp_path, "US,USD,US,ois,2Y,2026-01-01,4.0,2026-01-02,test\n"
-                            "US,USD,US,ois,10Y,2026-01-01,4.5,2026-01-02,test\n")
+    base = ("US,USD,US,ois,TEST,percent,2Y,2026-01-01,2026-01-02,2026-01-02,v1,4.0,test\n"
+            "US,USD,US,ois,TEST,percent,10Y,2026-01-01,2026-01-02,2026-01-02,v1,4.5,test\n")
+    cfg = ois_cfg(tmp_path, base)
     got = ois_evidence("2026-01-05", "US", "USD", "ois", config=cfg)
     assert got and "0.50" in got["value"] and got["curve"]["curve_id"] == "US"
-    # same file also contains a EUR curve with a different curvature; must never stitch
-    mixed = tmp_path / "mixed.csv"
-    mixed.write_text(OIS_HEADER + "US,USD,US,ois,2Y,2026-01-01,4.0,2026-01-02,test\n"
-                                  "EU,EUR,EA,ois,10Y,2026-01-01,1.0,2026-01-02,test\n", encoding="utf-8")
-    cfg_mixed = {"ois": {**cfg["ois"], "path": str(mixed)}}
+    mixed = ("US,USD,US,ois,TEST,percent,2Y,2026-01-01,2026-01-02,2026-01-02,v1,4.0,test\n"
+             "EU,EUR,EA,ois,TEST,percent,10Y,2026-01-01,2026-01-02,2026-01-02,v1,1.0,test\n")
+    cfg_mixed = {"ois": {**cfg["ois"], "path": str(tmp_path / "mixed.csv")}}
+    (tmp_path / "mixed.csv").write_text(OIS_HEADER + mixed, encoding="utf-8")
     assert ois_evidence("2026-01-05", "US", "USD", "ois", config=cfg_mixed) is None
     assert ois_evidence("2026-01-05", "EA", "EUR", "ois", config=cfg_mixed) is None
 
 
-def test_curve_rejects_different_dates_missing_tenor_expired_and_wrong_type(tmp_path):
-    different = ois_cfg(tmp_path, "US,USD,US,ois,2Y,2026-01-01,4.0,2026-01-02,test\n"
-                                  "US,USD,US,ois,10Y,2026-01-02,4.5,2026-01-03,test\n")
+def test_curve_rejects_dates_tenor_provider_units_type_and_staleness(tmp_path):
+    def one(rows): return ois_cfg(tmp_path, rows)
+    different = one("US,USD,US,ois,TEST,percent,2Y,2026-01-01,2026-01-02,2026-01-02,v1,4.0,t\n"
+                    "US,USD,US,ois,TEST,percent,10Y,2026-01-02,2026-01-03,2026-01-03,v1,4.5,t\n")
     assert ois_evidence("2026-01-05", "US", "USD", "ois", config=different) is None
-    missing = ois_cfg(tmp_path, "US,USD,US,ois,10Y,2026-01-01,4.5,2026-01-02,test\n")
+    missing = one("US,USD,US,ois,TEST,percent,10Y,2026-01-01,2026-01-02,2026-01-02,v1,4.5,t\n")
     assert ois_evidence("2026-01-05", "US", "USD", "ois", config=missing) is None
-    assert ois_evidence("2026-02-01", "US", "USD", "ois", config=different) is None
-    wrong_type = ois_cfg(tmp_path, "US,USD,US,policy_path_proxy,2Y,2026-01-01,4.0,2026-01-02,test\n"
-                                    "US,USD,US,policy_path_proxy,10Y,2026-01-01,4.5,2026-01-02,test\n")
-    assert ois_evidence("2026-01-05", "US", "USD", "ois", config=wrong_type) is None
+    mixed_provider = one("US,USD,US,ois,TEST,percent,2Y,2026-01-01,2026-01-02,2026-01-02,v1,4.0,t\n"
+                         "US,USD,US,ois,OTHER,percent,10Y,2026-01-01,2026-01-02,2026-01-02,v1,4.5,t\n")
+    assert ois_evidence("2026-01-05", "US", "USD", "ois", config=mixed_provider) is None
+    wrong_units = one("US,USD,US,ois,TEST,bps,2Y,2026-01-01,2026-01-02,2026-01-02,v1,4.0,t\n"
+                      "US,USD,US,ois,TEST,bps,10Y,2026-01-01,2026-01-02,2026-01-02,v1,4.5,t\n")
+    assert ois_evidence("2026-01-05", "US", "USD", "ois", config=wrong_units) is None
+    future_pub = one("US,USD,US,ois,TEST,percent,2Y,2026-01-01,2026-02-01,2026-02-01,v1,4.0,t\n"
+                     "US,USD,US,ois,TEST,percent,10Y,2026-01-01,2026-02-01,2026-02-01,v1,4.5,t\n")
+    assert ois_evidence("2026-01-05", "US", "USD", "ois", config=future_pub) is None
+    assert ois_evidence("2026-02-01", "US", "USD", "ois", config=future_pub) is not None
 
 
 def test_attach_external_opens_fundamental_only_when_measured(tmp_path, monkeypatch):
-    path = tmp_path / "c.csv"
-    path.write_text("series_id,date,value,available_at,metric\n"
-                    "US_EQ_SPY,2026-01-01,2.0,2026-01-02,eps_revision_pct\n", encoding="utf-8")
-    cfg = {"consensus": {"enabled": True, "path": str(path), "max_age_days": 90},
-           "ois": {"enabled": False}}
+    rows = "SPY,2026-01-01,2026-01-31,2026-01-02,2026-01-02,v1,2.0,eps_rev,forecast,test\n"
+    cfg = cons_cfg(tmp_path, rows)
     monkeypatch.setattr("goe.evidence.external._config", lambda: cfg)
     bundle = {"hypotheses": [
         {"id": "H-USEQ-FUND", "status": "untestable", "evidence_for": [], "evidence_against": []},
         {"id": "H-USEQ-GLOBAL", "status": "open", "evidence_for": [], "evidence_against": []}]}
     out = attach_external(bundle, SimpleNamespace(asset_class="equity_etf", region="US"),
-                          "US_EQ_SPY", "2026-01-05")
+                          "SPY", "2026-01-05")
     assert out["hypotheses"][0]["status"] == "open"
     assert out["hypotheses"][0]["evidence_for"][0]["discriminating"] is True

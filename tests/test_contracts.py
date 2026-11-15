@@ -44,7 +44,7 @@ def test_anomaly_contract_synthetic():
 
 def test_research_candidate_contract():
     c = {
-        "research_id": "R-1", "as_of": "2024-01-01", "market": "US",
+        "research_id": "R-1", "research_theme_id": "RT-1", "as_of": "2024-01-01", "market": "US",
         "asset_class": "equity_etf", "instruments": ["US_EQ_SPY"],
         "observed_phenomenon": "test", "materiality": "high",
         "competing_hypotheses": [
@@ -211,7 +211,7 @@ def test_release_rejects_reverse_rename_and_subset(monkeypatch, tmp_path):
 
 def test_research_tier_requires_two_measured_discriminators():
     c = {
-        "research_id": "R-2", "as_of": "2024-01-01", "market": "US",
+        "research_id": "R-2", "research_theme_id": "RT-2", "as_of": "2024-01-01", "market": "US",
         "asset_class": "equity_etf", "instruments": ["US_EQ_SPY"],
         "observed_phenomenon": "x", "materiality": "high",
         "competing_hypotheses": [

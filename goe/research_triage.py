@@ -21,6 +21,7 @@ from .evidence.external import attach_external
 from .expectations import compute_expectation_gap
 from .hypotheses import build_hypotheses
 from .research_identity import research_id as make_research_id
+from .research_identity import research_theme_id as make_research_theme_id
 from .timesemantics import filter_recent
 
 MISSING_DATA = ["分析师一致预期/修正", "期权隐含分布", "ETF 资金流", "信用 OAS（仅有 HYG/IEF 代理）"]
@@ -30,6 +31,7 @@ OPEN_DATA = ["价格/成交量", "CFTC 持仓（周度）", "收益率曲线", "
 @dataclass
 class ResearchCandidate:
     research_id: str
+    research_theme_id: str
     as_of: str
     market: str
     asset_class: str
@@ -264,6 +266,9 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
             research_id=make_research_id(as_of=as_of, instrument_id=iid,
                                          detector=str(r.detector), direction=str(r.direction),
                                          window=str(getattr(r, "window", ""))),
+            research_theme_id=make_research_theme_id(
+                instrument_id=iid, detector=str(r.detector), direction=str(r.direction),
+                window=str(getattr(r, "window", ""))),
             as_of=as_of, market=spec.region, asset_class=spec.asset_class,
             instruments=[iid], observed_phenomenon=(
                 f"{spec.name} 近期 {r.detector}（{r.direction}，分数 {score:.2f}）；"

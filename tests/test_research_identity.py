@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from goe.research_identity import research_id
 from goe.db import Store
 
@@ -49,3 +51,41 @@ def test_duplicate_upsert_keeps_identity_and_task(store):
     assert store.research_candidate(c["research_id"])["phenomenon"] == "updated"
     assert store.conn.execute("SELECT COUNT(*) FROM research_v2_tasks WHERE research_id=?",
                               (c["research_id"],)).fetchone()[0] == 1
+
+
+def _cand(rid, as_of="2026-11-13", iid="JP_EQ_N225", theme="RT-1"):
+    return {"research_id": rid, "research_theme_id": theme, "as_of": as_of,
+            "market": "JP", "asset_class": "equity_index", "instruments": [iid],
+            "observed_phenomenon": "x", "priority_tier": "intelligence",
+            "competing_hypotheses": [], "evidence": []}
+
+
+def test_immutable_identity_rejects_asset_and_date_retarget(store):
+    c = _cand(rid())
+    store.upsert_research_candidate(c)
+    for bad in (_cand(rid(), iid="US_EQ_SPY"), _cand(rid(), as_of="2026-11-14")):
+        with pytest.raises(ValueError, match="immutable research identity"):
+            store.upsert_research_candidate(bad)
+    row = store.research_candidate(c["research_id"])
+    assert row["as_of"] == "2026-11-13" and "JP_EQ_N225" in row["instruments_json"]
+
+
+def test_completed_status_is_not_silently_reopened(store):
+    c = _cand(rid())
+    store.upsert_research_candidate(c)
+    store.set_research_status(c["research_id"], "research_complete", "done")
+    store.upsert_research_candidate({**c, "observed_phenomenon": "updated"})
+    assert store.research_candidate(c["research_id"])["status"] == "research_complete"
+    with pytest.raises(ValueError, match="cannot be reopened"):
+        store.set_research_status(c["research_id"], "active")
+
+
+def test_theme_is_stable_across_dates_event_is_not():
+    from goe.research_identity import research_theme_id
+    t1 = research_theme_id(instrument_id="JP_EQ_N225", detector="drawdown_extreme",
+                           direction="deep_drawdown", window="1d")
+    t2 = research_theme_id(instrument_id="JP_EQ_N225", detector="drawdown_extreme",
+                           direction="deep_drawdown", window="1d")
+    assert t1 == t2 and t1.startswith("RT-")
+    assert rid("2026-11-13") != rid("2026-11-14")
+    assert rid("2026-11-13") != rid(det="vol_regime_shift")

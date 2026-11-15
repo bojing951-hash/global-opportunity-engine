@@ -48,8 +48,9 @@ def build_curve(sofr: list[tuple[str, float]], two: list[tuple[str, float]],
             if tenor in vals:
                 out.append({"curve_id": "US_TREASURY_POLICY_PROXY", "currency": "USD",
                             "region": "US", "curve_type": "policy_path_proxy",
-                            "tenor": tenor, "date": d, "value": f"{vals[tenor]:.4f}",
-                            "available_at": avail,
+                            "provider": "FRED", "units": "percent", "tenor": tenor,
+                            "date": d, "publication_time": avail, "available_at": avail,
+                            "vintage": avail, "value": f"{vals[tenor]:.4f}",
                             "source": "FRED Treasury/SOFR policy-path proxy (not term OIS)"})
     return out
 
@@ -64,7 +65,9 @@ def main() -> int:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=["curve_id", "currency", "region", "curve_type",
-                                            "tenor", "date", "value", "available_at", "source"])
+                                            "provider", "units", "tenor", "date",
+                                            "publication_time", "available_at", "vintage",
+                                            "value", "source"])
         w.writeheader(); w.writerows(rows)
     print(f"wrote {len(rows)} rows to {OUT} (policy-path proxy, not term OIS)")
     return 0

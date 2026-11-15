@@ -4,9 +4,11 @@ No public, licensed consensus/OIS history is bundled with this repository. The
 adapters therefore read explicitly configured local CSV files. Missing files
 leave hypotheses unknown; they never create observations or impute values.
 
-Schemas (strict):
-  consensus: series_id,date,value,available_at,metric
-  ois:       series_id,tenor,date,value,available_at
+Schemas (strict, point-in-time):
+  consensus: series_id,observation_date,forecast_target,publication_time,available_at,
+             vintage,value,metric,kind,source
+  ois:       curve_id,currency,region,curve_type,provider,units,tenor,date,
+             publication_time,available_at,vintage,value,source
 """
 from __future__ import annotations
 
@@ -39,8 +41,9 @@ def _read_csv(path: str | Path, required: set[str]) -> pd.DataFrame | None:
         return None
     if not required.issubset(df.columns):
         return None
-    for c in ("date", "available_at"):
-        df[c] = pd.to_datetime(df[c]).dt.date.astype(str)
+    for c in ("date", "available_at", "publication_time", "observation_date", "forecast_target"):
+        if c in df.columns:
+            df[c] = pd.to_datetime(df[c])
     return df
 
 
@@ -49,23 +52,43 @@ def consensus_evidence(as_of: str, series_id: str | None = None,
     cfg = (config or _config()).get("consensus") or {}
     if not cfg.get("enabled"):
         return None
-    df = _read_csv(cfg.get("path", ""), {"series_id", "date", "value", "available_at", "metric"})
+    cols = {"series_id", "observation_date", "forecast_target", "publication_time",
+            "available_at", "vintage", "value", "metric", "kind", "source"}
+    df = _read_csv(cfg.get("path", ""), cols)
     if df is None or df.empty:
         return None
     cutoff = pd.Timestamp(as_of)
-    avail = df[pd.to_datetime(df["available_at"]) <= cutoff]
+    for c in ("observation_date", "forecast_target", "publication_time", "available_at"):
+        df[c] = pd.to_datetime(df[c])
+    # Publication/availability must be known by the decision time; a future
+    # forecast target is allowed, but its publication is not.
+    avail = df[(df["available_at"] <= cutoff) & (df["publication_time"] <= cutoff)
+               & (df["publication_time"] <= df["available_at"])]
     if series_id:
         avail = avail[avail["series_id"] == series_id]
     if avail.empty:
         return None
-    last = avail.sort_values(["available_at", "date"]).iloc[-1]
+    kinds = set(avail["kind"].astype(str))
+    if kinds - {"actual", "forecast"}:
+        return None
+    # For actuals the target period must be in the past; for forecasts the
+    # target may be future but the forecast itself must have been published.
+    actual = avail[(avail["kind"] == "actual") & (avail["forecast_target"] <= cutoff)]
+    forecast = avail[(avail["kind"] == "forecast") & (avail["forecast_target"] >= cutoff)]
+    usable = pd.concat([actual, forecast]).drop_duplicates()
+    if usable.empty:
+        return None
+    last = usable.sort_values(["available_at", "observation_date"]).iloc[-1]
     age = (cutoff - pd.Timestamp(last["available_at"])).days
     if age > int(cfg.get("max_age_days", 90)):
         return None
-    return {"claim": "分析师一致预期修正", "value": f"{last['metric']}={last['value']}",
-            "class": "statistical_association", "source": "consensus_revisions",
-            "available_at": str(last["available_at"]), "discriminating": True,
-            "series_id": str(last["series_id"])}
+    return {"claim": "分析师一致预期修正（PIT）", "value": f"{last['metric']}={last['value']}",
+            "class": "statistical_association", "source": str(last["source"]),
+            "available_at": str(last["available_at"].date()),
+            "publication_time": str(last["publication_time"].date()),
+            "vintage": str(last["vintage"]), "kind": str(last["kind"]),
+            "forecast_target": str(last["forecast_target"].date()),
+            "discriminating": True, "series_id": str(last["series_id"])}
 
 
 def ois_evidence(as_of: str, region: str | None = None,
@@ -82,8 +105,8 @@ def ois_evidence(as_of: str, region: str | None = None,
     cfg = (config or _config()).get("ois") or {}
     if not cfg.get("enabled"):
         return None
-    cols = {"curve_id", "currency", "region", "curve_type", "tenor", "date",
-            "value", "available_at", "source"}
+    cols = {"curve_id", "currency", "region", "curve_type", "provider", "units", "tenor",
+            "date", "publication_time", "available_at", "vintage", "value", "source"}
     df = _read_csv(cfg.get("path", ""), cols)
     if df is None or df.empty:
         return None
@@ -91,13 +114,22 @@ def ois_evidence(as_of: str, region: str | None = None,
     desired_region = region or cfg.get("region")
     desired_type = curve_type or cfg.get("curve_type", "ois")
     desired_curve = curve_id or cfg.get("curve_id")
+    desired_provider = cfg.get("provider")
+    desired_units = cfg.get("units")
     if not desired_currency or not desired_region:
         return None
     cutoff = pd.Timestamp(as_of)
-    avail = df[(pd.to_datetime(df["available_at"]) <= cutoff)
+    for c in ("date", "publication_time", "available_at"):
+        df[c] = pd.to_datetime(df[c])
+    avail = df[(df["available_at"] <= cutoff) & (df["publication_time"] <= cutoff)
+               & (df["publication_time"] <= df["available_at"])
                & (df["currency"] == desired_currency)
                & (df["region"] == desired_region)
                & (df["curve_type"] == desired_type)].copy()
+    if desired_provider:
+        avail = avail[avail["provider"] == desired_provider]
+    if desired_units:
+        avail = avail[avail["units"] == desired_units]
     if desired_curve:
         avail = avail[avail["curve_id"] == desired_curve]
     if avail.empty:
@@ -106,6 +138,10 @@ def ois_evidence(as_of: str, region: str | None = None,
     if len(curve_ids) != 1:
         return None  # ambiguous curve identity: refuse rather than stitch
     cid = str(curve_ids[0])
+    if avail["provider"].nunique() != 1:
+        return None
+    if avail["units"].nunique() != 1:
+        return None
     latest = avail.sort_values("available_at").groupby("tenor", as_index=False).tail(1)
     tenors = set(latest["tenor"].astype(str))
     if not {"2Y", "10Y"}.issubset(tenors):
@@ -130,9 +166,12 @@ def ois_evidence(as_of: str, region: str | None = None,
             "value": f"2s10s={long - short:.2f}pp",
             "class": "statistical_association", "source": str(short_row["source"]),
             "available_at": str(short_row["available_at"]), "discriminating": True,
+            "publication_time": str(short_row["publication_time"].date()),
+            "vintage": str(short_row["vintage"]),
             "curve": {"curve_id": cid, "currency": desired_currency,
                       "region": desired_region, "curve_type": desired_type,
-                      "date": str(short_row["date"]), "2Y": short, "10Y": long}}
+                      "provider": str(short_row["provider"]), "units": str(short_row["units"]),
+                      "date": str(short_row["date"].date()), "2Y": short, "10Y": long}}
 
 
 
