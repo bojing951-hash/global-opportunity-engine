@@ -2,7 +2,7 @@
 
 - Date: 2026-11-15
 - Branch: `architecture/research-v2`
-- Engineering baseline: code `671f5fa` + Phase-2 proof `release_671f5faa5f.json` (226 tests)
+- Engineering baseline: code `671f5fa` + Phase-2 proof `release_671f5faa5f.json` (227 tests)
 - Phase-2 additions: cross-asset measured evidence, evidence gate, research-quality audit, A→B guard
 - V1/main/B: unchanged
 
@@ -15,8 +15,8 @@
 | RESEARCH CONTRACT | **PASS** |
 | HYPOTHESIS QUALITY | **PARTIAL** — structured hypotheses, but 0 research candidates under the measured-evidence gate |
 | DISCOVERY VALUE | **NOT VALIDATED** |
-| A-B INTEGRATION | **PARTIAL** — eligibility guard; 0 current eligible candidates, no `ok_valid` |
-| CI CROSS-OS | **BLOCKED / UNVERIFIED** — workflow exists, never executed on GitHub; Docker blocked by Keychain |
+| A-B INTEGRATION | **PARTIAL** — eligibility guard; 0 current eligible candidates, no task/`ok_valid` |
+| CI CROSS-OS | **PASS** — GitHub Actions run 20 (`43686642240`, `0d5d6ac`, 227 tests) SUCCESS; run 19 also SUCCESS |
 
 ## Phase 1 evidence
 - Verified scan: `scan-20261115T044634Z-b68802`, 358,310 prices, 159,508 indicators, 1,506 anomalies,
@@ -24,7 +24,7 @@
   frozen hashes verified; all output columns fingerprinted.
 - Adversarial cases: empty/fake/stale/partial/missing/mismatched/OHLCV/output/artifact modifications
   rejected; valid real scan accepted.
-- Test proof: 226/226; independent final QA G PASS and H PASS WITH ISSUES (P2 only); earlier P1s fixed.
+- Test proof: 227/227; independent final QA G PASS and H PASS WITH ISSUES (P2 only); earlier P1s fixed.
 - Accepted residuals: local DB/report/exports not in git; synthetic-consistent DB trust boundary;
   fabricated ingest-run row; artifact-vs-DB cross-check; CI unexecuted; no licensed consensus/OIS.
 
@@ -46,8 +46,14 @@
 
 ## Phase-2 independent QA
 - `audit/PHASE2_QA_ENGINEERING.md`: PASS WITH ISSUES; sole P1 was the uncommitted documentation
-  worktree (fixed by the freeze commit); scan gate/proof/226 tests verified.
+  worktree (fixed by the freeze commit); scan gate/proof/227 tests verified.
 - `audit/PHASE2_QA_RESEARCH.md`: PASS WITH ISSUES (P2 only); A→B guard end-to-end exit 3; quality
   audit recomputed exactly; no P0/P1; DISCOVERY VALUE NOT VALIDATED.
 - P2 notes: quality-audit metric names/denominators are descriptive, not validated; no CLI-level
   handoff test; no independent human labels or fresh future window.
+
+
+## Final QA (P1 round)
+- `FINAL_ENG_P1_QA.md`: PASS, no P0/P1. CI runs 19/20 green; stable IDs and curve identity verified.
+- `FINAL_RESEARCH_P1_QA.md`: PASS, no P0/P1. 20/20 contract; research 0/watch4/archive16; handoff 0; DISCOVERY NOT VALIDATED.
+- P2 residuals: queue/eligibility are tier-collinear until a B-capability gate is added; local scan evidence not portable; consensus/term-OIS unavailable; CI clean step removes all ignored files (ephemeral runner only).

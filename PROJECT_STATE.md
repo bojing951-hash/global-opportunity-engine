@@ -2,7 +2,7 @@
 
 - Date: 2026-11-15
 - Branch: `architecture/research-v2`
-- HEAD at last state write: current P1-fix commit (will advance with the Phase-1 scan-evidence commit)
+- HEAD at last state write: final acceptance commit (will advance with the Phase-1 scan-evidence commit)
 - Main: untouched. V1: tag `v1-frozen-1f2b341`; no V1 changes.
 - Current phase: **Phase 1 — Engineering Closure** (scan evidence gate), then Phase 2 research.
 
@@ -11,10 +11,10 @@
 |---|---|---|---|---|
 | P1-SCAN-1 | Release gate independently verifies real scan/data/report evidence | P0/P1 | DONE | `goe/scan_evidence.py`, `tests/test_scan_evidence.py` |
 | P1-SCAN-2 | Adversarial invalid/valid scan tests | P1 | IN PROGRESS | empty, fake hash, modified content, wrong as_of, old scan, partial ingest, missing/mismatched report |
-| P1-REL-1 | New proof after code freeze | P1 | DONE | `release_671f5faa5f.json`, 226 tests |
+| P1-REL-1 | New proof after code freeze | P1 | DONE | `release_671f5faa5f.json`, 227 tests |
 | P1-QA-1 | Independent red-team on scan evidence | P1 | DONE | QA C/D/E/F found P1s, fixed; G/H final |
 | P1-QA-2 | Second independent pass / fresh clone | P1 | IN PROGRESS | QA G/H |
-| P1-CI-1 | GitHub Actions cross-OS run | P1 | **SUCCESS** | run 19 b888303, URL in P1_FIXES |
+| P1-CI-1 | GitHub Actions cross-OS run | P1 | **SUCCESS** | run 20 0d5d6ac, 227 tests; run 19 also green |
 
 ## Phase 2 tasks (not started until Phase 1 frozen)
 | ID | Objective | Status |
@@ -30,7 +30,7 @@
 - V2 research gate: 20 candidates -> 0 research / 20 intelligence (`evidence_gap`) because no
   candidate has two measured discriminating hypotheses.
 - DISCOVERY VALUE: **NOT VALIDATED**.
-- Latest release proof: `release_671f5faa5f.json` (226 tests, scan-evidence v5).
+- Latest release proof: `release_671f5faa5f.json` (227 tests, scan-evidence v5).
 
 ## Next action
 Freeze scan-evidence code, generate new proof, run independent QA; if PASS, mark Phase 1
@@ -39,7 +39,7 @@ ENGINEERING ACCEPTED and continue Phase 2 without reopening release-gate hardeni
 
 ## Accepted Phase-1 residuals (P2, explicit)
 1. Scan evidence depends on the local 101 MB `data/goe.db` and gitignored `reports/`/`exports/`; a
-   fresh clone can replay the 226-test proof but cannot re-derive scan evidence.
+   fresh clone can replay the 227-test proof but cannot re-derive scan evidence.
 2. A self-consistent synthetic DB can satisfy the scan gate; there is no external signature/anchor.
 3. A fabricated in-window `ingest_runs` success row can satisfy the live-ingest check.
 4. Artifact-vs-DB content is not fully cross-checked; frozen artifact SHA-256 prevents post-scan file
@@ -68,7 +68,7 @@ ENGINEERING ACCEPTED and continue Phase 2 without reopening release-gate hardeni
 - P1-03: `goe/evidence/external.py` requires `curve_id,currency,region,curve_type,tenor,date,value,
   available_at,source`; all tenors must be the same curve/currency/region/type/date. Cross-currency,
   mixed curve, wrong type, missing tenor, different dates, stale and future data are rejected.
-- Tests: 226 passed offline (before the next proof).
+- Tests: 227 passed offline (before the next proof).
 
 
 ## P1 closure (latest)
@@ -78,3 +78,11 @@ ENGINEERING ACCEPTED and continue Phase 2 without reopening release-gate hardeni
 - Research dimensions now separated: `research_worthiness`, `evidence_readiness`,
   `handoff_eligibility`, `research_queue`. Current: 0 research, 4 watch, 0 eligible; N225 high
   worthiness/partial evidence/retained.
+
+
+## Final acceptance state (2026-11-15)
+- Final code `983854f`; proof `release_983854f9a3.json` (227/227); HEAD after docs commit.
+- GitHub Actions run 20 `43686642240` on `0d5d6ac`: **SUCCESS**; run 19 on `b888303`: **SUCCESS**.
+- Independent QA: `FINAL_ENG_P1_QA.md` PASS (no P0/P1); `FINAL_RESEARCH_P1_QA.md` PASS (no P0/P1, P2 only).
+- Phase 1 engineering accepted. Research: 0 research / 4 watch / 16 archive; 0 handoff eligible; N225 high-worthiness/partial-evidence/watch.
+- DISCOVERY VALUE: NOT VALIDATED. A-B: no eligible candidate, no task created.
