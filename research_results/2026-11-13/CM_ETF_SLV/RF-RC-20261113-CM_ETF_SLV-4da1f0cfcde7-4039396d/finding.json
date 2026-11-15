@@ -168,7 +168,7 @@
   ],
   "next_action": "Retain in A; acquire the listed missing evidence. No B handoff for unsupported deep asset research.",
   "input_sha256": "4039396dca75a789554f554fb9575084536b3a63c36f41b0d53a1037d0dc28c6",
-  "code_commit": "4fa60862cc168b532bcb2e11871e2c5bf8cda9f1",
+  "code_commit": "b93d5e66920ed95347568fe2e8c1f4c61570df84",
   "feature_version": "v2",
   "status": "INCONCLUSIVE",
   "data_dates": {

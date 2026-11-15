@@ -28,6 +28,8 @@ def main() -> int:
         instruments = json.loads(r["instruments_json"] or "[]")
         asset = str(instruments[0]) if instruments else str(payload.get("asset", "unknown"))
         out = ROOT / "research_results" / str(r["as_of"]) / asset / str(r["finding_id"])
+        if (out / "finding.json").exists():
+            continue  # never overwrite an existing versioned finding artifact
         out.mkdir(parents=True, exist_ok=True)
         (out / "finding.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2),
                                           encoding="utf-8")
