@@ -159,6 +159,11 @@ CREATE TABLE IF NOT EXISTS research_v2_events (
   at TEXT NOT NULL, event_type TEXT NOT NULL, note TEXT, payload_json TEXT
 );
 
+CREATE TABLE IF NOT EXISTS research_v2_findings (
+  finding_id TEXT PRIMARY KEY, research_id TEXT NOT NULL REFERENCES research_v2_candidates(research_id),
+  status TEXT NOT NULL, payload_json TEXT, artifact_path TEXT, created_at TEXT
+);
+
 CREATE TABLE IF NOT EXISTS research_v2_identity_map (
   old_id TEXT PRIMARY KEY, new_id TEXT NOT NULL, reason TEXT, created_at TEXT
 );
@@ -909,6 +914,45 @@ class Store:
                          VALUES(?,?,?,?) ON CONFLICT(old_id) DO UPDATE SET
                          new_id=excluded.new_id, reason=excluded.reason""",
                       (old_id, new_id, reason, utc_now()))
+
+    def update_research_hypotheses(self, research_id: str, updates: dict[str, dict[str, Any]]) -> None:
+        """Persist evidence-driven hypothesis status/evidence into the research snapshot."""
+        with self.transaction() as c:
+            if not c.execute("SELECT 1 FROM research_v2_candidates WHERE research_id=?",
+                             (research_id,)).fetchone():
+                raise ValueError(f"research candidate does not exist: {research_id}")
+            for key, upd in updates.items():
+                hid = f"{research_id}:{key}"
+                row = c.execute("SELECT payload_json FROM research_v2_hypotheses WHERE hypothesis_id=?",
+                                (hid,)).fetchone()
+                if row:
+                    payload = json.loads(row["payload_json"] or "{}")
+                    payload.update({"status": upd.get("status"), "evidence_update": upd})
+                    c.execute("UPDATE research_v2_hypotheses SET status=?,payload_json=? WHERE hypothesis_id=?",
+                              (upd.get("status"), json.dumps(payload, ensure_ascii=False, default=str), hid))
+                else:
+                    payload = {**upd, "id": key, "status": upd.get("status"),
+                               "label": upd.get("label") or key}
+                    c.execute("""INSERT INTO research_v2_hypotheses(hypothesis_id,research_id,
+                                 hypothesis_key,type,status,label,payload_json,created_at)
+                               VALUES(?,?,?,?,?,?,?,?)""",
+                              (hid, research_id, key, upd.get("type") or "research",
+                               upd.get("status"), payload["label"],
+                               json.dumps(payload, ensure_ascii=False, default=str), utc_now()))
+
+    def add_research_finding(self, finding_id: str, research_id: str, status: str,
+                             payload: dict[str, Any], artifact_path: str = "") -> None:
+        with self.transaction() as c:
+            if not c.execute("SELECT 1 FROM research_v2_candidates WHERE research_id=?",
+                             (research_id,)).fetchone():
+                raise ValueError(f"research candidate does not exist: {research_id}")
+            c.execute("""INSERT INTO research_v2_findings(finding_id,research_id,status,payload_json,
+                         artifact_path,created_at) VALUES(?,?,?,?,?,?)
+                       ON CONFLICT(finding_id) DO UPDATE SET status=excluded.status,
+                         payload_json=excluded.payload_json, artifact_path=excluded.artifact_path""",
+                      (finding_id, research_id, status,
+                       json.dumps(payload, ensure_ascii=False, default=str),
+                       artifact_path, utc_now()))
 
     def identity_lookup(self, old_id: str) -> str | None:
         row = self.conn.execute("SELECT new_id FROM research_v2_identity_map WHERE old_id=?",

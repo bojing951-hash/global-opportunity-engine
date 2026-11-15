@@ -123,3 +123,18 @@ ENGINEERING ACCEPTED and continue Phase 2 without reopening release-gate hardeni
   (not "explained"); D corrected to Cotton (CM_AGR_CT), not Live Cattle.
 - Global support now requires R²>0.50 (documented H-GLOBAL threshold); VIX/QQQ are not "supported".
 - 237 offline tests; proof/CI to be regenerated.
+
+
+## Research execution state (2026-11-15)
+CURRENT_GOAL: real research closed loop, N225.
+CURRENT_RESEARCH_CASE: RC-20261113-JP_EQ_N225-455ff8e1a32f (event 2026-11-06).
+CURRENT_HYPOTHESES: H-EQJP-LOCAL / GLOBAL / FX / POLICY / FUND; new H-EQJP-ASIA-REGIONAL.
+EVIDENCE_ACQUIRED: PIT cross-section; prior-US 2026-11-05 SPY -4.41%, QQQ -6.49%, VIX +69.66%;
+Asia same-day TOPIX -6.50%, TAIEX -4.51%, KOSPI -6.02%; USDJPY prior -0.07%.
+TESTS_EXECUTED: local, global lead, Asia regional, FX, 3-day reversal; explicit thresholds.
+RESEARCH_FINDINGS: `research_results/2026-11-13/N225/findings.md` and `finding.json`.
+RESEARCH_UNCERTAINTY: local Japan vs regional Asia; no sector/consensus; INCONCLUSIVE; no alpha.
+EVIDENCE_MISSING: TOPIX sector breadth, Asia semiconductor exposure, consensus, event-news calendar.
+OPEN_BLOCKERS: B cannot deep-research Japan equity/sector; see `B_CAPABILITY_REQUEST.md`.
+NEXT_ACTION: acquire sector breadth; independent QA; commit/proof/CI.
+ACCEPTANCE_STATUS: research A-D functional; E pending independent QA.

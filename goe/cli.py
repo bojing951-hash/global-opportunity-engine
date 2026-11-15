@@ -350,6 +350,22 @@ def cmd_release(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_research_case(args: argparse.Namespace) -> int:
+    """Execute a real research case; never a plan-only dossier."""
+    from .research_exec import execute_nikkei_case
+    if args.case != "nikkei":
+        print(f"unknown research case: {args.case}")
+        return 2
+    store = Store(args.db or str(project_root() / "data" / "goe.db"))
+    finding = execute_nikkei_case(store, as_of=args.as_of, out_dir=args.out)
+    print(f"finding={finding.finding_id} status={finding.status}")
+    print(f"event={finding.event_date} evidence_sha256={finding.input_sha256}")
+    for line in finding.learned:
+        print(f"  - {line}")
+    print(f"artifact={Path(args.out) / args.as_of / 'N225' / 'findings.md'}")
+    return 0
+
+
 def cmd_dossier(args: argparse.Namespace) -> int:
     """Generate source-bound Research Dossiers from a frozen candidate artifact."""
     import json as _json
@@ -561,6 +577,13 @@ def build_parser() -> argparse.ArgumentParser:
     t.add_argument("--ia-out", default=None)
     t.add_argument("--ia-timeout", type=int, default=300)
     t.set_defaults(func=cmd_triage)
+
+    rc = sub.add_parser("research-case", help="执行真实研究案例并产出 Finding")
+    rc.add_argument("--case", default="nikkei")
+    rc.add_argument("--as-of", default="2026-11-13")
+    rc.add_argument("--out", default="research_results")
+    rc.add_argument("--db", default=None)
+    rc.set_defaults(func=cmd_research_case)
 
     d = sub.add_parser("dossier", help="生成可检查的 Research Dossier")
     d.add_argument("--artifact", default=None)
