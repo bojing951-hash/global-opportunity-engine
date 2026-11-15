@@ -97,15 +97,22 @@ class ResearchOrchestrator:
         asset = str((c.get("instruments") or ["unknown"])[0])
         ac = str(c.get("asset_class"))
         if ac in ("equity_index", "equity_etf", "sector_equity"):
-            peers = {"HK_EQ_HSI": ("HK/China", "same_day"),
-                     "JP_EQ_N225": ("Japan", "same_day"),
-                     "KR_EQ_KOSPI": ("Korea", "same_day"),
+            # Build peers dynamically and never let the event asset be a peer.
+            pool = ["HK_EQ_HSI", "CN_EQ_CSI300", "JP_EQ_N225", "TW_EQ_TAIEX", "KR_EQ_KOSPI"]
+            pool = [x for x in pool if x != asset]
+            local = next((x for x in pool if x in ("HK_EQ_HSI", "CN_EQ_CSI300")), pool[0])
+            rest = [x for x in pool if x != local]
+            regional_a = rest[0]
+            regional_b = rest[1] if len(rest) > 1 else rest[0]
+            peers = {local: ("local", "same_day"),
+                     regional_a: ("regional A", "same_day"),
+                     regional_b: ("regional B", "same_day"),
                      "US_EQ_SPY": ("US broad", "prior_us_session"),
                      "US_EQ_QQQ": ("US growth", "prior_us_session"),
                      "US_VOL_VIX": ("VIX", "prior_us_session"),
                      "CN_FX_USDCNY": ("CNY", "prior_us_session")}
-            roles = {"local": "HK_EQ_HSI", "regional_tw": "JP_EQ_N225",
-                     "regional_kr": "KR_EQ_KOSPI", "global_equity": "US_EQ_SPY",
+            roles = {"local": local, "regional_tw": regional_a,
+                     "regional_kr": regional_b, "global_equity": "US_EQ_SPY",
                      "global_growth": "US_EQ_QQQ", "global_vol": "US_VOL_VIX",
                      "fx": "CN_FX_USDCNY"}
             kind = "equity_event"

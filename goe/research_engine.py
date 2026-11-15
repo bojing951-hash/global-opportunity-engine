@@ -160,7 +160,7 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
             "pass": bool(spy is not None and vix is not None and spy < -0.01 and vix > 0),
             "interpretation": "prior US session selloff/VIX spike is consistent with a global lead"}
         tests["asia_regional_test"] = {
-            "taiex_return": taiex, "kospi_return": kospi,
+            "regional_a_return": taiex, "regional_b_return": kospi,
             "pass": bool(taiex is not None and kospi is not None and taiex < -0.03 and kospi < -0.03),
             "interpretation": "North Asia co-move supported; tech-specific attribution not identified"}
         tests["fx_test"] = {"prior_usdjpy_return": fx,
