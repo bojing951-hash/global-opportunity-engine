@@ -35,3 +35,17 @@ def test_duplicate_claims_are_exposed_not_rewarded():
     c["competing_hypotheses"][1]["evidence_for"] = c["competing_hypotheses"][0]["evidence_for"]
     r = evaluate_candidates([c])["candidates"][0]
     assert r["duplicate_claims"] == 1
+
+
+def test_worthiness_and_readiness_are_separate():
+    c = cand("W", "intelligence", "evidence_gap", 1)
+    c.update(research_worthiness="high", evidence_readiness="partial",
+             research_queue="watch", handoff_eligibility="a_retained")
+    r = evaluate_candidates([c])
+    assert r["n_candidates"] == 1
+    assert r["n_research_candidates"] == 0
+    assert r["n_watch"] == 1
+    assert r["n_handoff_eligible"] == 0
+    assert r["candidates"][0]["worthiness"] == "high"
+    assert r["candidates"][0]["readiness"] == "partial"
+    assert r["discovery_value"] == "NOT VALIDATED"

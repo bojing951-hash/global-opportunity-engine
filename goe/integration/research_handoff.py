@@ -99,6 +99,9 @@ def eligible_for_handoff(rows) -> list:
         tier = r.get("priority_tier") if isinstance(r, dict) else getattr(r, "priority_tier", None)
         readiness = (r.get("research_readiness") if isinstance(r, dict)
                      else getattr(r, "research_readiness", None))
-        if tier in ("A", "B", "C") and readiness == "evidence_ok":
+        eligible = (r.get("handoff_eligibility") if isinstance(r, dict)
+                    else getattr(r, "handoff_eligibility", None))
+        if (eligible == "eligible" and tier in ("A", "B", "C")
+                and readiness == "evidence_ok"):
             out.append(r)
     return out

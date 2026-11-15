@@ -75,7 +75,9 @@ def test_research_candidate_contract():
         "evidence_against": [{"claim": "counter", "class": "unknown", "source": "gap",
                              "available_at": "2024-01-01"}],
         "evaluation_id": "D:2024-01-01:US_EQ_SPY", "method": "D_v2_triage",
-        "research_readiness": "evidence_ok",
+        "research_readiness": "evidence_ok", "research_worthiness": "high",
+        "evidence_readiness": "ready", "handoff_eligibility": "eligible",
+        "research_queue": "research",
     }
     validate_research_candidate(c)
     c["competing_hypotheses"] = c["competing_hypotheses"][:1]
@@ -229,7 +231,9 @@ def test_research_tier_requires_two_measured_discriminators():
         "priority_tier": "B", "priority_rank": 1, "rationale": "x",
         "data_quality": {}, "evidence_gaps": [], "evidence_for": [{"claim": "m"}],
         "evidence_against": [{"claim": "u"}], "evaluation_id": "D:x:y", "method": "D_v2_triage",
-        "research_readiness": "evidence_ok",
+        "research_readiness": "evidence_ok", "research_worthiness": "high",
+        "evidence_readiness": "ready", "handoff_eligibility": "eligible",
+        "research_queue": "research",
     }
     with pytest.raises(ContractError):
         validate_research_candidate(c)

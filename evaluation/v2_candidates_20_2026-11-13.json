@@ -184,7 +184,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L2, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L2, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, worthiness=low, evidence=missing, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -216,6 +216,10 @@
         "政策决议精确时点"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [],
       "evidence_against": [
         {
@@ -448,7 +452,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=12h",
+      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, worthiness=low, evidence=missing, cost=12h",
       "data_quality": {
         "score": 0.0,
         "gaps": [
@@ -480,6 +484,10 @@
         "换月因子"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [
         {
           "claim": "DXY/UST 可用",
@@ -713,7 +721,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=12h",
+      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, worthiness=low, evidence=missing, cost=12h",
       "data_quality": {
         "score": 0.0,
         "gaps": [
@@ -745,6 +753,10 @@
         "换月因子"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [
         {
           "claim": "DXY/UST 可用",
@@ -1002,7 +1014,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=3, discriminating=0, cost=12h",
+      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=3, discriminating=0, worthiness=low, evidence=missing, cost=12h",
       "data_quality": {
         "score": 0.5333333333333333,
         "gaps": [
@@ -1034,6 +1046,10 @@
         "换月因子"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [
         {
           "claim": "DXY/UST 可用",
@@ -1308,7 +1324,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=3, discriminating=0, cost=12h",
+      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=3, discriminating=0, worthiness=low, evidence=missing, cost=12h",
       "data_quality": {
         "score": 0.5333333333333333,
         "gaps": [
@@ -1340,6 +1356,10 @@
         "换月因子"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [
         {
           "claim": "同日跨资产全球因子回归",
@@ -1658,7 +1678,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L0, distinguishability L1, impact L0, open_hypotheses=4, discriminating=1, cost=10h",
+      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L0, distinguishability L1, impact L0, open_hypotheses=4, discriminating=1, worthiness=low, evidence=partial, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -1701,6 +1721,10 @@
         "政策决议精确时点"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "partial",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [
         {
           "claim": "本地基准回归",
@@ -1941,7 +1965,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, worthiness=low, evidence=missing, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -1984,6 +2008,10 @@
         "行业利率 beta"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [
         {
           "claim": "利率与相对强弱可观察",
@@ -2220,7 +2248,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=country_equity, materiality L2, gap L0, distinguishability L1, impact L1, open_hypotheses=2, discriminating=1, cost=10h",
+      "rationale": "tier intelligence: case=country_equity, materiality L2, gap L0, distinguishability L1, impact L1, open_hypotheses=2, discriminating=1, worthiness=low, evidence=partial, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -2274,6 +2302,10 @@
         "政策决议精确时点"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "partial",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [
         {
           "claim": "本地基准回归",
@@ -2490,7 +2522,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=fx, materiality L1, gap L1, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=fx, materiality L1, gap L1, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, worthiness=low, evidence=missing, cost=10h",
       "data_quality": {
         "score": 0.0,
         "gaps": [
@@ -2522,6 +2554,10 @@
         "CFTC 分位"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [
         {
           "claim": "汇率变动可观察",
@@ -2729,7 +2765,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=fx, materiality L1, gap L1, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=fx, materiality L1, gap L1, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, worthiness=low, evidence=missing, cost=10h",
       "data_quality": {
         "score": 0.0,
         "gaps": [
@@ -2761,6 +2797,10 @@
         "CFTC 分位"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [
         {
           "claim": "汇率变动可观察",
@@ -2994,7 +3034,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, worthiness=low, evidence=missing, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -3026,6 +3066,10 @@
         "政策决议精确时点"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [],
       "evidence_against": [
         {
@@ -3335,7 +3379,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=country_equity, materiality L3, gap L2, distinguishability L1, impact L2, open_hypotheses=4, discriminating=1, cost=10h",
+      "rationale": "tier intelligence: case=country_equity, materiality L3, gap L2, distinguishability L1, impact L2, open_hypotheses=4, discriminating=1, worthiness=high, evidence=partial, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -3389,6 +3433,10 @@
         "政策决议精确时点"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "high",
+      "evidence_readiness": "partial",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "watch",
       "evidence_for": [
         {
           "claim": "本地基准回归",
@@ -3655,7 +3703,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L2, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L2, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, worthiness=low, evidence=missing, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -3698,6 +3746,10 @@
         "政策决议精确时点"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [],
       "evidence_against": [
         {
@@ -3938,7 +3990,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=country_equity, materiality L2, gap L2, distinguishability L0, impact L1, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=country_equity, materiality L2, gap L2, distinguishability L0, impact L1, open_hypotheses=2, discriminating=0, worthiness=medium, evidence=missing, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -3970,6 +4022,10 @@
         "政策决议精确时点"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "medium",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "watch",
       "evidence_for": [],
       "evidence_against": [
         {
@@ -4211,7 +4267,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=us_equity_etf, materiality L2, gap L2, distinguishability L0, impact L2, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=us_equity_etf, materiality L2, gap L2, distinguishability L0, impact L2, open_hypotheses=2, discriminating=0, worthiness=medium, evidence=missing, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -4254,6 +4310,10 @@
         "资金流"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "medium",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "watch",
       "evidence_for": [
         {
           "claim": "同日跨资产全球因子回归",
@@ -4496,7 +4556,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=us_equity_etf, materiality L1, gap L2, distinguishability L1, impact L0, open_hypotheses=2, discriminating=1, cost=10h",
+      "rationale": "tier intelligence: case=us_equity_etf, materiality L1, gap L2, distinguishability L1, impact L0, open_hypotheses=2, discriminating=1, worthiness=low, evidence=partial, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -4539,6 +4599,10 @@
         "资金流"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "partial",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [
         {
           "claim": "同日跨资产全球因子回归",
@@ -4763,7 +4827,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L2, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L2, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, worthiness=low, evidence=missing, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -4806,6 +4870,10 @@
         "行业利率 beta"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [
         {
           "claim": "利率与相对强弱可观察",
@@ -5013,7 +5081,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L2, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L2, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, worthiness=low, evidence=missing, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -5056,6 +5124,10 @@
         "行业利率 beta"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [
         {
           "claim": "利率与相对强弱可观察",
@@ -5263,7 +5335,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=sector_equity, materiality L2, gap L2, distinguishability L0, impact L1, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=sector_equity, materiality L2, gap L2, distinguishability L0, impact L1, open_hypotheses=2, discriminating=0, worthiness=medium, evidence=missing, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -5306,6 +5378,10 @@
         "行业利率 beta"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "medium",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "watch",
       "evidence_for": [
         {
           "claim": "利率与相对强弱可观察",
@@ -5535,7 +5611,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=rates, materiality L2, gap L0, distinguishability L0, impact L1, open_hypotheses=3, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=rates, materiality L2, gap L0, distinguishability L0, impact L1, open_hypotheses=3, discriminating=0, worthiness=low, evidence=missing, cost=10h",
       "data_quality": {
         "score": 0.4666666666666666,
         "gaps": [
@@ -5578,6 +5654,10 @@
         "OIS 政策路径"
       ],
       "research_readiness": "evidence_gap",
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "handoff_eligibility": "a_retained",
+      "research_queue": "archive",
       "evidence_for": [
         {
           "claim": "名义利率变动可观察",

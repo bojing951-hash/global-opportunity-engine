@@ -185,8 +185,11 @@ def test_handoff_eligibility_excludes_intelligence():
     from goe.integration.research_handoff import eligible_for_handoff
 
     rows = [
-        {"research_id": "I", "priority_tier": "intelligence", "research_readiness": "evidence_gap"},
-        {"research_id": "A", "priority_tier": "A", "research_readiness": "evidence_ok"},
-        {"research_id": "B", "priority_tier": "B", "research_readiness": "evidence_gap"},
+        {"research_id": "I", "priority_tier": "intelligence", "research_readiness": "evidence_gap",
+         "handoff_eligibility": "a_retained"},
+        {"research_id": "A", "priority_tier": "A", "research_readiness": "evidence_ok",
+         "handoff_eligibility": "eligible"},
+        {"research_id": "B", "priority_tier": "B", "research_readiness": "evidence_gap",
+         "handoff_eligibility": "a_retained"},
     ]
     assert [r["research_id"] for r in eligible_for_handoff(rows)] == ["A"]

@@ -26,7 +26,8 @@ RESEARCH_REQUIRED = ["research_id", "as_of", "market", "asset_class", "instrumen
                      "required_data", "research_cost", "decision_impact",
                      "priority_tier", "priority_rank", "rationale", "data_quality",
                      "evidence_gaps", "evidence_for", "evidence_against", "evaluation_id", "method",
-                     "research_readiness"]
+                     "research_readiness", "research_worthiness", "evidence_readiness",
+                     "handoff_eligibility", "research_queue"]
 V1_WEIGHTS = {"anomaly_strength", "economic_impact", "expectation_gap",
               "repricing_potential", "catalyst", "timing_window",
               "risk_liquidity", "evidence_quality"}
@@ -129,6 +130,17 @@ def validate_research_candidate(c: dict[str, Any]) -> None:
         raise ContractError("decision_impact needs if_true/if_false")
     if c["priority_tier"] not in {"A", "B", "C", "intelligence"}:
         raise ContractError("priority_tier must be A/B/C/intelligence")
+    if c["research_worthiness"] not in {"high", "medium", "low"}:
+        raise ContractError("bad research_worthiness")
+    if c["evidence_readiness"] not in {"ready", "partial", "missing"}:
+        raise ContractError("bad evidence_readiness")
+    if c["research_queue"] not in {"research", "watch", "archive"}:
+        raise ContractError("bad research_queue")
+    if c["handoff_eligibility"] not in {"eligible", "a_retained"}:
+        raise ContractError("bad handoff_eligibility")
+    if c["handoff_eligibility"] == "eligible" and (
+            c["priority_tier"] == "intelligence" or c["evidence_readiness"] != "ready"):
+        raise ContractError("handoff eligible requires research tier + evidence ready")
     if c["priority_tier"] != "intelligence":
         discriminating = sum(
             1 for h in hyps if h.get("status") == "open" and any(

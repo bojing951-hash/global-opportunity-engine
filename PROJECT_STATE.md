@@ -14,7 +14,7 @@
 | P1-REL-1 | New proof after code freeze | P1 | DONE | `release_671f5faa5f.json`, 226 tests |
 | P1-QA-1 | Independent red-team on scan evidence | P1 | DONE | QA C/D/E/F found P1s, fixed; G/H final |
 | P1-QA-2 | Second independent pass / fresh clone | P1 | IN PROGRESS | QA G/H |
-| P1-CI-1 | GitHub Actions cross-OS run | P1 | FIXED LOCALLY; AWAIT GITHUB | egg-info ignore + CI rerun |
+| P1-CI-1 | GitHub Actions cross-OS run | P1 | **SUCCESS** | run 19 b888303, URL in P1_FIXES |
 
 ## Phase 2 tasks (not started until Phase 1 frozen)
 | ID | Objective | Status |
@@ -69,3 +69,12 @@ ENGINEERING ACCEPTED and continue Phase 2 without reopening release-gate hardeni
   available_at,source`; all tenors must be the same curve/currency/region/type/date. Cross-currency,
   mixed curve, wrong type, missing tenor, different dates, stale and future data are rejected.
 - Tests: 226 passed offline (before the next proof).
+
+
+## P1 closure (latest)
+- P1-01 GitHub Actions **SUCCESS** run 19 (`b888303`) after egg-info ignore/workflow cleanup.
+- P1-02 stable content-hash IDs + identity alias table.
+- P1-03 single-curve identity contract with cross-currency rejection.
+- Research dimensions now separated: `research_worthiness`, `evidence_readiness`,
+  `handoff_eligibility`, `research_queue`. Current: 0 research, 4 watch, 0 eligible; N225 high
+  worthiness/partial evidence/retained.

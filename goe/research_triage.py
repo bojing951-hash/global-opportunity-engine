@@ -49,6 +49,10 @@ class ResearchCandidate:
     data_quality: dict[str, Any] = field(default_factory=dict)
     evidence_gaps: list[str] = field(default_factory=list)
     research_readiness: str = ""
+    research_worthiness: str = ""
+    evidence_readiness: str = ""
+    handoff_eligibility: str = ""
+    research_queue: str = ""
     evidence_for: list[dict[str, Any]] = field(default_factory=list)
     evidence_against: list[dict[str, Any]] = field(default_factory=list)
     evaluation_id: str = ""
@@ -233,7 +237,19 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
         dist_level = 2 if discriminating_count >= 2 else (1 if discriminating_count == 1 else 0)
         impact_level = 2 if (float(spec.importance) >= 0.8 and gap_level > 0) else \
             (1 if float(spec.importance) >= 0.5 else 0)
-        if mat_level < 1 or gap_level == 0 or not discriminating or discriminating_count < 2:
+        # Worthiness is about the question; readiness is about evidence. They are
+        # deliberately independent so a valuable but evidence-poor question is
+        # retained on the research watch queue instead of being discarded.
+        if mat_level >= 3 and gap_level >= 2 and impact_level >= 2 and float(spec.importance) >= 0.7:
+            worthiness = "high"
+        elif mat_level >= 2 and gap_level >= 1 and impact_level >= 1:
+            worthiness = "medium"
+        else:
+            worthiness = "low"
+        readiness = ("ready" if discriminating_count >= 2 else
+                     "partial" if discriminating_count == 1 else "missing")
+        if (worthiness == "low" or readiness != "ready" or mat_level < 1
+                or gap_level == 0 or not discriminating):
             tier = "intelligence"
         elif mat_level >= 3 and gap_level >= 2 and dist_level >= 2 and impact_level >= 2:
             tier = "A"
@@ -266,10 +282,14 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
             rationale=f"tier {tier}: case={bundle['case']}, materiality L{mat_level}, "
                       f"gap L{gap_level}, distinguishability L{dist_level}, impact L{impact_level}, "
                       f"open_hypotheses={bundle['open_count']}, discriminating={discriminating_count}, "
-                      f"cost={cost['hours']}h",
+                      f"worthiness={worthiness}, evidence={readiness}, cost={cost['hours']}h",
             data_quality={"score": float(gap.confidence), "gaps": unknowns,
                           "cross_asset": fits, "discriminating_hypotheses": discriminating_count},
             research_readiness="evidence_ok" if discriminating_count >= 2 else "evidence_gap",
+            research_worthiness=worthiness, evidence_readiness=readiness,
+            handoff_eligibility=("eligible" if tier in ("A", "B", "C") else "a_retained"),
+            research_queue=("research" if tier in ("A", "B", "C")
+                            else ("watch" if worthiness != "low" else "archive")),
             evidence_gaps=unknowns, theme=theme,
             evidence_for=evidence_for, evidence_against=evidence_against,
             evaluation_id=f"D:{as_of}:{iid}",
