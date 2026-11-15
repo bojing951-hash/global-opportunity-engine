@@ -1,0 +1,237 @@
+{
+  "finding_id": "RF-RC-20261113-US_EQ_QQQ-ed67c9acfee9-a379204b",
+  "research_id": "RC-20261113-US_EQ_QQQ-ed67c9acfee9",
+  "decision_as_of": "2026-11-13",
+  "event_date": "2026-11-05",
+  "observed": {
+    "US_EQ_QQQ": {
+      "label": "US growth",
+      "return": 0.009733,
+      "data_date": "2026-11-04",
+      "alignment": "prior_us_session"
+    },
+    "HK_EQ_HSI": {
+      "label": "HK/China",
+      "return": 0.036685,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "JP_EQ_N225": {
+      "label": "Japan",
+      "return": -0.017861,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "KR_EQ_KOSPI": {
+      "label": "Korea",
+      "return": -0.052782,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "US broad",
+      "return": 0.016518,
+      "data_date": "2026-11-04",
+      "alignment": "prior_us_session"
+    },
+    "US_VOL_VIX": {
+      "label": "VIX",
+      "return": -0.202592,
+      "data_date": "2026-11-04",
+      "alignment": "prior_us_session"
+    },
+    "CN_FX_USDCNY": {
+      "label": "CNY",
+      "return": 0.003324,
+      "data_date": "2026-11-04",
+      "alignment": "prior_us_session"
+    }
+  },
+  "plan": {
+    "question": "Invesco QQQ (Nasdaq 100) 近期 price_return_shock（up，分数 0.13）；1 个月收益 -5.6%；回撤分位 0.29。",
+    "case_kind": "equity_event",
+    "peers": {
+      "HK_EQ_HSI": [
+        "HK/China",
+        "same_day"
+      ],
+      "JP_EQ_N225": [
+        "Japan",
+        "same_day"
+      ],
+      "KR_EQ_KOSPI": [
+        "Korea",
+        "same_day"
+      ],
+      "US_EQ_SPY": [
+        "US broad",
+        "prior_us_session"
+      ],
+      "US_EQ_QQQ": [
+        "US growth",
+        "prior_us_session"
+      ],
+      "US_VOL_VIX": [
+        "VIX",
+        "prior_us_session"
+      ],
+      "CN_FX_USDCNY": [
+        "CNY",
+        "prior_us_session"
+      ]
+    },
+    "missing": [
+      "TOPIX sector breadth",
+      "Asia semiconductor exposure",
+      "consensus revisions",
+      "event/news calendar"
+    ],
+    "pit": "same-day for event market; prior US session for US/FX in equity case"
+  },
+  "evidence": {
+    "source": "GOE prices DB",
+    "event_available_at": "2026-11-05",
+    "decision_as_of": "2026-11-13",
+    "data_hash": "f94e12e0b336eab1a519f36ba79f930cf78d6251f739e6afb20eb42ec1a07b8f",
+    "data_dates": {
+      "US_EQ_QQQ": "2026-11-04",
+      "HK_EQ_HSI": "2026-11-05",
+      "JP_EQ_N225": "2026-11-05",
+      "KR_EQ_KOSPI": "2026-11-05",
+      "US_EQ_SPY": "2026-11-04",
+      "US_VOL_VIX": "2026-11-04",
+      "CN_FX_USDCNY": "2026-11-04"
+    },
+    "input_rows": 779
+  },
+  "tests": {
+    "historical_percentile": {
+      "event_return": 0.009733,
+      "percentile": 0.7896825396825397,
+      "pass": false,
+      "interpretation": "two-sided 5% tail of the trailing 252-session return distribution"
+    },
+    "local_asia_test": {
+      "topix_return": 0.036685,
+      "pass": false,
+      "interpretation": "TOPIX co-move supports broad Japan/local; association only"
+    },
+    "global_lead_test": {
+      "prior_us_session": "2026-11-04",
+      "spy_return": 0.016518,
+      "qqq_return": 0.009733,
+      "vix_return": -0.202592,
+      "pass": false,
+      "interpretation": "prior US session selloff/VIX spike is consistent with a global lead"
+    },
+    "asia_regional_test": {
+      "taiex_return": -0.017861,
+      "kospi_return": -0.052782,
+      "pass": false,
+      "interpretation": "North Asia co-move supported; tech-specific attribution not identified"
+    },
+    "fx_test": {
+      "prior_usdjpy_return": 0.003324,
+      "pass": true,
+      "interpretation": "small FX move cannot explain the equity move"
+    },
+    "reversal_test": {
+      "n225_next_3d": 0.042825,
+      "pass": true,
+      "interpretation": "only bars after event through as-of"
+    }
+  },
+  "hypothesis_updates": {
+    "H-EQ-LOCAL": {
+      "status": "INCONCLUSIVE",
+      "label": "Local market factor",
+      "type": "local_market",
+      "new_evidence": "TOPIX same-day",
+      "value": 0.036685,
+      "note": "Broad co-move; not an independent instrument."
+    },
+    "H-USEQ-GLOBAL": {
+      "status": "WEAKENED_BY_EVIDENCE",
+      "label": "Global risk lead",
+      "type": "global_risk",
+      "new_evidence": "prior US session SPY/QQQ/VIX",
+      "value": {
+        "SPY": 0.016518,
+        "QQQ": 0.009733,
+        "VIX": -0.202592
+      },
+      "note": "Prior US selloff/VIX spike preceded Asia; same-date US close is not used."
+    },
+    "H-EQ-FX": {
+      "status": "INCONCLUSIVE",
+      "label": "FX/cross-border flow",
+      "type": "fx",
+      "new_evidence": "prior USDJPY",
+      "value": 0.003324,
+      "note": "Small FX move cannot explain the equity move by itself."
+    },
+    "H-EQ-POLICY": {
+      "status": "INSUFFICIENT_DATA",
+      "label": "Policy/regulatory event",
+      "type": "policy",
+      "new_evidence": "config/events.yaml calendar check",
+      "value": null,
+      "note": "No scheduled event in config/events.yaml; not proof no policy news."
+    },
+    "H-USEQ-FUND": {
+      "status": "INSUFFICIENT_DATA",
+      "label": "Fundamentals",
+      "type": "fundamental",
+      "new_evidence": "consensus unavailable",
+      "value": null,
+      "note": "No authorized consensus data; no fabrication."
+    },
+    "H-EQ-REGIONAL": {
+      "status": "INCONCLUSIVE",
+      "label": "Regional co-move",
+      "type": "regional_asia",
+      "new_evidence": "Taiwan/Korea same-day",
+      "value": {
+        "TAIEX": -0.017861,
+        "KOSPI": -0.052782
+      },
+      "note": "Regional co-move; sector/tech attribution unavailable."
+    }
+  },
+  "learned": [
+    "US_EQ_QQQ event 2026-11-05: +0.97%; HK/China +3.67%.",
+    "Prior US session 2026-11-04: +1.65%, +0.97%, -20.26%; global lead consistent.",
+    "Japan -1.79%, Korea -5.28%; regional co-move supported.",
+    "CNY +0.33%; too small to be primary.",
+    "Three-session reversal +4.28%.",
+    "Local and regional explanations both survive; broad indices cannot separate."
+  ],
+  "still_unknown": [
+    "TOPIX sector breadth",
+    "Asia semiconductor exposure",
+    "consensus revisions",
+    "event/news calendar"
+  ],
+  "next_action": "Retain in A; acquire the listed missing evidence. No B handoff for unsupported deep asset research.",
+  "input_sha256": "a379204b735cb6f6ae6c5daf30e84a8dd41bb668e6216ca189891af9bd5f00bd",
+  "code_commit": "92df1b7dfc4c5292010296579d24a9262d8e9ea4",
+  "feature_version": "v2",
+  "status": "INCONCLUSIVE",
+  "data_dates": {
+    "US_EQ_QQQ": "2026-11-04",
+    "HK_EQ_HSI": "2026-11-05",
+    "JP_EQ_N225": "2026-11-05",
+    "KR_EQ_KOSPI": "2026-11-05",
+    "US_EQ_SPY": "2026-11-04",
+    "US_VOL_VIX": "2026-11-04",
+    "CN_FX_USDCNY": "2026-11-04"
+  },
+  "rules": {
+    "historical_percentile": "two-sided 5% tail of the trailing 252-session return distribution",
+    "local_asia_test": "TOPIX co-move supports broad Japan/local; association only",
+    "global_lead_test": "prior US session selloff/VIX spike is consistent with a global lead",
+    "asia_regional_test": "North Asia co-move supported; tech-specific attribution not identified",
+    "fx_test": "small FX move cannot explain the equity move",
+    "reversal_test": "only bars after event through as-of"
+  }
+}
