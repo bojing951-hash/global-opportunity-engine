@@ -1,0 +1,80 @@
+{
+  "created_at": "2026-11-15T04:38:17Z",
+  "git_commit": "f2b9d9eaf07223edb62fb008246af148d362fb92",
+  "git_branch": "architecture/research-v2",
+  "git_dirty": false,
+  "scan": {
+    "scan_id": "scan-20261115T043427Z-593a4f",
+    "as_of": "2026-11-13",
+    "status": "success",
+    "config_hash": "7d4d8ae1a7ca110204f522359f57e8c627c89cdec753eea29b51af4a486fc187",
+    "data_hash": "9350b109d05e0131412fc8631a6620eae73072ba17c208271b43b1d384c04054",
+    "started_at": "2026-11-15T04:34:27Z"
+  },
+  "scan_evidence": {
+    "scan_id": "scan-20261115T043427Z-593a4f",
+    "as_of": "2026-11-13",
+    "mode": "offline",
+    "config_hash": "7d4d8ae1a7ca110204f522359f57e8c627c89cdec753eea29b51af4a486fc187",
+    "data_hash": "9350b109d05e0131412fc8631a6620eae73072ba17c208271b43b1d384c04054",
+    "prices": 358310,
+    "indicators": 159508,
+    "anomalies": 1506,
+    "transmissions": 5,
+    "opportunities": 11,
+    "report_path": "reports/report_2026-11-13.md",
+    "scan_json_path": "reports/scan_2026-11-13.json",
+    "pipeline_path": "exports/pipeline_2026-11-13.json",
+    "report_sha256": "c901cb9403b892e31d196a82c4e3459dda3b418e97b112a67833042a4443dd90",
+    "scan_json_sha256": "308ba379f2a57e3e58e8c4b66bc017b3b1d26f749f956f93344c8ed99a7e25e2",
+    "pipeline_sha256": "1fa671a13c43df2f854115567038ce4df06fdc54902fb5d6bd4f4037a5623661",
+    "readiness_ok": true,
+    "ingest_status": "offline"
+  },
+  "scan_counts": {
+    "anomalies": 1506,
+    "opportunities": 11,
+    "transmissions": 5,
+    "prices": 358310,
+    "indicators": 159508
+  },
+  "opportunities_by_status": {
+    "excluded": 4,
+    "invalidated": 2,
+    "low_priority": 3,
+    "watch": 2
+  },
+  "test_evidence": {
+    "proof_path": "audit/test_evidence/20261115T043650Z_f2b9d9eaf0.proof.json",
+    "category": "offline",
+    "passed": 218,
+    "skipped": 0,
+    "commands": [
+      "{python}",
+      "-c",
+      "import os,sys;sys.path=[p for p in sys.path if p not in ('', '.')];import pytest;sys.path.insert(0, os.getcwd());raise SystemExit(pytest.main(sys.argv[1:]))",
+      "tests",
+      "-o",
+      "addopts=",
+      "-q",
+      "-m",
+      "not network and not realdata",
+      "--junitxml",
+      "{junit}"
+    ],
+    "required_sha256": "4a3b56e7cc202beaf2067e0586dbe34a5aabd260b750de9d249e53602f2f9045",
+    "executed_sha256": "4a3b56e7cc202beaf2067e0586dbe34a5aabd260b750de9d249e53602f2f9045",
+    "rerun": {
+      "passed": 218,
+      "executed": 218,
+      "skipped": 0,
+      "log_sha256": "ad27a4622f214126e71899680b1017b12e1fa80ee2fd8bbed474f2937245c66c"
+    }
+  },
+  "artifacts": {
+    "reports/report_2026-11-13.md": "c901cb9403b892e31d196a82c4e3459dda3b418e97b112a67833042a4443dd90",
+    "reports/scan_2026-11-13.json": "308ba379f2a57e3e58e8c4b66bc017b3b1d26f749f956f93344c8ed99a7e25e2",
+    "exports/pipeline_2026-11-13.json": "1fa671a13c43df2f854115567038ce4df06fdc54902fb5d6bd4f4037a5623661"
+  },
+  "notes": "Phase1 scan evidence v4: artifact hashes; 218 tests"
+}
