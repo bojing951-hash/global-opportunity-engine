@@ -8,6 +8,7 @@ from typing import Any
 from .db import Store
 from .research_engine import ResearchSpec, execute_spec, spec_for_asset
 from .research_planner import plan as plan_evidence
+from .research_contract import EventNotResolved, resolve_event
 from .research_identity import research_theme_id
 
 STATES = ("DETECTED", "PLANNED", "EVIDENCE_PENDING", "EVIDENCE_ACQUIRED",
@@ -56,7 +57,12 @@ class ResearchOrchestrator:
             raise
         self.store.set_research_workflow_state(spec.research_id, "INCONCLUSIVE"
                                                 if finding.status == "INCONCLUSIVE" else "COMPLETED")
-        self.store.add_research_event(spec.research_id, "research:evaluated", finding.status)
+        action = ("WAIT_FOR_NEW_DATA" if any(str(x) == "INSUFFICIENT_DATA"
+                                              for x in finding.hypothesis_updates.values())
+                  else ("STOP_LOW_VALUE_RESEARCH" if finding.status == "INCONCLUSIVE"
+                        else "COMPLETE_RESEARCH"))
+        self.store.add_research_event(spec.research_id, "research:evaluated", finding.status,
+                                      payload={"next_action": action})
         return finding
 
     def next_case(self) -> ResearchSpec | None:
@@ -89,7 +95,13 @@ class ResearchOrchestrator:
             return None
         ranked.sort(key=lambda x: (-x[0], x[1]))
         _, _, c = ranked[0]
-        spec = self._spec_from_candidate(c)
+        try:
+            spec = self._spec_from_candidate(c)
+        except EventNotResolved as exc:
+            self.store.set_research_workflow_state(c["research_id"], "WAITING_FOR_DATA")
+            self.store.add_research_event(c["research_id"], "research:event_not_resolved",
+                                          str(exc))
+            return None
         self.register(spec)
         return spec
 
@@ -140,16 +152,8 @@ class ResearchOrchestrator:
         if not hyps:
             hyps = [("H-UNKNOWN", {"label": "unresolved", "type": "research"})]
             hmap["unknown"] = "H-UNKNOWN"
-        event_override = None
-        try:
-            ev = self.store.conn.execute(
-                """SELECT as_of FROM anomalies WHERE instrument_id=? AND as_of<=?
-                   AND (direction LIKE '%down%' OR direction LIKE '%deep_drawdown%')
-                   ORDER BY as_of DESC LIMIT 1""", (asset, c.get("as_of"))).fetchone()
-            if ev:
-                event_override = ev["as_of"]
-        except Exception:
-            event_override = None
+        contract = resolve_event(c, self.store.conn)
+        event_override = contract.event_end
         return ResearchSpec(
             event_override=event_override,
             research_id=str(c["research_id"]),
@@ -158,6 +162,7 @@ class ResearchOrchestrator:
             as_of=str(c.get("as_of")), asset=asset, market=str(c.get("market") or ""),
             asset_class=ac, question=str(c.get("observed_phenomenon") or "unexplained move"),
             case_kind=kind, peers=peers, hypotheses=hyps, roles=roles,
+            event_contract=contract.to_dict(),
             hypothesis_ids={"local": hmap.get("local", "H-EQ-LOCAL"),
                             "global": hmap.get("global", "H-EQ-GLOBAL"),
                             "fx": hmap.get("fx", "H-EQ-FX"),

@@ -65,6 +65,7 @@ class ResearchSpec:
     event_override: str | None = None
     roles: dict[str, str] = field(default_factory=dict)
     hypothesis_ids: dict[str, str] = field(default_factory=dict)
+    event_contract: dict[str, Any] | None = None
     extra: dict[str, Any] = field(default_factory=dict)
 
 
@@ -136,6 +137,9 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
 
     def hid(k: str, default: str) -> str:
         return H.get(k, default)
+
+    def hs(passed, supported: str, weak: str = "INCONCLUSIVE") -> str:
+        return "INSUFFICIENT_DATA" if passed is None else (supported if passed else weak)
     tests: dict[str, Any] = {"historical_percentile": {
         "event_return": n225, "percentile": pct,
         "pass": bool(pct is not None and (pct <= 0.05 or pct >= 0.95)),
@@ -153,14 +157,14 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         kr_label = observed.get(R.get("regional_kr", ""), {}).get("label", "regional market B")
         fx_label = observed.get(R.get("fx", ""), {}).get("label", "FX")
         tests["local_asia_test"] = {
-            "topix_return": topix, "pass": bool(topix is not None and topix < -0.03),
+            "topix_return": topix, "pass": (None if topix is None else topix < -0.03),
             "interpretation": f"{local_label} co-move; association only"}
         tests["global_lead_test"] = {
             "prior_us_session": prior, "spy_return": spy, "qqq_return": qqq, "vix_return": vix,
-            "pass": bool(spy is not None and vix is not None and spy < -0.01 and vix > 0),
+            "pass": (None if spy is None or vix is None else (spy < -0.01 and vix > 0)),
             "interpretation": "prior US session selloff/VIX spike is consistent with a global lead"}
-        regional_pass = bool(taiex is not None and kospi is not None
-                             and taiex < -0.03 and kospi < -0.03)
+        regional_pass = (None if taiex is None or kospi is None
+                         else (taiex < -0.03 and kospi < -0.03))
         tests["asia_regional_test"] = {
             "regional_a_return": taiex, "regional_b_return": kospi,
             "pass": regional_pass,
@@ -168,7 +172,7 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
                               if regional_pass else
                               "Regional peers did not both meet the pre-set threshold")}
         tests["fx_test"] = {"prior_usdjpy_return": fx,
-                            "pass": bool(fx is not None and abs(fx) >= 0.20 * abs(n225 or 0.01)),
+                            "pass": (None if fx is None else abs(fx) >= 0.20 * abs(n225 or 0.01)),
                             "interpretation": "small FX move cannot explain the equity move"}
         idx = returns.index; pos = idx.get_loc(pd.Timestamp(event))
         nxt = returns[spec.asset].iloc[pos + 1: pos + 4]
@@ -190,16 +194,16 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         except Exception:
             pass
         updates = {
-            hid("local", "H-EQ-LOCAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["local_asia_test"]["pass"] else "INCONCLUSIVE",
+            hid("local", "H-EQ-LOCAL"): {"status": hs(tests["local_asia_test"]["pass"], "SUPPORTED_BY_AVAILABLE_EVIDENCE"),
                              "label": "Local market factor", "type": "local_market",
                              "new_evidence": f"{local_label} same-day", "value": topix,
                              "note": ("Local peer co-moved; not an independent instrument." if local_ok
                                       else "Local peer did not meet its pre-set threshold; no local support.")},
-            hid("global", "H-EQ-GLOBAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["global_lead_test"]["pass"] else "WEAKENED_BY_EVIDENCE",
+            hid("global", "H-EQ-GLOBAL"): {"status": hs(tests["global_lead_test"]["pass"], "SUPPORTED_BY_AVAILABLE_EVIDENCE", "WEAKENED_BY_EVIDENCE"),
                               "label": "Global risk lead", "type": "global_risk",
                               "new_evidence": "prior US session SPY/QQQ/VIX", "value": {"SPY": spy, "QQQ": qqq, "VIX": vix},
                               "note": "Prior US selloff/VIX spike preceded Asia; same-date US close is not used."},
-            hid("fx", "H-EQ-FX"): {"status": "WEAKENED_BY_EVIDENCE" if not tests["fx_test"]["pass"] else "INCONCLUSIVE",
+            hid("fx", "H-EQ-FX"): {"status": hs(tests["fx_test"]["pass"], "INCONCLUSIVE", "WEAKENED_BY_EVIDENCE"),
                           "label": "FX/cross-border flow", "type": "fx", "new_evidence": "prior USDJPY", "value": fx,
                           "note": "Small FX move cannot explain the equity move by itself."},
             hid("policy", "H-EQ-POLICY"): {"status": "INSUFFICIENT_DATA" if policy_event is None else "INCONCLUSIVE",
@@ -210,7 +214,7 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
             hid("fund", "H-EQ-FUND"): {"status": "INSUFFICIENT_DATA", "label": "Fundamentals", "type": "fundamental",
                             "new_evidence": "consensus unavailable", "value": None,
                             "note": "No authorized consensus data; no fabrication."},
-            hid("regional", "H-EQ-REGIONAL"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["asia_regional_test"]["pass"] else "INCONCLUSIVE",
+            hid("regional", "H-EQ-REGIONAL"): {"status": hs(tests["asia_regional_test"]["pass"], "SUPPORTED_BY_AVAILABLE_EVIDENCE"),
                                      "label": "Regional co-move", "type": "regional_asia",
                                      "new_evidence": "regional peers same-day",
                                      "value": {tw_label: taiex, kr_label: kospi},
@@ -236,13 +240,13 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
     elif case_kind == "fx_level":
         eur, jpy, spy, vix, ief = role("cross1"), role("cross2"), role("risk"), role("vol"), role("rates")
         tests["broad_usd_test"] = {"eurusd": eur, "usdjpy": jpy,
-                                   "pass": bool(eur is not None and jpy is not None and eur < -0.002 and jpy > 0.002),
+                                   "pass": (None if eur is None or jpy is None else (eur < -0.002 and jpy > 0.002)),
                                    "interpretation": "EUR lower and USDJPY higher confirms broad USD strength"}
         tests["rate_test"] = {"ief_return": ief,
-                              "pass": bool(ief is not None and ief < 0 and n225 > 0),
+                              "pass": (None if ief is None else (ief < 0 and n225 > 0)),
                               "interpretation": "US duration down (yields up) alongside USD up is consistent with rate differential"}
         tests["risk_test"] = {"spy": spy, "vix": vix,
-                              "pass": bool(spy is not None and vix is not None and spy < 0 and vix > 0),
+                              "pass": (None if spy is None or vix is None else (spy < 0 and vix > 0)),
                               "interpretation": "risk-off / safe-haven bid"}
         updates = {
             hid("rates", "H-FX-RATES"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["rate_test"]["pass"] else "INCONCLUSIVE",
@@ -269,16 +273,16 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
     elif case_kind == "commodity_event":
         dxy, gold, ief, spy, vix = role("dollar"), role("gold"), role("rates"), role("risk"), role("vol")
         tests["dollar_test"] = {"dxy_return": dxy,
-                                "pass": bool(dxy is not None and n225 < 0 and dxy > 0),
+                                "pass": (None if dxy is None else (n225 < 0 and dxy > 0)),
                                 "interpretation": "USD up with commodity down is consistent with dollar channel"}
         tests["real_rate_test"] = {"ief_return": ief,
-                                   "pass": bool(ief is not None and ief < 0 and n225 < 0),
+                                   "pass": (None if ief is None else (ief < 0 and n225 < 0)),
                                    "interpretation": "duration down (yields up) with commodity down is consistent with real-rate channel"}
         tests["risk_test"] = {"spy": spy, "vix": vix,
-                              "pass": bool(spy is not None and vix is not None and spy < 0 and vix > 0),
+                              "pass": (None if spy is None or vix is None else (spy < 0 and vix > 0)),
                               "interpretation": "risk-off channel"}
         tests["gold_test"] = {"gold_return": gold,
-                              "pass": bool(gold is not None and gold < 0),
+                              "pass": (None if gold is None else gold < 0),
                               "interpretation": "gold co-move checks a broad commodity/metal factor"}
         updates = {
             hid("dollar", "H-CMD-DOLLAR"): {"status": "SUPPORTED_BY_AVAILABLE_EVIDENCE" if tests["dollar_test"]["pass"] else "INCONCLUSIVE",
