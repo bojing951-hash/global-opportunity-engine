@@ -18,3 +18,8 @@ Current real result (2026-11-13, 20 candidates):
   BLOCKED (no licensed public history) and is not fabricated.
 
 This is a deliberate reduction in output, not a failure to generate candidates.
+
+## Correction after independent QA
+The first gate run counted a low-R² FX fit and a local fit attached to a generic GLOBAL hypothesis.
+Both were fixed: FX evidence requires R²>=0.30; local evidence attaches only to an explicit
+`-LOCAL` hypothesis. Re-run result remains **0 research / 20 intelligence**.

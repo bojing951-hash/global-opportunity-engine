@@ -82,3 +82,14 @@ patch by retuning thresholds.
 3. Wire at least one missing series (same-day cross-asset returns / consensus revisions / OIS path)
    so the distinguishing-evidence step can actually run.
 4. Prune stale worktrees and add cleanup for `goe-junit-*`.
+
+## Addendum 2026-11-15 — evidence-gate round
+- New proof: `audit/test_evidence/20261115T..._d50c10d...proof.json` at code `d50c10d`;
+  **209 passed = 209 executed = required**, 0 skipped, 10 deselected.
+- `verify-release` replay accepted on macOS.
+- New code: cross-asset measured evidence, evidence-sufficiency gate (0 research / 20 intelligence),
+  PIT external-evidence adapters, CI workflow.
+- Post-change red-team: `audit/QA_EVIDENCE_ENGINEERING.md` PASS WITH ISSUES (P1: GitHub Actions
+  never actually ran); `audit/QA_ZERO_GATE.md` found a local/global evidence-labelling P1 and a
+  stale documentation line; both were fixed in `d50c10d`, but no fresh independent re-audit of that
+  fix exists in this round. Treat the evidence-gate research status as **PARTIAL / NOT VALIDATED**.
