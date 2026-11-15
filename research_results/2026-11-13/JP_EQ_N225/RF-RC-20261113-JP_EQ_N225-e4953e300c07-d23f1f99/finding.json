@@ -151,7 +151,7 @@
   "hypothesis_updates": {
     "H-EQJP-LOCAL": {
       "status": "SUPPORTED_BY_AVAILABLE_EVIDENCE",
-      "label": "Local market factor",
+      "label": "Japan broad local market factor",
       "type": "local_market",
       "new_evidence": "TOPIX same-day",
       "value": -0.064966,
@@ -159,7 +159,7 @@
     },
     "H-EQJP-GLOBAL": {
       "status": "SUPPORTED_BY_AVAILABLE_EVIDENCE",
-      "label": "Global risk lead",
+      "label": "US/global risk lead",
       "type": "global_risk",
       "new_evidence": "prior US session SPY/QQQ/VIX",
       "value": {
@@ -171,7 +171,7 @@
     },
     "H-EQJP-FX": {
       "status": "WEAKENED_BY_EVIDENCE",
-      "label": "FX/cross-border flow",
+      "label": "JPY/cross-border flow",
       "type": "fx",
       "new_evidence": "prior USDJPY",
       "value": -0.000707,
@@ -187,7 +187,7 @@
     },
     "H-EQJP-FUND": {
       "status": "INSUFFICIENT_DATA",
-      "label": "Fundamentals",
+      "label": "Japan fundamentals",
       "type": "fundamental",
       "new_evidence": "consensus unavailable",
       "value": null,
@@ -195,7 +195,7 @@
     },
     "H-EQJP-ASIA-REGIONAL": {
       "status": "SUPPORTED_BY_AVAILABLE_EVIDENCE",
-      "label": "Regional co-move",
+      "label": "Regional North Asia co-move",
       "type": "regional_asia",
       "new_evidence": "Taiwan/Korea same-day",
       "value": {
@@ -207,11 +207,11 @@
   },
   "learned": [
     "JP_EQ_N225 event 2026-11-06: -5.96%; TOPIX -6.50%.",
-    "Prior US session 2026-11-05: -4.41%, -6.49%, +69.66%; global lead consistent.",
-    "TAIEX -4.51%, KOSPI -6.02%; regional co-move supported.",
-    "USDJPY -0.07%; too small to be primary.",
+    "Prior US session 2026-11-05: SPY -4.41%, QQQ -6.49%, VIX +69.66%; global lead consistent.",
+    "Taiwan -4.51%, Korea -6.02%; North Asia co-move supported.",
+    "Prior USDJPY -0.07%; too small to be primary.",
     "Three-session reversal +6.64%.",
-    "Local and regional explanations both survive; broad indices cannot separate."
+    "Local Japan and regional North Asia both survive; broad indices cannot separate."
   ],
   "still_unknown": [
     "TOPIX sector breadth",
@@ -221,7 +221,7 @@
   ],
   "next_action": "Retain in A; acquire the listed missing evidence. No B handoff for unsupported deep asset research.",
   "input_sha256": "d23f1f9969a0b4a2bdb507055208ee82a91fac33025ca83f9b47d4a0ff3c9826",
-  "code_commit": "b93d5e66920ed95347568fe2e8c1f4c61570df84",
+  "code_commit": "4fa60862cc168b532bcb2e11871e2c5bf8cda9f1",
   "feature_version": "v2",
   "status": "INCONCLUSIVE",
   "data_dates": {

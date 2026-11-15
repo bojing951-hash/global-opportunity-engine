@@ -1,0 +1,182 @@
+{
+  "finding_id": "RF-RC-20261113-CM_ETF_SLV-4da1f0cfcde7-d1df303f",
+  "research_id": "RC-20261113-CM_ETF_SLV-4da1f0cfcde7",
+  "decision_as_of": "2026-11-13",
+  "event_date": "2026-06-09",
+  "observed": {
+    "CM_ETF_SLV": {
+      "label": "CM_ETF_SLV",
+      "return": -0.041734,
+      "data_date": "2026-06-09",
+      "alignment": "same_day"
+    },
+    "US_FX_DXY": {
+      "label": "DXY",
+      "return": -0.001399,
+      "data_date": "2026-06-09",
+      "alignment": "same_day"
+    },
+    "CM_MET_GC": {
+      "label": "Gold",
+      "return": -0.017647,
+      "data_date": "2026-06-09",
+      "alignment": "same_day"
+    },
+    "US_FI_IEF": {
+      "label": "IEF duration",
+      "return": 0.00278,
+      "data_date": "2026-06-09",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "SPY",
+      "return": -0.002936,
+      "data_date": "2026-06-09",
+      "alignment": "same_day"
+    },
+    "US_VOL_VIX": {
+      "label": "VIX",
+      "return": 0.050211,
+      "data_date": "2026-06-09",
+      "alignment": "same_day"
+    }
+  },
+  "plan": {
+    "question": "What explains the silver drawdown on 2026-06-09: dollar, real rates, risk-off, or data artifact?",
+    "case_kind": "commodity_event",
+    "peers": {
+      "US_FX_DXY": [
+        "DXY",
+        "same_day"
+      ],
+      "CM_MET_GC": [
+        "Gold",
+        "same_day"
+      ],
+      "US_FI_IEF": [
+        "IEF duration",
+        "same_day"
+      ],
+      "US_EQ_SPY": [
+        "SPY",
+        "same_day"
+      ],
+      "US_VOL_VIX": [
+        "VIX",
+        "same_day"
+      ]
+    },
+    "missing": [
+      "inventory/supply",
+      "real yields",
+      "positioning",
+      "contract roll metadata"
+    ],
+    "pit": "same-day for event market; prior US session for US/FX in equity case"
+  },
+  "evidence": {
+    "source": "GOE prices DB",
+    "event_available_at": "2026-06-09",
+    "decision_as_of": "2026-11-13",
+    "data_hash": "1b9361878270ce0c16fbb19a565274b5eed2de8b94678b5b721f256d6d90966b",
+    "data_dates": {
+      "CM_ETF_SLV": "2026-06-09",
+      "US_FX_DXY": "2026-06-09",
+      "CM_MET_GC": "2026-06-09",
+      "US_FI_IEF": "2026-06-09",
+      "US_EQ_SPY": "2026-06-09",
+      "US_VOL_VIX": "2026-06-09"
+    },
+    "input_rows": 672
+  },
+  "tests": {
+    "dollar_test": {
+      "dxy_return": -0.001399,
+      "pass": false,
+      "interpretation": "USD up with commodity down is consistent with dollar channel"
+    },
+    "real_rate_test": {
+      "ief_return": 0.00278,
+      "pass": false,
+      "interpretation": "duration down (yields up) with commodity down is consistent with real-rate channel"
+    },
+    "risk_test": {
+      "spy": -0.002936,
+      "vix": 0.050211,
+      "pass": true,
+      "interpretation": "risk-off channel"
+    },
+    "gold_test": {
+      "gold_return": -0.017647,
+      "pass": true,
+      "interpretation": "gold co-move checks a broad commodity/metal factor"
+    }
+  },
+  "hypothesis_updates": {
+    "H-CMD-DOLLAR": {
+      "status": "INCONCLUSIVE",
+      "label": "USD/dollar channel",
+      "type": "dollar",
+      "new_evidence": "DXY same-day",
+      "value": -0.001399,
+      "note": "Dollar co-move is association; no causal identification."
+    },
+    "H-CMD-REALRATE": {
+      "status": "INCONCLUSIVE",
+      "label": "Real-rate channel",
+      "type": "real_rate",
+      "new_evidence": "IEF proxy same-day",
+      "value": 0.00278,
+      "note": "IEF is a duration proxy, not a direct real-yield measure."
+    },
+    "H-CMD-RISK": {
+      "status": "SUPPORTED_BY_AVAILABLE_EVIDENCE",
+      "label": "Risk-off channel",
+      "type": "risk",
+      "new_evidence": "SPY/VIX same-day",
+      "value": {
+        "SPY": -0.002936,
+        "VIX": 0.050211
+      },
+      "note": "Risk channel is not separable from dollar/rates with these proxies."
+    },
+    "H-CMD-SUPPLY": {
+      "status": "INSUFFICIENT_DATA",
+      "label": "Supply/inventory",
+      "type": "supply",
+      "new_evidence": "no inventory/supply data",
+      "value": null,
+      "note": "No supply data; not fabricated."
+    }
+  },
+  "learned": [
+    "CM_ETF_SLV event 2026-06-09: -4.17%.",
+    "DXY -0.14%, gold -1.76%, IEF +0.28%, SPY -0.29%, VIX +5.02%.",
+    "Dollar/rate/risk channels overlap; none uniquely identified; supply data missing."
+  ],
+  "still_unknown": [
+    "inventory/supply",
+    "real yields",
+    "positioning",
+    "contract roll metadata"
+  ],
+  "next_action": "Retain in A; acquire the listed missing evidence. No B handoff for unsupported deep asset research.",
+  "input_sha256": "d1df303fc7a6a64e29f55e8bb7ddd6799a106aedd7fc592f26e01a9cf82bb4be",
+  "code_commit": "16e90703d100a670b3f79fc926840670be8265a6",
+  "feature_version": "v2",
+  "status": "INCONCLUSIVE",
+  "data_dates": {
+    "CM_ETF_SLV": "2026-06-09",
+    "US_FX_DXY": "2026-06-09",
+    "CM_MET_GC": "2026-06-09",
+    "US_FI_IEF": "2026-06-09",
+    "US_EQ_SPY": "2026-06-09",
+    "US_VOL_VIX": "2026-06-09"
+  },
+  "rules": {
+    "dollar_test": "USD up with commodity down is consistent with dollar channel",
+    "real_rate_test": "duration down (yields up) with commodity down is consistent with real-rate channel",
+    "risk_test": "risk-off channel",
+    "gold_test": "gold co-move checks a broad commodity/metal factor"
+  }
+}

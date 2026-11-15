@@ -1,0 +1,183 @@
+{
+  "finding_id": "RF-RC-20261113-US_FX_DXY-66e350e808c5",
+  "research_id": "RC-20261113-US_FX_DXY-66e350e808c5",
+  "decision_as_of": "2026-11-13",
+  "event_date": "2026-03-19",
+  "observed": {
+    "US_FX_DXY": {
+      "label": "US_FX_DXY",
+      "return": -0.008592,
+      "data_date": "2026-03-19",
+      "alignment": "same_day"
+    },
+    "GX_FX_EURUSD": {
+      "label": "EURUSD",
+      "return": -0.0065,
+      "data_date": "2026-03-19",
+      "alignment": "same_day"
+    },
+    "GX_FX_USDJPY": {
+      "label": "USDJPY",
+      "return": 0.005702,
+      "data_date": "2026-03-19",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "SPY",
+      "return": -0.002464,
+      "data_date": "2026-03-19",
+      "alignment": "same_day"
+    },
+    "US_VOL_VIX": {
+      "label": "VIX",
+      "return": -0.041052,
+      "data_date": "2026-03-19",
+      "alignment": "same_day"
+    },
+    "US_FI_IEF": {
+      "label": "IEF duration",
+      "return": -0.000105,
+      "data_date": "2026-03-19",
+      "alignment": "same_day"
+    }
+  },
+  "plan": {
+    "question": "What explains the US dollar index high in November 2026: rate differential, risk-off, broad USD, or data artifact?",
+    "case_kind": "fx_level",
+    "peers": {
+      "GX_FX_EURUSD": [
+        "EURUSD",
+        "same_day"
+      ],
+      "GX_FX_USDJPY": [
+        "USDJPY",
+        "same_day"
+      ],
+      "US_EQ_SPY": [
+        "SPY",
+        "same_day"
+      ],
+      "US_VOL_VIX": [
+        "VIX",
+        "same_day"
+      ],
+      "US_FI_IEF": [
+        "IEF duration",
+        "same_day"
+      ]
+    },
+    "missing": [
+      "2Y/10Y yield decomposition",
+      "positioning",
+      "policy calendar",
+      "real-time news"
+    ],
+    "pit": "same-day for event market; prior US session for US/FX in equity case"
+  },
+  "evidence": {
+    "source": "GOE prices DB",
+    "event_available_at": "2026-03-19",
+    "decision_as_of": "2026-11-13",
+    "data_hash": "7fec8e65ea97c05daf46e5b75c6a484936e30167ce06dcf11ab4b309c421aec6",
+    "data_dates": {
+      "US_FX_DXY": "2026-03-19",
+      "GX_FX_EURUSD": "2026-03-19",
+      "GX_FX_USDJPY": "2026-03-19",
+      "US_EQ_SPY": "2026-03-19",
+      "US_VOL_VIX": "2026-03-19",
+      "US_FI_IEF": "2026-03-19"
+    },
+    "input_rows": 614
+  },
+  "tests": {
+    "broad_usd_test": {
+      "eurusd": -0.0065,
+      "usdjpy": 0.005702,
+      "pass": true,
+      "interpretation": "EUR lower and USDJPY higher confirms broad USD strength"
+    },
+    "rate_test": {
+      "ief_return": -0.000105,
+      "pass": false,
+      "interpretation": "US duration down (yields up) alongside USD up is consistent with rate differential"
+    },
+    "risk_test": {
+      "spy": -0.002464,
+      "vix": -0.041052,
+      "pass": false,
+      "interpretation": "risk-off / safe-haven bid"
+    }
+  },
+  "hypothesis_updates": {
+    "H-FX-RATES": {
+      "status": "INCONCLUSIVE",
+      "label": "US rate differential",
+      "type": "rates",
+      "new_evidence": "IEF and DXY same-day",
+      "value": {
+        "DXY": -0.008592,
+        "IEF": -0.000105
+      },
+      "note": "Duration down + USD up is consistent with yield support; association only."
+    },
+    "H-FX-RISK": {
+      "status": "WEAKENED_BY_EVIDENCE",
+      "label": "Global risk-off/safe haven",
+      "type": "risk",
+      "new_evidence": "SPY/VIX same-day",
+      "value": {
+        "SPY": -0.002464,
+        "VIX": -0.041052
+      },
+      "note": "Risk-off bid is a competing channel; cannot establish causality."
+    },
+    "H-FX-BROAD": {
+      "status": "SUPPORTED_BY_AVAILABLE_EVIDENCE",
+      "label": "Broad USD move",
+      "type": "cross_rate",
+      "new_evidence": "EURUSD/USDJPY same-day",
+      "value": {
+        "EURUSD": -0.0065,
+        "USDJPY": 0.005702
+      },
+      "note": "Cross-rate confirmation; no claim about equilibrium."
+    },
+    "H-FX-DATA": {
+      "status": "INSUFFICIENT_DATA",
+      "label": "Data artifact",
+      "type": "data_artifact",
+      "new_evidence": "no roll/split flag for DXY",
+      "value": null,
+      "note": "Index data are not a futures roll; artifact not indicated but not fully ruled out."
+    }
+  },
+  "learned": [
+    "US_FX_DXY event 2026-03-19: -0.86%.",
+    "EURUSD -0.65%, USDJPY +0.57%, IEF -0.01%, SPY -0.25%, VIX -4.11%.",
+    "Rate and risk channels both survive; no causal identification."
+  ],
+  "still_unknown": [
+    "2Y/10Y yield decomposition",
+    "positioning",
+    "policy calendar",
+    "real-time news"
+  ],
+  "next_action": "Retain in A; acquire the listed missing evidence. No B handoff for unsupported deep asset research.",
+  "input_sha256": "11063b67c44deac6c1b68b2e083fbe5c3f06f43cd88dda9ba926b4ae3bc9121c",
+  "code_commit": "16e90703d100a670b3f79fc926840670be8265a6",
+  "feature_version": "v2",
+  "status": "INCONCLUSIVE",
+  "data_dates": {
+    "US_FX_DXY": "2026-03-19",
+    "GX_FX_EURUSD": "2026-03-19",
+    "GX_FX_USDJPY": "2026-03-19",
+    "US_EQ_SPY": "2026-03-19",
+    "US_VOL_VIX": "2026-03-19",
+    "US_FI_IEF": "2026-03-19"
+  },
+  "rules": {
+    "broad_usd_test": "EUR lower and USDJPY higher confirms broad USD strength",
+    "rate_test": "US duration down (yields up) alongside USD up is consistent with rate differential",
+    "risk_test": "risk-off / safe-haven bid"
+  }
+}
