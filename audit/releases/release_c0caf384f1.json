@@ -1,0 +1,80 @@
+{
+  "created_at": "2026-11-15T03:33:59Z",
+  "git_commit": "c0caf384f136fd209d33b4ca8906a768ff533170",
+  "git_branch": "architecture/research-v2",
+  "git_dirty": false,
+  "scan": {
+    "scan_id": "scan-20261115T031540Z-4048c8",
+    "as_of": "2026-11-13",
+    "status": "success",
+    "config_hash": "7d4d8ae1a7ca110204f522359f57e8c627c89cdec753eea29b51af4a486fc187",
+    "data_hash": "9ddd93ef2a456ee16e94985b1918a820e8415c72596dba8117662287207b39ef",
+    "started_at": "2026-11-15T03:15:40Z"
+  },
+  "scan_evidence": {
+    "scan_id": "scan-20261115T031540Z-4048c8",
+    "as_of": "2026-11-13",
+    "mode": "offline",
+    "config_hash": "7d4d8ae1a7ca110204f522359f57e8c627c89cdec753eea29b51af4a486fc187",
+    "data_hash": "9ddd93ef2a456ee16e94985b1918a820e8415c72596dba8117662287207b39ef",
+    "prices": 358310,
+    "indicators": 159508,
+    "anomalies": 1506,
+    "transmissions": 5,
+    "opportunities": 11,
+    "report_path": "reports/report_2026-11-13.md",
+    "scan_json_path": "reports/scan_2026-11-13.json",
+    "pipeline_path": "exports/pipeline_2026-11-13.json",
+    "report_sha256": "24a50fdde52548a128ceab9f011efbd46d4344cf8b03423eb43bb76059229ed9",
+    "scan_json_sha256": "391b6b0696e92107ec66846052aa032d4e0880beda06e737dd0c66a438a00f37",
+    "pipeline_sha256": "8bb95e9175b6e09071e4c2aac286eb59f305d31b58c5a7037a4e77d9c0514047",
+    "readiness_ok": true,
+    "ingest_status": "offline"
+  },
+  "scan_counts": {
+    "anomalies": 1506,
+    "opportunities": 11,
+    "transmissions": 5,
+    "prices": 358310,
+    "indicators": 159508
+  },
+  "opportunities_by_status": {
+    "excluded": 4,
+    "invalidated": 2,
+    "low_priority": 3,
+    "watch": 2
+  },
+  "test_evidence": {
+    "proof_path": "/Users/cast/Downloads/金融系统/global-opportunity-engine/audit/test_evidence/20261115T033220Z_c0caf384f1.proof.json",
+    "category": "offline",
+    "passed": 214,
+    "skipped": 0,
+    "commands": [
+      "{python}",
+      "-c",
+      "import os,sys;sys.path=[p for p in sys.path if p not in ('', '.')];import pytest;sys.path.insert(0, os.getcwd());raise SystemExit(pytest.main(sys.argv[1:]))",
+      "tests",
+      "-o",
+      "addopts=",
+      "-q",
+      "-m",
+      "not network and not realdata",
+      "--junitxml",
+      "{junit}"
+    ],
+    "required_sha256": "e72f7547830d5852bb38c72d859f8463a85c0b3d92640f99a6e81308e1c2bbda",
+    "executed_sha256": "e72f7547830d5852bb38c72d859f8463a85c0b3d92640f99a6e81308e1c2bbda",
+    "rerun": {
+      "passed": 214,
+      "executed": 214,
+      "skipped": 0,
+      "log_sha256": "8671882211399d331acaa59eb22920cdfac95fe4e0f479af7565bb8b7702619d"
+    }
+  },
+  "artifacts": {
+    "reports/report_2026-11-13.md": "24a50fdde52548a128ceab9f011efbd46d4344cf8b03423eb43bb76059229ed9",
+    "reports/scan_2026-11-13.json": "391b6b0696e92107ec66846052aa032d4e0880beda06e737dd0c66a438a00f37",
+    "exports/pipeline_2026-11-13.json": "8bb95e9175b6e09071e4c2aac286eb59f305d31b58c5a7037a4e77d9c0514047"
+  },
+  "notes": "Phase1 verified scan evidence; 214 tests; real scan verified"
+}
