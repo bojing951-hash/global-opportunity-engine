@@ -23,5 +23,6 @@ The file rates are not committed (`data/` is ignored), so a clone without them m
 demoted to `intelligence` with `research_readiness="evidence_gap"`. With the current data:
 - 20 candidates -> **0 research candidates, 20 intelligence**.
 - This is the intended honest result while the measured-evidence gate is in force. Cross-asset
-  evidence is measured, but only one strong local fit exists; consensus and term OIS are not
-  available, so the gate cannot promote a candidate today.
+  evidence is measured and several local fits are strong (e.g. RC-06/RC-08/RC-12), but no candidate
+  has two open measured discriminating hypotheses; consensus and term OIS are not available, so the
+  gate cannot promote a candidate today.

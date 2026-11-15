@@ -19,7 +19,7 @@
         "gap_score": 1.0,
         "gap_level": 2,
         "mechanism_conflict": false,
-        "distinguishability_level": 1,
+        "distinguishability_level": 0,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -184,7 +184,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L2, distinguishability L1, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L2, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -291,7 +291,7 @@
         "gap_score": 0.0,
         "gap_level": 0,
         "mechanism_conflict": false,
-        "distinguishability_level": 2,
+        "distinguishability_level": 0,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -448,7 +448,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L2, impact L0, open_hypotheses=2, discriminating=0, cost=12h",
+      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=12h",
       "data_quality": {
         "score": 0.0,
         "gaps": [
@@ -556,7 +556,7 @@
         "gap_score": 0.0,
         "gap_level": 0,
         "mechanism_conflict": false,
-        "distinguishability_level": 2,
+        "distinguishability_level": 0,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -713,7 +713,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L2, impact L0, open_hypotheses=2, discriminating=0, cost=12h",
+      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=12h",
       "data_quality": {
         "score": 0.0,
         "gaps": [
@@ -821,7 +821,7 @@
         "gap_score": 0.0,
         "gap_level": 0,
         "mechanism_conflict": false,
-        "distinguishability_level": 2,
+        "distinguishability_level": 0,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -1002,7 +1002,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L2, impact L0, open_hypotheses=3, discriminating=0, cost=12h",
+      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=3, discriminating=0, cost=12h",
       "data_quality": {
         "score": 0.5333333333333333,
         "gaps": [
@@ -1118,7 +1118,7 @@
         "gap_score": 0.0,
         "gap_level": 0,
         "mechanism_conflict": false,
-        "distinguishability_level": 2,
+        "distinguishability_level": 0,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -1308,7 +1308,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L2, impact L0, open_hypotheses=3, discriminating=0, cost=12h",
+      "rationale": "tier intelligence: case=commodity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=3, discriminating=0, cost=12h",
       "data_quality": {
         "score": 0.5333333333333333,
         "gaps": [
@@ -1424,7 +1424,7 @@
         "gap_score": 0.0,
         "gap_level": 0,
         "mechanism_conflict": false,
-        "distinguishability_level": 2,
+        "distinguishability_level": 1,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -1658,7 +1658,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L0, distinguishability L2, impact L0, open_hypotheses=4, discriminating=1, cost=10h",
+      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L0, distinguishability L1, impact L0, open_hypotheses=4, discriminating=1, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -1802,7 +1802,7 @@
         "gap_score": 0.0,
         "gap_level": 0,
         "mechanism_conflict": false,
-        "distinguishability_level": 1,
+        "distinguishability_level": 0,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -1941,7 +1941,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L0, distinguishability L1, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -2351,7 +2351,7 @@
         "gap_score": 0.0,
         "gap_level": 1,
         "mechanism_conflict": true,
-        "distinguishability_level": 1,
+        "distinguishability_level": 0,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -2490,7 +2490,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=fx, materiality L1, gap L1, distinguishability L1, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=fx, materiality L1, gap L1, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.0,
         "gaps": [
@@ -2590,7 +2590,7 @@
         "gap_score": 0.0,
         "gap_level": 1,
         "mechanism_conflict": true,
-        "distinguishability_level": 1,
+        "distinguishability_level": 0,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -2729,7 +2729,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=fx, materiality L1, gap L1, distinguishability L1, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=fx, materiality L1, gap L1, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.0,
         "gaps": [
@@ -2829,7 +2829,7 @@
         "gap_score": 0.0,
         "gap_level": 0,
         "mechanism_conflict": false,
-        "distinguishability_level": 1,
+        "distinguishability_level": 0,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -2994,7 +2994,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L0, distinguishability L1, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L0, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -3101,7 +3101,7 @@
         "gap_score": 0.709,
         "gap_level": 2,
         "mechanism_conflict": true,
-        "distinguishability_level": 2,
+        "distinguishability_level": 1,
         "decision_impact_level": 2,
         "has_change": true
       },
@@ -3335,7 +3335,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=country_equity, materiality L3, gap L2, distinguishability L2, impact L2, open_hypotheses=4, discriminating=1, cost=10h",
+      "rationale": "tier intelligence: case=country_equity, materiality L3, gap L2, distinguishability L1, impact L2, open_hypotheses=4, discriminating=1, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -3490,7 +3490,7 @@
         "gap_score": 0.957,
         "gap_level": 2,
         "mechanism_conflict": false,
-        "distinguishability_level": 1,
+        "distinguishability_level": 0,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -3655,7 +3655,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L2, distinguishability L1, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=country_equity, materiality L1, gap L2, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -3773,7 +3773,7 @@
         "gap_score": 0.782,
         "gap_level": 2,
         "mechanism_conflict": false,
-        "distinguishability_level": 1,
+        "distinguishability_level": 0,
         "decision_impact_level": 1,
         "has_change": true
       },
@@ -3938,7 +3938,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=country_equity, materiality L2, gap L2, distinguishability L1, impact L1, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=country_equity, materiality L2, gap L2, distinguishability L0, impact L1, open_hypotheses=2, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -4045,7 +4045,7 @@
         "gap_score": 0.328,
         "gap_level": 2,
         "mechanism_conflict": true,
-        "distinguishability_level": 1,
+        "distinguishability_level": 0,
         "decision_impact_level": 2,
         "has_change": true
       },
@@ -4211,7 +4211,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=us_equity_etf, materiality L2, gap L2, distinguishability L1, impact L2, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=us_equity_etf, materiality L2, gap L2, distinguishability L0, impact L2, open_hypotheses=2, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -4615,7 +4615,7 @@
         "gap_score": 0.703,
         "gap_level": 2,
         "mechanism_conflict": false,
-        "distinguishability_level": 2,
+        "distinguishability_level": 0,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -4763,7 +4763,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L2, distinguishability L2, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L2, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -4874,7 +4874,7 @@
         "gap_score": 0.428,
         "gap_level": 2,
         "mechanism_conflict": true,
-        "distinguishability_level": 2,
+        "distinguishability_level": 0,
         "decision_impact_level": 0,
         "has_change": true
       },
@@ -5013,7 +5013,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L2, distinguishability L2, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L2, distinguishability L0, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -5124,7 +5124,7 @@
         "gap_score": 1.0,
         "gap_level": 2,
         "mechanism_conflict": false,
-        "distinguishability_level": 2,
+        "distinguishability_level": 0,
         "decision_impact_level": 1,
         "has_change": true
       },
@@ -5263,7 +5263,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=sector_equity, materiality L2, gap L2, distinguishability L2, impact L1, open_hypotheses=2, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=sector_equity, materiality L2, gap L2, distinguishability L0, impact L1, open_hypotheses=2, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -5374,7 +5374,7 @@
         "gap_score": 0.0,
         "gap_level": 0,
         "mechanism_conflict": false,
-        "distinguishability_level": 2,
+        "distinguishability_level": 0,
         "decision_impact_level": 1,
         "has_change": true
       },
@@ -5535,7 +5535,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=rates, materiality L2, gap L0, distinguishability L2, impact L1, open_hypotheses=3, discriminating=0, cost=10h",
+      "rationale": "tier intelligence: case=rates, materiality L2, gap L0, distinguishability L0, impact L1, open_hypotheses=3, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.4666666666666666,
         "gaps": [

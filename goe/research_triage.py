@@ -228,11 +228,8 @@ def build_candidates(fs, anomalies: pd.DataFrame, mechanisms: list[Any] | None =
 
         # hard gate: materiality; explanatory gap; distinguishability; decision impact
         gap_level = 2 if gap_score >= 0.3 else (1 if (gap_open or mech_conflict) else 0)
-        avail_ids = {t.get("hypothesis_id") for t in bundle["tests"]
-                     if t.get("data_status") == "available"}
-        any_ids = {t.get("hypothesis_id") for t in bundle["tests"]
-                   if t.get("data_status") in ("available", "obtainable")}
-        dist_level = 2 if len(avail_ids) >= 2 else (1 if (len(avail_ids) >= 1 or len(any_ids) >= 2) else 0)
+        # distinguishability must reflect measured evidence, not mere data availability
+        dist_level = 2 if discriminating_count >= 2 else (1 if discriminating_count == 1 else 0)
         impact_level = 2 if (float(spec.importance) >= 0.8 and gap_level > 0) else \
             (1 if float(spec.importance) >= 0.5 else 0)
         if mat_level < 1 or gap_level == 0 or not discriminating or discriminating_count < 2:
