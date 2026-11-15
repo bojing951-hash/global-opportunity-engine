@@ -1858,18 +1858,18 @@
           "type": "global_risk",
           "status": "open",
           "implications": "同日防御/周期行业应反向；相对表现应由共同因子解释。",
-          "evidence_for": [
+          "evidence_for": [],
+          "evidence_against": [
             {
-              "claim": "本地基准回归",
-              "value": "R²=0.48, beta=1.18, residual_z=-0.69, n=252",
+              "claim": "全球因子解释力不足",
+              "value": "R²=0.03 < 0.30; residual_z=-0.90",
               "class": "statistical_association",
               "source": "derived/cross_asset",
               "available_at": "2026-11-13",
               "hypothesis_id": "H-SECCE-GLOBAL",
               "discriminating": true
             }
-          ],
-          "evidence_against": []
+          ]
         },
         {
           "id": "H-SECCE-POS",
@@ -1898,15 +1898,6 @@
           "source": "prices",
           "available_at": "2026-11-13",
           "hypothesis_id": "H-SECCE-STYLE"
-        },
-        {
-          "claim": "本地基准回归",
-          "value": "R²=0.48, beta=1.18, residual_z=-0.69, n=252",
-          "class": "statistical_association",
-          "source": "derived/cross_asset",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-SECCE-GLOBAL",
-          "discriminating": true
         }
       ],
       "critical_unknowns": [
@@ -1950,7 +1941,7 @@
       },
       "priority_tier": "intelligence",
       "priority_rank": 0,
-      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L0, distinguishability L1, impact L0, open_hypotheses=2, discriminating=1, cost=10h",
+      "rationale": "tier intelligence: case=sector_equity, materiality L1, gap L0, distinguishability L1, impact L0, open_hypotheses=2, discriminating=0, cost=10h",
       "data_quality": {
         "score": 0.4,
         "gaps": [
@@ -1985,7 +1976,7 @@
             "reason": ""
           }
         },
-        "discriminating_hypotheses": 1
+        "discriminating_hypotheses": 0
       },
       "evidence_gaps": [
         "行业一致预期/需求",
@@ -2001,15 +1992,6 @@
           "source": "prices",
           "available_at": "2026-11-13",
           "hypothesis_id": "H-SECCE-STYLE"
-        },
-        {
-          "claim": "本地基准回归",
-          "value": "R²=0.48, beta=1.18, residual_z=-0.69, n=252",
-          "class": "statistical_association",
-          "source": "derived/cross_asset",
-          "available_at": "2026-11-13",
-          "hypothesis_id": "H-SECCE-GLOBAL",
-          "discriminating": true
         }
       ],
       "evidence_against": [
@@ -2028,6 +2010,15 @@
           "source": "derived",
           "available_at": "2026-11-13",
           "hypothesis_id": "H-SECCE-STYLE"
+        },
+        {
+          "claim": "全球因子解释力不足",
+          "value": "R²=0.03 < 0.30; residual_z=-0.90",
+          "class": "statistical_association",
+          "source": "derived/cross_asset",
+          "available_at": "2026-11-13",
+          "hypothesis_id": "H-SECCE-GLOBAL",
+          "discriminating": true
         },
         {
           "claim": "行业资金流未接入",
@@ -4352,8 +4343,8 @@
           "implications": "同日股票、信用、商品和美元应同向；控制全球因子后本地残差消失。",
           "evidence_for": [
             {
-              "claim": "本地基准回归",
-              "value": "R²=0.62, beta=1.70, residual_z=0.67, n=252",
+              "claim": "同日跨资产全球因子回归",
+              "value": "R²=0.53, beta=2.46, residual_z=1.57, n=252",
               "class": "statistical_association",
               "source": "derived/cross_asset",
               "available_at": "2026-11-13",
@@ -4447,8 +4438,8 @@
       ],
       "evidence": [
         {
-          "claim": "本地基准回归",
-          "value": "R²=0.62, beta=1.70, residual_z=0.67, n=252",
+          "claim": "同日跨资产全球因子回归",
+          "value": "R²=0.53, beta=2.46, residual_z=1.57, n=252",
           "class": "statistical_association",
           "source": "derived/cross_asset",
           "available_at": "2026-11-13",
@@ -4550,8 +4541,8 @@
       "research_readiness": "evidence_gap",
       "evidence_for": [
         {
-          "claim": "本地基准回归",
-          "value": "R²=0.62, beta=1.70, residual_z=0.67, n=252",
+          "claim": "同日跨资产全球因子回归",
+          "value": "R²=0.53, beta=2.46, residual_z=1.57, n=252",
           "class": "statistical_association",
           "source": "derived/cross_asset",
           "available_at": "2026-11-13",
@@ -4942,8 +4933,8 @@
           "evidence_for": [],
           "evidence_against": [
             {
-              "claim": "本地基准解释力不足",
-              "value": "R²=0.00 < 0.30",
+              "claim": "全球因子解释力不足",
+              "value": "R²=0.01 < 0.30; residual_z=-0.62",
               "class": "statistical_association",
               "source": "derived/cross_asset",
               "available_at": "2026-11-13",
@@ -5093,8 +5084,8 @@
           "hypothesis_id": "H-SECCS-STYLE"
         },
         {
-          "claim": "本地基准解释力不足",
-          "value": "R²=0.00 < 0.30",
+          "claim": "全球因子解释力不足",
+          "value": "R²=0.01 < 0.30; residual_z=-0.62",
           "class": "statistical_association",
           "source": "derived/cross_asset",
           "available_at": "2026-11-13",
@@ -5192,8 +5183,8 @@
           "evidence_for": [],
           "evidence_against": [
             {
-              "claim": "本地基准解释力不足",
-              "value": "R²=0.06 < 0.30",
+              "claim": "全球因子解释力不足",
+              "value": "R²=0.03 < 0.30; residual_z=-0.40",
               "class": "statistical_association",
               "source": "derived/cross_asset",
               "available_at": "2026-11-13",
@@ -5343,8 +5334,8 @@
           "hypothesis_id": "H-SECHC-STYLE"
         },
         {
-          "claim": "本地基准解释力不足",
-          "value": "R²=0.06 < 0.30",
+          "claim": "全球因子解释力不足",
+          "value": "R²=0.03 < 0.30; residual_z=-0.40",
           "class": "statistical_association",
           "source": "derived/cross_asset",
           "available_at": "2026-11-13",

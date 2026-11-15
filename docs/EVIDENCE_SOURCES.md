@@ -22,4 +22,6 @@ The file rates are not committed (`data/` is ignored), so a clone without them m
 `discriminating=true`) per open hypothesis. A candidate with fewer than 2 such hypotheses is
 demoted to `intelligence` with `research_readiness="evidence_gap"`. With the current data:
 - 20 candidates -> **0 research candidates, 20 intelligence**.
-- This is the intended honest result until consensus/OIS files are supplied.
+- This is the intended honest result while the measured-evidence gate is in force. Cross-asset
+  evidence is measured, but only one strong local fit exists; consensus and term OIS are not
+  available, so the gate cannot promote a candidate today.

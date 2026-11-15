@@ -43,13 +43,16 @@ adapters (PIT, no fabrication), and a measured-evidence gate. Real result: 0 res
 currently available evidence. OIS is a public policy-path proxy, not term OIS; consensus is BLOCKED by
 the absence of a licensed public history. See `docs/EVIDENCE_SOURCES.md`.
 
-Measured discriminating evidence is required in >=2 open hypotheses; with current data only N225
-qualifies. The other 19 are retained as intelligence, not deleted. Details:
+Measured discriminating evidence is required in >=2 open hypotheses; with current data **no
+candidate** has two (N225 has one strong local fit). All 20 are retained as intelligence, not
+deleted. Details:
 `audit/EVIDENCE_GATE_DECISION.md`, `docs/EVIDENCE_SOURCES.md`.
 
 ## Independent final QA
-- `audit/FINAL_RELEASE_QA.md`: PASS WITH ISSUES, no P0/P1 (release proof, attack matrix, fresh clone).
-- `audit/FINAL_RESEARCH_QA.md`: PASS WITH ISSUES, no P0/P1, DISCOVERY VALUE NOT VALIDATED (P2 wording only).
+- `audit/QA_EVIDENCE_ENGINEERING.md`: PASS WITH ISSUES, no P0; **P1 residual: GitHub Actions has
+  not actually run** (workflow committed, local replay only).
+- `audit/QA_ZERO_GATE.md`: zero-research gate verified; 20/20 intelligence, contract pass,
+  DISCOVERY VALUE NOT VALIDATED (P1 evidence-labelling issues fixed; P2 docs).
 
 ## Verification status
 Independent engineering verification: PASS WITH ISSUES; the anomaly date semantics P1 is resolved by

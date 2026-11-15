@@ -136,7 +136,10 @@ def evidence_for_bundle(bundle: dict[str, Any], fits: dict[str, Any]) -> dict[st
             h["status"] = "open" if not support or abs(g["residual_z"] or 0) >= 1.5 else "supported"
     l = fits.get("local")
     if l and l.get("available"):
-        h = by_suffix("-LOCAL", "global_risk")
+        # Local benchmark evidence belongs only to a hypothesis explicitly about
+        # local/regional factors. Falling back by type would overwrite a GLOBAL
+        # hypothesis with a local fit (observed on sector/ETF candidates).
+        h = by_suffix("-LOCAL")
         if h:
             support = l["r2"] >= 0.30
             h["evidence_for"] = [item(
