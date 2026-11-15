@@ -34,6 +34,6 @@ jobs:
           echo "after clean:"; git status --porcelain --untracked-files=all
       - name: Replay latest release proof (cross-OS)
         run: |
-          PROOF="$(ls -1t audit/test_evidence/*.proof.json | head -1)"
+          PROOF="$(ls -1 audit/test_evidence/*.proof.json | sort | tail -1)"
           echo "replaying $PROOF"
           python -m goe.cli verify-release --proof "$PROOF"
