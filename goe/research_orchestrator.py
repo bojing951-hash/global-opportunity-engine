@@ -1,11 +1,13 @@
 """Autonomous research orchestrator: select, execute, persist, decide next."""
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import Any
 
 from .db import Store
 from .research_engine import ResearchSpec, execute_spec, spec_for_asset
+from .research_planner import plan as plan_evidence
 from .research_identity import research_theme_id
 
 STATES = ("DETECTED", "PLANNED", "EVIDENCE_PENDING", "EVIDENCE_ACQUIRED",
@@ -36,9 +38,16 @@ class ResearchOrchestrator:
             self.store.set_research_workflow_state(spec.research_id, "PLANNED")
         self.store.add_research_event(spec.research_id, "research:planned", spec.question)
 
+    def retry(self, research_id: str) -> None:
+        if self.store.research_workflow_state(research_id) == "BLOCKED":
+            self.store.set_research_workflow_state(research_id, "PLANNED")
+            self.store.add_research_event(research_id, "research:retry", "manual/unblocked retry")
+
     def run(self, spec: ResearchSpec) -> Any:
         self.store.set_research_workflow_state(spec.research_id, "EVIDENCE_PENDING")
-        self.store.add_research_event(spec.research_id, "research:evidence_pending", spec.question)
+        task = plan_evidence(spec)
+        self.store.add_research_event(spec.research_id, "research:evidence_plan",
+                                      task.target_claim, payload=task.to_dict())
         try:
             self.store.set_research_workflow_state(spec.research_id, "TESTING")
             finding = execute_spec(self.store, spec)
@@ -51,16 +60,109 @@ class ResearchOrchestrator:
         return finding
 
     def next_case(self) -> ResearchSpec | None:
-        for spec in (case_nikkei(), case_dxy(), case_silver()):
-            state = self.store.research_workflow_state(spec.research_id)
-            if state == "BLOCKED":
-                continue  # do not retry a failed case forever
-            self.register(spec)
-            row = self.store.conn.execute(
-                "SELECT 1 FROM research_v2_findings WHERE research_id=?", (spec.research_id,)).fetchone()
-            if not row:
-                return spec
-        return None
+        """Select from the real candidate queue; never from a hardcoded case list."""
+        rows = self.store.conn.execute(
+            """SELECT c.research_id,c.payload_json,c.status
+               FROM research_v2_candidates c
+               WHERE NOT EXISTS (SELECT 1 FROM research_v2_findings f
+                                 WHERE f.research_id=c.research_id)
+               ORDER BY c.research_id""").fetchall()
+        ranked = []
+        for r in rows:
+            c = json.loads(r["payload_json"] or "{}")
+            if c.get("research_queue") not in ("watch", "research"):
+                continue
+            # The equity template's lead/lag peers are calibrated for non-US events;
+            # a US-event template is not yet registered, so do not misapply it.
+            if (c.get("asset_class") in ("equity_index", "equity_etf", "sector_equity")
+                    and c.get("market") == "US"):
+                continue
+            if c.get("research_worthiness") not in ("high", "medium"):
+                continue
+            state = self.store.research_workflow_state(r["research_id"])
+            if state in ("BLOCKED", "COMPLETED"):
+                continue
+            score = {"high": 2, "medium": 1}.get(c.get("research_worthiness"), 0)
+            score += {"ready": 2, "partial": 1}.get(c.get("evidence_readiness"), 0)
+            ranked.append((score, r["research_id"], c))
+        if not ranked:
+            return None
+        ranked.sort(key=lambda x: (-x[0], x[1]))
+        _, _, c = ranked[0]
+        spec = self._spec_from_candidate(c)
+        self.register(spec)
+        return spec
+
+    def _spec_from_candidate(self, c: dict[str, Any]) -> ResearchSpec:
+        asset = str((c.get("instruments") or ["unknown"])[0])
+        ac = str(c.get("asset_class"))
+        if ac in ("equity_index", "equity_etf", "sector_equity"):
+            peers = {"HK_EQ_HSI": ("HK/China", "same_day"),
+                     "JP_EQ_N225": ("Japan", "same_day"),
+                     "KR_EQ_KOSPI": ("Korea", "same_day"),
+                     "US_EQ_SPY": ("US broad", "prior_us_session"),
+                     "US_EQ_QQQ": ("US growth", "prior_us_session"),
+                     "US_VOL_VIX": ("VIX", "prior_us_session"),
+                     "CN_FX_USDCNY": ("CNY", "prior_us_session")}
+            roles = {"local": "HK_EQ_HSI", "regional_tw": "JP_EQ_N225",
+                     "regional_kr": "KR_EQ_KOSPI", "global_equity": "US_EQ_SPY",
+                     "global_growth": "US_EQ_QQQ", "global_vol": "US_VOL_VIX",
+                     "fx": "CN_FX_USDCNY"}
+            kind = "equity_event"
+        elif ac == "fx":
+            peers = {"GX_FX_EURUSD": ("EURUSD", "same_day"),
+                     "GX_FX_USDJPY": ("USDJPY", "same_day"),
+                     "US_EQ_SPY": ("SPY", "same_day"), "US_VOL_VIX": ("VIX", "same_day"),
+                     "US_FI_IEF": ("IEF", "same_day")}
+            roles = {"cross1": "GX_FX_EURUSD", "cross2": "GX_FX_USDJPY",
+                     "risk": "US_EQ_SPY", "vol": "US_VOL_VIX", "rates": "US_FI_IEF"}
+            kind = "fx_level"
+        else:
+            peers = {"US_FX_DXY": ("DXY", "same_day"), "CM_MET_GC": ("Gold", "same_day"),
+                     "US_FI_IEF": ("IEF", "same_day"), "US_EQ_SPY": ("SPY", "same_day"),
+                     "US_VOL_VIX": ("VIX", "same_day")}
+            roles = {"dollar": "US_FX_DXY", "gold": "CM_MET_GC", "rates": "US_FI_IEF",
+                     "risk": "US_EQ_SPY", "vol": "US_VOL_VIX"}
+            kind = "commodity_event"
+        hyps = []
+        hmap = {}
+        for h in c.get("competing_hypotheses") or []:
+            hid = str(h.get("id")); key = hid.rsplit("-", 1)[-1].lower()
+            hyps.append((hid, {"label": h.get("label", hid), "type": h.get("type", "research")}))
+            hmap[key] = hid
+        if not hyps:
+            hyps = [("H-UNKNOWN", {"label": "unresolved", "type": "research"})]
+            hmap["unknown"] = "H-UNKNOWN"
+        event_override = None
+        try:
+            ev = self.store.conn.execute(
+                """SELECT as_of FROM anomalies WHERE instrument_id=? AND as_of<=?
+                   AND (direction LIKE '%down%' OR direction LIKE '%deep_drawdown%')
+                   ORDER BY as_of DESC LIMIT 1""", (asset, c.get("as_of"))).fetchone()
+            if ev:
+                event_override = ev["as_of"]
+        except Exception:
+            event_override = None
+        return ResearchSpec(
+            event_override=event_override,
+            research_id=str(c["research_id"]),
+            research_theme_id=str(c.get("research_theme_id") or research_theme_id(
+                instrument_id=asset, detector="dynamic", direction=kind, window="event")),
+            as_of=str(c.get("as_of")), asset=asset, market=str(c.get("market") or ""),
+            asset_class=ac, question=str(c.get("observed_phenomenon") or "unexplained move"),
+            case_kind=kind, peers=peers, hypotheses=hyps, roles=roles,
+            hypothesis_ids={"local": hmap.get("local", "H-EQ-LOCAL"),
+                            "global": hmap.get("global", "H-EQ-GLOBAL"),
+                            "fx": hmap.get("fx", "H-EQ-FX"),
+                            "policy": hmap.get("policy", "H-EQ-POLICY"),
+                            "fund": hmap.get("fund", "H-EQ-FUND"),
+                            "regional": hmap.get("regional", "H-EQ-REGIONAL"),
+                            "rates": hmap.get("rates", "H-FX-RATES"),
+                            "risk": hmap.get("risk", "H-FX-RISK"),
+                            "broad": hmap.get("broad", "H-FX-BROAD"),
+                            "artifact": hmap.get("art", "H-FX-DATA"),
+                            "dollar": hmap.get("dollar", "H-CMD-DOLLAR"),
+                            "supply": hmap.get("supply", "H-CMD-SUPPLY")})
 
     def status(self) -> list[dict[str, Any]]:
         rows = self.store.conn.execute(

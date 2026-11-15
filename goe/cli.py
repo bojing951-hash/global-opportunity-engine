@@ -240,6 +240,13 @@ def cmd_opp(args: argparse.Namespace) -> int:
             for e in events:
                 print(f"  {e['at']} {e['event_type']}: {e.get('from_status')} -> {e.get('to_status')} {e.get('note','')}")
         return 0
+    if args.action == "retry":
+        if not args.id:
+            print("--id required for retry")
+            return 2
+        orch.retry(args.id)
+        print(f"retry_ready={args.id}")
+        return 0
     if args.action == "status":
         source = "auto" if getattr(args, "auto", False) else "manual"
         ok = store.set_opportunity_status(args.id, args.set, args.reason or "manual update",
@@ -357,13 +364,29 @@ def cmd_research(args: argparse.Namespace) -> int:
     store = Store(args.db or str(project_root() / "data" / "goe.db"))
     orch = ResearchOrchestrator(store)
     cases = {"nikkei": case_nikkei, "dxy": case_dxy, "silver": case_silver}
+    if args.action == "retry":
+        if not args.id:
+            print("--id required for retry")
+            return 2
+        orch.retry(args.id)
+        print(f"retry_ready={args.id}")
+        return 0
     if args.action == "status":
         for r in orch.status():
             print(f"{r['research_id']} {r['asset_class']} state={r['workflow']} "
                   f"findings={r['findings']} latest={r['latest_finding']}")
         return 0
     if args.action in ("run", "next"):
-        if args.action == "next" or args.case == "next":
+        if args.id:
+            row = store.conn.execute("SELECT payload_json FROM research_v2_candidates WHERE research_id=?",
+                                     (args.id,)).fetchone()
+            if not row:
+                print("candidate not found")
+                return 1
+            import json as _json
+            c = _json.loads(row["payload_json"])
+            spec = orch._spec_from_candidate(c)
+        elif args.action == "next" or args.case == "next":
             spec = orch.next_case()
             if spec is None:
                 print("no research case available")
@@ -618,7 +641,8 @@ def build_parser() -> argparse.ArgumentParser:
     t.set_defaults(func=cmd_triage)
 
     rsub = sub.add_parser("research", help="通用研究执行/调度")
-    rsub.add_argument("action", choices=["run", "next", "status"])
+    rsub.add_argument("action", choices=["run", "next", "status", "retry"])
+    rsub.add_argument("--id", default=None)
     rsub.add_argument("--case", default="next", choices=["nikkei", "dxy", "silver", "all", "next"])
     rsub.add_argument("--db", default=None)
     rsub.set_defaults(func=cmd_research)

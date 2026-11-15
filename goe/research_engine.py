@@ -20,6 +20,13 @@ from .db import Store
 from .features import FEATURE_VERSION, FeatureBuilder
 from .research_identity import research_id as make_rid, research_theme_id as make_theme
 from .research_exec import ResearchFinding
+from .test_registry import execution_key, select_test
+
+METHOD_VERSION = "research-engine-v3"
+
+
+def _engine_hash() -> str:
+    return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()[:8]
 
 
 def _sha(payload: Any) -> str:
@@ -92,6 +99,10 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
     fs = FeatureBuilder(store, as_of=spec.as_of, point_in_time=True,
                         history_start=(pd.Timestamp(spec.as_of) - pd.DateOffset(years=3)).strftime("%Y-%m-%d")).build()
     returns = fs.returns
+    definition = select_test(spec.asset_class)
+    if definition is None:
+        raise ValueError(f"UNSUPPORTED_TEST: no registered test for {spec.asset_class}")
+    case_kind = execution_key(definition.test_id)
     event = spec.event_override or _event_date(returns, spec.asset, spec.as_of, spec.event_window)
     prior = _prior(returns, event)
     observed: dict[str, dict[str, Any]] = {}
@@ -133,13 +144,17 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
     learned: list[str] = []
     unknown: list[str] = []
 
-    if spec.case_kind == "equity_event":
+    if case_kind == "equity_event":
         topix, taiex, kospi = role("local"), role("regional_tw"), role("regional_kr")
         spy, qqq, vix = role("global_equity"), role("global_growth"), role("global_vol")
         fx = role("fx")
+        local_label = observed.get(R.get("local", ""), {}).get("label", "local market")
+        tw_label = observed.get(R.get("regional_tw", ""), {}).get("label", "regional market A")
+        kr_label = observed.get(R.get("regional_kr", ""), {}).get("label", "regional market B")
+        fx_label = observed.get(R.get("fx", ""), {}).get("label", "FX")
         tests["local_asia_test"] = {
             "topix_return": topix, "pass": bool(topix is not None and topix < -0.03),
-            "interpretation": "TOPIX co-move supports broad Japan/local; association only"}
+            "interpretation": f"{local_label} co-move; association only"}
         tests["global_lead_test"] = {
             "prior_us_session": prior, "spy_return": spy, "qqq_return": qqq, "vix_return": vix,
             "pass": bool(spy is not None and vix is not None and spy < -0.01 and vix > 0),
@@ -192,19 +207,16 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
                                      "new_evidence": "Taiwan/Korea same-day", "value": {"TAIEX": taiex, "KOSPI": kospi},
                                      "note": "Regional co-move; sector/tech attribution unavailable."},
         }
-        local_label = observed.get(R.get("local", ""), {}).get("label", "local market")
-        tw_label = observed.get(R.get("regional_tw", ""), {}).get("label", "regional market A")
-        kr_label = observed.get(R.get("regional_kr", ""), {}).get("label", "regional market B")
-        fx_label = observed.get(R.get("fx", ""), {}).get("label", "FX")
         learned = [f"{spec.asset} event {event}: {p(n225)}; {local_label} {p(topix)}.",
                    f"Prior US session {prior}: {p(spy)}, {p(qqq)}, {p(vix)}; global lead consistent.",
                    f"{tw_label} {p(taiex)}, {kr_label} {p(kospi)}; regional co-move supported.",
                    f"{fx_label} {p(fx)}; too small to be primary.",
                    f"Three-session reversal {p(reversal)}.",
                    "Local and regional explanations both survive; broad indices cannot separate."]
-        unknown = ["TOPIX sector breadth", "Asia semiconductor exposure", "consensus revisions", "event/news calendar"]
+        unknown = [f"{local_label} sector/constituent breadth", "regional supply-chain exposure",
+                   "consensus revisions", "event/news calendar"]
 
-    elif spec.case_kind == "fx_level":
+    elif case_kind == "fx_level":
         eur, jpy, spy, vix, ief = role("cross1"), role("cross2"), role("risk"), role("vol"), role("rates")
         tests["broad_usd_test"] = {"eurusd": eur, "usdjpy": jpy,
                                    "pass": bool(eur is not None and jpy is not None and eur < -0.002 and jpy > 0.002),
@@ -237,7 +249,7 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
                    "Rate/broad-USD co-move is supported; risk-off is weakened at this event; no causal identification."]
         unknown = ["2Y/10Y yield decomposition", "positioning", "policy calendar", "real-time news"]
 
-    elif spec.case_kind == "commodity_event":
+    elif case_kind == "commodity_event":
         dxy, gold, ief, spy, vix = role("dollar"), role("gold"), role("rates"), role("risk"), role("vol")
         tests["dollar_test"] = {"dxy_return": dxy,
                                 "pass": bool(dxy is not None and n225 < 0 and dxy > 0),
@@ -278,7 +290,8 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
     rules = {k: v.get("interpretation") for k, v in tests.items()}
     status = "INCONCLUSIVE"
     input_hash = _sha({"observed": observed, "rules": rules, "event": event,
-                       "as_of": spec.as_of, "data_hash": data_hash})
+                       "as_of": spec.as_of, "data_hash": data_hash,
+                       "method": METHOD_VERSION, "engine": _engine_hash()})
     finding = ResearchFinding(
         finding_id="RF-" + spec.research_id + "-" + input_hash[:8], research_id=spec.research_id,
         decision_as_of=spec.as_of, event_date=event, observed=observed,
@@ -295,13 +308,26 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         code_commit=_commit(), feature_version=FEATURE_VERSION, status=status,
         data_dates={k: v["data_date"] for k, v in observed.items()}, rules=rules)
     out = Path(out_dir) / spec.as_of / spec.asset / finding.finding_id
-    out.mkdir(parents=True, exist_ok=True)
+    existing = out / "finding.json"
+    if existing.exists():
+        payload = json.loads(existing.read_text(encoding="utf-8"))
+        if payload.get("finding_id") != finding.finding_id:
+            raise RuntimeError("artifact/finding id mismatch at immutable path")
+        store.add_research_finding(finding.finding_id, spec.research_id, finding.status,
+                                   payload, str(existing))
+        return ResearchFinding(**payload) if isinstance(payload, dict) else finding
+    # Write atomically outside the final directory; rename is the commit point.
+    tmp = out.parent / (".tmp-" + finding.finding_id)
+    if tmp.exists():
+        import shutil
+        shutil.rmtree(tmp)
+    tmp.mkdir(parents=True, exist_ok=True)
     payload = finding.to_dict()
-    (out / "finding.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
-    (out / "plan.json").write_text(json.dumps(finding.plan, ensure_ascii=False, indent=2), encoding="utf-8")
-    (out / "evidence.json").write_text(json.dumps({"source": "GOE prices DB", "observed": observed,
+    (tmp / "finding.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    (tmp / "plan.json").write_text(json.dumps(finding.plan, ensure_ascii=False, indent=2), encoding="utf-8")
+    (tmp / "evidence.json").write_text(json.dumps({"source": "GOE prices DB", "observed": observed,
                                                    "data_hash": data_hash}, ensure_ascii=False, indent=2), encoding="utf-8")
-    (out / "tests.json").write_text(json.dumps(tests, ensure_ascii=False, indent=2), encoding="utf-8")
+    (tmp / "tests.json").write_text(json.dumps(tests, ensure_ascii=False, indent=2), encoding="utf-8")
     md = [f"# Research Finding — {spec.asset} {spec.as_of}", "",
           f"- Event date: {event}", f"- Status: {status}",
           f"- Input SHA256: `{finding.input_sha256}`", f"- Code commit: `{finding.code_commit}`", "",
@@ -315,7 +341,9 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
     md += ["", "## What we learned"] + [f"- {x}" for x in learned]
     md += ["", "## Still unknown"] + [f"- {x}" for x in unknown]
     md += ["", finding.next_action, "", "DISCOVERY VALUE: NOT VALIDATED"]
-    (out / "findings.md").write_text("\n".join(md), encoding="utf-8")
+    (tmp / "findings.md").write_text("\n".join(md), encoding="utf-8")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp.rename(out)
     store.update_research_hypotheses(spec.research_id, updates)
     store.add_research_finding(finding.finding_id, spec.research_id, status, payload,
                                str(out / "finding.json"))
