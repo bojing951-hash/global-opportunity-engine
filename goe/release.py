@@ -38,6 +38,7 @@ from pathlib import Path
 from typing import Any
 
 from .db import Store
+from .scan_evidence import ScanEvidenceError, verify_scan_evidence
 
 PROOF_SCHEMA = "goe-test-proof/v4"
 PYTHON_PLACEHOLDER = "{python}"
@@ -679,33 +680,41 @@ def build_manifest(
             f"release requires the {RELEASE_CATEGORY!r} suite, got {proof.get('category')!r}"
         )
 
+    try:
+        scan_ev = verify_scan_evidence(store)
+    except ScanEvidenceError as exc:
+        raise ReleaseError(f"verified scan evidence failed: {exc}") from exc
     scan = store.conn.execute(
         "SELECT scan_id,as_of,status,config_hash,data_hash,started_at FROM scan_runs "
-        "ORDER BY started_at DESC LIMIT 1"
-    ).fetchone()
-    if not scan or scan["status"] != "success":
-        raise ReleaseError("latest scan is missing or not successful")
-    counts = {
-        "anomalies": store.scalar("SELECT COUNT(*) FROM anomalies") or 0,
-        "opportunities": store.scalar("SELECT COUNT(*) FROM opportunities") or 0,
-    }
+        "WHERE scan_id=?", (scan_ev.scan_id,)).fetchone()
+    counts = {"anomalies": scan_ev.anomalies, "opportunities": scan_ev.opportunities,
+              "transmissions": scan_ev.transmissions,
+              "prices": scan_ev.prices, "indicators": scan_ev.indicators}
     by_status = {
         r[0]: r[1]
         for r in store.conn.execute("SELECT status,COUNT(*) FROM opportunities GROUP BY status")
     }
-    artifacts = {}
-    for p in [
-        Path("reports") / f"report_{scan['as_of']}.md",
-        Path("reports") / f"scan_{scan['as_of']}.json",
-    ]:
-        if p.exists():
-            artifacts[str(p)] = _sha256(p.read_bytes())
+    root = _git_root(".")
+    def rel(p: str) -> str:
+        try:
+            return Path(p).resolve().relative_to(root).as_posix()
+        except Exception:
+            return p
+    artifacts = {
+        rel(scan_ev.report_path): scan_ev.report_sha256,
+        rel(scan_ev.scan_json_path): scan_ev.scan_json_sha256,
+        rel(scan_ev.pipeline_path): scan_ev.pipeline_sha256,
+    }
+    scan_ev_dict = scan_ev.to_dict()
+    for key in ("report_path", "scan_json_path", "pipeline_path"):
+        scan_ev_dict[key] = rel(scan_ev_dict[key])
     manifest = {
         "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "git_commit": _git("rev-parse", "HEAD", cwd=root),
         "git_branch": _git("rev-parse", "--abbrev-ref", "HEAD", cwd=root),
         "git_dirty": dirty,
         "scan": dict(scan),
+        "scan_evidence": scan_ev_dict,
         "scan_counts": counts,
         "opportunities_by_status": by_status,
         "test_evidence": {
