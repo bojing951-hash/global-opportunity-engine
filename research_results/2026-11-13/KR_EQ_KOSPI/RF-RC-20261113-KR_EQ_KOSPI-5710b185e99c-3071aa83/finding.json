@@ -1,0 +1,245 @@
+{
+  "finding_id": "RF-RC-20261113-KR_EQ_KOSPI-5710b185e99c-3071aa83",
+  "research_id": "RC-20261113-KR_EQ_KOSPI-5710b185e99c",
+  "decision_as_of": "2026-11-13",
+  "event_date": "2026-10-15",
+  "observed": {
+    "KR_EQ_KOSPI": {
+      "label": "KR_EQ_KOSPI",
+      "return": -0.075654,
+      "data_date": "2026-10-15",
+      "alignment": "same_day"
+    },
+    "HK_EQ_HSI": {
+      "label": "local",
+      "return": -0.010342,
+      "data_date": "2026-10-15",
+      "alignment": "same_day"
+    },
+    "CN_EQ_CSI300": {
+      "label": "regional A",
+      "return": -0.01225,
+      "data_date": "2026-10-15",
+      "alignment": "same_day"
+    },
+    "JP_EQ_N225": {
+      "label": "regional B",
+      "return": -0.048983,
+      "data_date": "2026-10-15",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "US broad",
+      "return": -0.01081,
+      "data_date": "2026-10-14",
+      "alignment": "prior_us_session"
+    },
+    "US_EQ_QQQ": {
+      "label": "US growth",
+      "return": -0.019662,
+      "data_date": "2026-10-14",
+      "alignment": "prior_us_session"
+    },
+    "US_VOL_VIX": {
+      "label": "VIX",
+      "return": 0.104781,
+      "data_date": "2026-10-14",
+      "alignment": "prior_us_session"
+    },
+    "CN_FX_USDCNY": {
+      "label": "CNY",
+      "return": 0.0,
+      "data_date": "2026-10-14",
+      "alignment": "prior_us_session"
+    }
+  },
+  "plan": {
+    "question": "KOSPI 2026-10-15 near 5-year drawdown extreme; breadth/region/global explanations unresolved.",
+    "case_kind": "equity_event",
+    "peers": {
+      "HK_EQ_HSI": [
+        "local",
+        "same_day"
+      ],
+      "CN_EQ_CSI300": [
+        "regional A",
+        "same_day"
+      ],
+      "JP_EQ_N225": [
+        "regional B",
+        "same_day"
+      ],
+      "US_EQ_SPY": [
+        "US broad",
+        "prior_us_session"
+      ],
+      "US_EQ_QQQ": [
+        "US growth",
+        "prior_us_session"
+      ],
+      "US_VOL_VIX": [
+        "VIX",
+        "prior_us_session"
+      ],
+      "CN_FX_USDCNY": [
+        "CNY",
+        "prior_us_session"
+      ]
+    },
+    "missing": [
+      "local sector/constituent breadth",
+      "regional supply-chain exposure",
+      "consensus revisions",
+      "event/news calendar"
+    ],
+    "pit": "same-day for event market; prior US session for US/FX in equity case"
+  },
+  "evidence": {
+    "source": "GOE prices DB",
+    "event_available_at": "2026-10-15",
+    "decision_as_of": "2026-11-13",
+    "data_hash": "a483e5d15b893a90631f1b50f26412fde21be8673a2fe1b6c4506ac68da8e04a",
+    "data_dates": {
+      "KR_EQ_KOSPI": "2026-10-15",
+      "HK_EQ_HSI": "2026-10-15",
+      "CN_EQ_CSI300": "2026-10-15",
+      "JP_EQ_N225": "2026-10-15",
+      "US_EQ_SPY": "2026-10-14",
+      "US_EQ_QQQ": "2026-10-14",
+      "US_VOL_VIX": "2026-10-14",
+      "CN_FX_USDCNY": "2026-10-14"
+    },
+    "input_rows": 764
+  },
+  "tests": {
+    "historical_percentile": {
+      "event_return": -0.075654,
+      "percentile": 0.023809523809523808,
+      "pass": true,
+      "interpretation": "two-sided 5% tail of the trailing 252-session return distribution"
+    },
+    "local_asia_test": {
+      "topix_return": -0.010342,
+      "pass": false,
+      "interpretation": "local co-move; association only"
+    },
+    "global_lead_test": {
+      "prior_us_session": "2026-10-14",
+      "spy_return": -0.01081,
+      "qqq_return": -0.019662,
+      "vix_return": 0.104781,
+      "pass": true,
+      "interpretation": "prior US session selloff/VIX spike is consistent with a global lead"
+    },
+    "asia_regional_test": {
+      "regional_a_return": -0.01225,
+      "regional_b_return": -0.048983,
+      "pass": false,
+      "interpretation": "Regional peers did not both meet the pre-set threshold"
+    },
+    "fx_test": {
+      "prior_usdjpy_return": 0.0,
+      "pass": false,
+      "interpretation": "small FX move cannot explain the equity move"
+    },
+    "reversal_test": {
+      "n225_next_3d": -0.000266,
+      "pass": false,
+      "interpretation": "only bars after event through as-of"
+    }
+  },
+  "hypothesis_updates": {
+    "H-EQKR-LOCAL": {
+      "status": "INCONCLUSIVE",
+      "label": "Local market factor",
+      "type": "local_market",
+      "new_evidence": "TOPIX same-day",
+      "value": -0.010342,
+      "note": "Local peer did not meet its pre-set threshold; no local support."
+    },
+    "H-EQKR-GLOBAL": {
+      "status": "SUPPORTED_BY_AVAILABLE_EVIDENCE",
+      "label": "Global risk lead",
+      "type": "global_risk",
+      "new_evidence": "prior US session SPY/QQQ/VIX",
+      "value": {
+        "SPY": -0.01081,
+        "QQQ": -0.019662,
+        "VIX": 0.104781
+      },
+      "note": "Prior US selloff/VIX spike preceded Asia; same-date US close is not used."
+    },
+    "H-EQ-FX": {
+      "status": "WEAKENED_BY_EVIDENCE",
+      "label": "FX/cross-border flow",
+      "type": "fx",
+      "new_evidence": "prior USDJPY",
+      "value": 0.0,
+      "note": "Small FX move cannot explain the equity move by itself."
+    },
+    "H-EQKR-POLICY": {
+      "status": "INSUFFICIENT_DATA",
+      "label": "Policy/regulatory event",
+      "type": "policy",
+      "new_evidence": "config/events.yaml calendar check",
+      "value": null,
+      "note": "No scheduled event in config/events.yaml; not proof no policy news."
+    },
+    "H-EQKR-FUND": {
+      "status": "INSUFFICIENT_DATA",
+      "label": "Fundamentals",
+      "type": "fundamental",
+      "new_evidence": "consensus unavailable",
+      "value": null,
+      "note": "No authorized consensus data; no fabrication."
+    },
+    "H-EQ-REGIONAL": {
+      "status": "INCONCLUSIVE",
+      "label": "Regional co-move",
+      "type": "regional_asia",
+      "new_evidence": "Taiwan/Korea same-day",
+      "value": {
+        "TAIEX": -0.01225,
+        "KOSPI": -0.048983
+      },
+      "note": "Regional co-move; sector/tech attribution unavailable."
+    }
+  },
+  "learned": [
+    "KR_EQ_KOSPI event 2026-10-15: -7.57%; local -1.03%.",
+    "Prior US session 2026-10-14: -1.08%, -1.97%, +10.48%; global lead consistent.",
+    "regional A -1.23%, regional B -4.90%; regional co-move did not meet threshold.",
+    "CNY +0.00%; too small to be primary.",
+    "Three-session reversal -0.03%.",
+    "Neither local nor regional thresholds were met; only the global lead is supported."
+  ],
+  "still_unknown": [
+    "local sector/constituent breadth",
+    "regional supply-chain exposure",
+    "consensus revisions",
+    "event/news calendar"
+  ],
+  "next_action": "Retain in A; acquire the listed missing evidence. No B handoff for unsupported deep asset research.",
+  "input_sha256": "3071aa83fcfa87622828d7ebeb4b1aa83e90fbe6327e33eeec56ab86f35ed3bd",
+  "code_commit": "2d03820f27d69846660e5fc6a121bd3316944492",
+  "feature_version": "v2",
+  "status": "INCONCLUSIVE",
+  "data_dates": {
+    "KR_EQ_KOSPI": "2026-10-15",
+    "HK_EQ_HSI": "2026-10-15",
+    "CN_EQ_CSI300": "2026-10-15",
+    "JP_EQ_N225": "2026-10-15",
+    "US_EQ_SPY": "2026-10-14",
+    "US_EQ_QQQ": "2026-10-14",
+    "US_VOL_VIX": "2026-10-14",
+    "CN_FX_USDCNY": "2026-10-14"
+  },
+  "rules": {
+    "historical_percentile": "two-sided 5% tail of the trailing 252-session return distribution",
+    "local_asia_test": "local co-move; association only",
+    "global_lead_test": "prior US session selloff/VIX spike is consistent with a global lead",
+    "asia_regional_test": "Regional peers did not both meet the pre-set threshold",
+    "fx_test": "small FX move cannot explain the equity move",
+    "reversal_test": "only bars after event through as-of"
+  }
+}

@@ -169,6 +169,6 @@ ACCEPTANCE_STATUS: multi-case functional; research value NOT VALIDATED.
 ## Dynamic candidate research (2026-11-15)
 - Orchestrator `next_case` reads real watch/research candidates and ranks worthiness/evidence; no fixed case list.
 - Evidence Planner emits EvidenceTask; Test Registry selects equity/FX/commodity tests.
-- Unseen cases: TW_EQ_TAIEX (dynamic retry/id) and KR_EQ_KOSPI (automatic `research next`).
+- Unseen cases: TW_EQ_TAIEX (dynamic retry/id) and KR_EQ_KOSPI (automatic `research next`); KOSPI regional peers exclude the event asset; global lead only.
 - Findings versioned/idempotent; same input returns existing finding; KOSPI first/second run same ID.
 - 243+ tests; proof/CI pending.
