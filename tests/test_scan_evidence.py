@@ -12,6 +12,9 @@ from goe.scan_evidence import ScanEvidenceError, verify_scan_evidence
 def make_scan(tmp_path):
     s = Store(tmp_path / "scan.db")
     as_of = "2026-01-03"
+    for src in ("yahoo", "test"):
+        s.conn.execute("INSERT INTO sources(source_id,name,kind,tier) VALUES(?,?,?,?)",
+                       (src, src, "price" if src == "yahoo" else "indicator", "exchange"))
     s.conn.execute("""INSERT INTO prices(instrument_id,date,open,high,low,close,adj_close,volume,source_id,fetched_at,run_id)
                       VALUES('US_EQ_SPY',?,1,1,1,100,100,1000,'yahoo','2026-01-03T20:00:00Z','scan-1')""", (as_of,))
     for sid in ("UST:2Y", "UST:10Y", "US_CPI", "US_POLICY_RATE"):

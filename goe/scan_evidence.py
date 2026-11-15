@@ -16,6 +16,7 @@ import pandas as pd
 
 from . import project_root
 from .db import Store
+from .config import load_sources
 from .readiness import check_data_readiness
 
 CORE_SERIES = {
@@ -128,6 +129,25 @@ def verify_scan_evidence(store: Store, *, reports_dir: str | Path | None = None,
     ingest_status = str((stats.get("ingest") or {}).get("status") or "offline")
     if ingest_status in ("failed", "partial"):
         _reject(f"scan ingest status is {ingest_status}; release requires complete ingest")
+
+    # Source provenance: every observation must point at a registered source and
+    # must not claim to have been fetched in the future.
+    known_sources = set(load_sources()) | {r[0] for r in store.conn.execute("SELECT source_id FROM sources")}
+    if not known_sources:
+        _reject("no registered data sources")
+    for table in ("prices", "indicators"):
+        missing_src = store.scalar(
+            f"SELECT COUNT(*) FROM {table} WHERE date<=? AND (source_id IS NULL "
+            f"OR source_id NOT IN ({','.join('?' for _ in known_sources)}))",
+            (as_of, *sorted(known_sources)))
+        if missing_src:
+            _reject(f"{table} contain observations from unregistered sources")
+    future_fetch = store.scalar(
+        "SELECT COUNT(*) FROM prices WHERE date<=? AND fetched_at > ?", (as_of, as_of + "T23:59:59Z"))
+    if future_fetch:
+        _reject("price rows have future fetched_at timestamps")
+    if scan["mode"] != "offline" and ingest_status not in ("success",):
+        _reject(f"live scan ingest status is {ingest_status!r}, not success")
 
     for sid, max_age in CORE_SERIES.items():
         last = store.scalar("SELECT MAX(date) FROM indicators WHERE series_id=? AND date<=?",
