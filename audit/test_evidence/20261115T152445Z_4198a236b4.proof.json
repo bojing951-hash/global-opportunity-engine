@@ -1,0 +1,42 @@
+{
+  "schema": "goe-test-proof/v4",
+  "git_commit": "4198a236b4f4875ffb5686308cee14acf67a1bf9",
+  "git_dirty": false,
+  "category": "offline",
+  "marker_expr": "not network and not realdata",
+  "command_template": [
+    "{python}",
+    "-c",
+    "import os,sys;sys.path=[p for p in sys.path if p not in ('', '.')];import pytest;sys.path.insert(0, os.getcwd());raise SystemExit(pytest.main(sys.argv[1:]))",
+    "tests",
+    "-o",
+    "addopts=",
+    "-q",
+    "-m",
+    "not network and not realdata",
+    "--junitxml",
+    "{junit}"
+  ],
+  "python_version": "3.12",
+  "python_requires": ">=3.10",
+  "cwd_rel": ".",
+  "started_at": "2026-11-15T15:23:16Z",
+  "ended_at": "2026-11-15T15:24:45Z",
+  "exit_code": 0,
+  "passed": 245,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "required": {
+    "count": 245,
+    "sha256": "76dcb160012b2b924439657375b6cb458f3cb2ef168de25040a613bedc463dc9"
+  },
+  "executed": {
+    "count": 245,
+    "sha256": "76dcb160012b2b924439657375b6cb458f3cb2ef168de25040a613bedc463dc9"
+  },
+  "log_path": "audit/test_evidence/20261115T152445Z_4198a236b4.log",
+  "log_sha256": "0bf4e0b12df8632507df37542b590cca4dc1915eb334436622c7170797e4f21d",
+  "junit_path": "audit/test_evidence/20261115T152445Z_4198a236b4.junit.xml",
+  "junit_sha256": "98d1f260723623e6b771a0eb41ebf65f759b9b44dd2d12c6bf59e1674cb81a74"
+}
