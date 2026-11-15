@@ -1,0 +1,103 @@
+{
+  "source": "GOE prices DB",
+  "event_available_at": "2026-11-06",
+  "decision_as_of": "2026-11-13",
+  "data_dates": {
+    "JP_EQ_N225": "2026-11-06",
+    "JP_EQ_TOPIX": "2026-11-06",
+    "TW_EQ_TAIEX": "2026-11-06",
+    "KR_EQ_KOSPI": "2026-11-06",
+    "HK_EQ_HSI": "2026-11-06",
+    "CN_EQ_CSI300": "2026-11-06",
+    "US_EQ_SPY": "2026-11-05",
+    "US_EQ_QQQ": "2026-11-05",
+    "US_VOL_VIX": "2026-11-05",
+    "GX_FX_USDJPY": "2026-11-05",
+    "US_FI_IEF": "2026-11-05",
+    "US_CR_HYG": "2026-11-05"
+  },
+  "data_hash": "55e06c14d1fe73ce2e9b370c1247cc18fcaee025fbfbf08cc196e1fa66f525e6",
+  "input_rows": 780,
+  "missing": [
+    "consensus revisions",
+    "TOPIX sector constituents",
+    "term OIS",
+    "CFTC history at event",
+    "Asia semiconductor exposure"
+  ],
+  "alignment": "Asia same-day; US/FX previous US session; no same-date future US close",
+  "observed": {
+    "JP_EQ_N225": {
+      "label": "Japan Nikkei 225 (event asset)",
+      "return": -0.059647,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "JP_EQ_TOPIX": {
+      "label": "Japan broad market",
+      "return": -0.064966,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "TW_EQ_TAIEX": {
+      "label": "Taiwan equity market",
+      "return": -0.045053,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "KR_EQ_KOSPI": {
+      "label": "Korea equity market",
+      "return": -0.060201,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "HK_EQ_HSI": {
+      "label": "Hong Kong equity market",
+      "return": -0.012708,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "CN_EQ_CSI300": {
+      "label": "China A-share",
+      "return": -0.014376,
+      "data_date": "2026-11-06",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "US broad risk",
+      "return": -0.044092,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "US_EQ_QQQ": {
+      "label": "US growth",
+      "return": -0.064889,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "US_VOL_VIX": {
+      "label": "US implied volatility",
+      "return": 0.696568,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "GX_FX_USDJPY": {
+      "label": "JPY",
+      "return": -0.000707,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "US_FI_IEF": {
+      "label": "US duration",
+      "return": 0.003382,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    },
+    "US_CR_HYG": {
+      "label": "US credit",
+      "return": -0.003096,
+      "data_date": "2026-11-05",
+      "alignment": "prior_us_session"
+    }
+  }
+}

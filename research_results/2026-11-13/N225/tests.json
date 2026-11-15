@@ -1,0 +1,31 @@
+{
+  "local_asia_test": {
+    "topix_return": -0.064966,
+    "pass": true,
+    "interpretation": "TOPIX co-move supports a broad Japan/local factor; association only"
+  },
+  "global_lead_test": {
+    "prior_us_session": "2026-11-05",
+    "spy_return": -0.044092,
+    "qqq_return": -0.064889,
+    "vix_return": 0.696568,
+    "pass": true,
+    "interpretation": "prior US selloff/VIX spike is consistent with a global lead"
+  },
+  "asia_regional_test": {
+    "taiex_return": -0.045053,
+    "kospi_return": -0.060201,
+    "pass": true,
+    "interpretation": "Taiwan/Korea co-move supports regional Asia; tech-specific attribution not identified"
+  },
+  "fx_test": {
+    "prior_usdjpy_return": -0.000707,
+    "pass": false,
+    "interpretation": "small prior FX move cannot explain a -6% equity move by itself"
+  },
+  "reversal_test": {
+    "n225_next_3d": 0.066403,
+    "pass": true,
+    "interpretation": "measured only from bars after the event through as-of"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "question": "What explains the N225 event: Japan-local factor, regional Asia co-move, US/global risk, JPY, policy, or fundamentals?",
+  "next_best_evidence": "PIT-aligned same-day Asia returns plus PRIOR US-session returns/VIX/USDJPY",
+  "why": "It separates a Japan/regional Asia shock from a US-global lead without lookahead",
+  "source": "GOE prices DB (yahoo), completed daily bars",
+  "period": "event 2026-11-06; prior US session 2026-11-05; trailing 90 sessions",
+  "cost": "low; already stored",
+  "missing": [
+    "consensus revisions",
+    "TOPIX sector constituents",
+    "term OIS",
+    "CFTC history at event",
+    "Asia semiconductor exposure"
+  ],
+  "decision_rule": {
+    "local": "TOPIX same-day return < -3%",
+    "global": "prior US session SPY < -1% AND VIX > 0",
+    "regional": "TAIEX and KOSPI same-day both < -3%",
+    "fx": "prior-session |USDJPY| > 2%",
+    "reversal": "N225 cumulative return over next 3 sessions > 0",
+    "alignment": "Asia same-day; US/FX previous US session; no same-date future US close"
+  },
+  "pit_note": "US same-calendar-date close is after the Asia close and is therefore not used."
+}
