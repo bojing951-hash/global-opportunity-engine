@@ -1,0 +1,247 @@
+{
+  "window": "2026-11-13",
+  "source": "evaluation/v2_candidates_20_2026-11-13.json",
+  "max_output": 10,
+  "cards": [
+    {
+      "card_id": "C01",
+      "asset": "CH_EQ_SMI",
+      "observed_phenomenon": "Swiss Market Index 近期 drawdown_extreme（near_high，分数 0.87）；1 个月收益 +7.2%；回撤分位 0.97。",
+      "return_1m": 0.07215180984954928,
+      "anomaly_score": 0.8709293089753775,
+      "materiality": 0.4,
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      }
+    },
+    {
+      "card_id": "C02",
+      "asset": "CM_AGR_LE",
+      "observed_phenomenon": "Live Cattle front month 近期 drawdown_extreme（deep_drawdown，分数 0.99）；1 个月收益 -2.2%；回撤分位 0.02。",
+      "return_1m": -0.02233139855426547,
+      "anomaly_score": 0.9880857823669579,
+      "materiality": 0.2,
+      "decision_relevance": {
+        "if_true": "若供给解释成立，研究库存/地缘情景；若美元解释成立，研究计价与对冲。",
+        "if_false": "若均不成立，保留为待验证情报，不直接做方向性判断。"
+      }
+    },
+    {
+      "card_id": "C03",
+      "asset": "CM_AGR_SB",
+      "observed_phenomenon": "Sugar No.11 front month 近期 vol_regime_shift（expansion，分数 0.01）；1 个月收益 -12.6%；回撤分位 0.52。",
+      "return_1m": -0.1257198090235162,
+      "anomaly_score": 0.007774295284068167,
+      "materiality": 0.25,
+      "decision_relevance": {
+        "if_true": "若供给解释成立，研究库存/地缘情景；若美元解释成立，研究计价与对冲。",
+        "if_false": "若均不成立，保留为待验证情报，不直接做方向性判断。"
+      }
+    },
+    {
+      "card_id": "C04",
+      "asset": "CM_ENE_RB",
+      "observed_phenomenon": "RBOB Gasoline front month 近期 price_return_shock（down，分数 0.15）；1 个月收益 -18.1%；回撤分位 0.23。",
+      "return_1m": -0.18061053881062372,
+      "anomaly_score": 0.15388308765732672,
+      "materiality": 0.4,
+      "decision_relevance": {
+        "if_true": "若供给解释成立，研究库存/地缘情景；若美元解释成立，研究计价与对冲。",
+        "if_false": "若均不成立，保留为待验证情报，不直接做方向性判断。"
+      }
+    },
+    {
+      "card_id": "C05",
+      "asset": "CM_ETF_SLV",
+      "observed_phenomenon": "iShares Silver Trust 近期 relative_strength_extreme（underperform，分数 0.04）；1 个月收益 -10.2%；回撤分位 0.00。",
+      "return_1m": -0.10155320917666344,
+      "anomaly_score": 0.04423881659662898,
+      "materiality": 0.35,
+      "decision_relevance": {
+        "if_true": "若供给解释成立，研究库存/地缘情景；若美元解释成立，研究计价与对冲。",
+        "if_false": "若均不成立，保留为待验证情报，不直接做方向性判断。"
+      }
+    },
+    {
+      "card_id": "C06",
+      "asset": "CN_EQ_CSI1000",
+      "observed_phenomenon": "CSI 1000 Index 近期 drawdown_extreme（deep_drawdown，分数 0.90）；1 个月收益 -4.8%；回撤分位 0.02。",
+      "return_1m": -0.04812215763996586,
+      "anomaly_score": 0.9046862589356632,
+      "materiality": 0.4,
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      }
+    },
+    {
+      "card_id": "C07",
+      "asset": "CN_SEC_EV",
+      "observed_phenomenon": "China EV Sector ETF 近期 drawdown_extreme（deep_drawdown，分数 0.84）；1 个月收益 -4.0%；回撤分位 0.03。",
+      "return_1m": -0.04005936056422432,
+      "anomaly_score": 0.8371723590150913,
+      "materiality": 0.35,
+      "decision_relevance": {
+        "if_true": "若利率/风格解释成立，研究久期与行业相对价值；若全球风险解释成立，研究防御/周期切换。",
+        "if_false": "若相对表现无法由风格/风险解释，保留为待验证的行业基本面问题。"
+      }
+    },
+    {
+      "card_id": "C08",
+      "asset": "DE_EQ_DAX",
+      "observed_phenomenon": "DAX 40 近期 drawdown_extreme（near_high，分数 0.76）；1 个月收益 +5.8%；回撤分位 0.95。",
+      "return_1m": 0.058235275407306775,
+      "anomaly_score": 0.7617156473391581,
+      "materiality": 0.7,
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      }
+    },
+    {
+      "card_id": "C09",
+      "asset": "GX_FX_USDBRL",
+      "observed_phenomenon": "USD/BRL 近期 drawdown_extreme（near_high，分数 0.94）；1 个月收益 +11.9%；回撤分位 0.99。",
+      "return_1m": 0.11862282963170712,
+      "anomaly_score": 0.9444003177124701,
+      "materiality": 0.35,
+      "decision_relevance": {
+        "if_true": "若利差/风险解释成立，研究 carry 或避险对冲；若干预解释成立，研究政策防线。",
+        "if_false": "若均被证伪，保留为市场情报，等待资金流/政策证据。"
+      }
+    },
+    {
+      "card_id": "C10",
+      "asset": "GX_FX_USDKRW",
+      "observed_phenomenon": "USD/KRW 近期 relative_strength_extreme（outperform，分数 0.51）；1 个月收益 -0.3%；回撤分位 0.02。",
+      "return_1m": -0.0026878528028960735,
+      "anomaly_score": 0.5059970046611774,
+      "materiality": 0.4,
+      "decision_relevance": {
+        "if_true": "若利差/风险解释成立，研究 carry 或避险对冲；若干预解释成立，研究政策防线。",
+        "if_false": "若均被证伪，保留为市场情报，等待资金流/政策证据。"
+      }
+    },
+    {
+      "card_id": "C11",
+      "asset": "IN_EQ_INDA",
+      "observed_phenomenon": "iShares MSCI India 近期 price_return_shock（up，分数 0.35）；1 个月收益 +6.8%；回撤分位 0.58。",
+      "return_1m": 0.06840456156638863,
+      "anomaly_score": 0.35474423934839844,
+      "materiality": 0.3,
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      }
+    },
+    {
+      "card_id": "C12",
+      "asset": "JP_EQ_N225",
+      "observed_phenomenon": "Nikkei 225 近期 drawdown_extreme（deep_drawdown，分数 0.98）；1 个月收益 -9.7%；回撤分位 0.03。",
+      "return_1m": -0.09745378675255034,
+      "anomaly_score": 0.9841143764892772,
+      "materiality": 0.8,
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      }
+    },
+    {
+      "card_id": "C13",
+      "asset": "MX_EQ_IPC",
+      "observed_phenomenon": "IPC Mexico 近期 drawdown_extreme（near_high，分数 0.88）；1 个月收益 +7.2%；回撤分位 0.93。",
+      "return_1m": 0.07236681767416564,
+      "anomaly_score": 0.8808578236695788,
+      "materiality": 0.25,
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      }
+    },
+    {
+      "card_id": "C14",
+      "asset": "TW_EQ_TAIEX",
+      "observed_phenomenon": "TAIEX 近期 price_return_shock（down，分数 0.81）；1 个月收益 -9.7%；回撤分位 0.20。",
+      "return_1m": -0.09652588305404886,
+      "anomaly_score": 0.8096038529330292,
+      "materiality": 0.5,
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      }
+    },
+    {
+      "card_id": "C15",
+      "asset": "US_EQ_QQQ",
+      "observed_phenomenon": "Invesco QQQ (Nasdaq 100) 近期 price_return_shock（up，分数 0.13）；1 个月收益 -5.6%；回撤分位 0.29。",
+      "return_1m": -0.05594351960212729,
+      "anomaly_score": 0.12537393433190536,
+      "materiality": 0.95,
+      "decision_relevance": {
+        "if_true": "若利率/全球风险解释成立，研究久期与风格暴露；若盈利解释成立，交 B 做估值/盈利研究。",
+        "if_false": "若均被证伪，保留为市场情报，不升级为研究候选。"
+      }
+    },
+    {
+      "card_id": "C16",
+      "asset": "US_FAC_MTUM",
+      "observed_phenomenon": "iShares MSCI USA Momentum Factor 近期 price_return_shock（up，分数 0.32）；1 个月收益 -9.0%；回撤分位 0.15。",
+      "return_1m": -0.09000263054952862,
+      "anomaly_score": 0.32374993875799296,
+      "materiality": 0.3,
+      "decision_relevance": {
+        "if_true": "若利率/全球风险解释成立，研究久期与风格暴露；若盈利解释成立，交 B 做估值/盈利研究。",
+        "if_false": "若均被证伪，保留为市场情报，不升级为研究候选。"
+      }
+    },
+    {
+      "card_id": "C17",
+      "asset": "US_SEC_XLB",
+      "observed_phenomenon": "Materials Select Sector SPDR 近期 trend_break（death_cross，分数 0.50）；1 个月收益 +5.4%；回撤分位 0.74。",
+      "return_1m": 0.05375482347635585,
+      "anomaly_score": 0.5,
+      "materiality": 0.35,
+      "decision_relevance": {
+        "if_true": "若利率/风格解释成立，研究久期与行业相对价值；若全球风险解释成立，研究防御/周期切换。",
+        "if_false": "若相对表现无法由风格/风险解释，保留为待验证的行业基本面问题。"
+      }
+    },
+    {
+      "card_id": "C18",
+      "asset": "US_SEC_XLP",
+      "observed_phenomenon": "Consumer Staples Select Sector SPDR 近期 vol_regime_shift（expansion，分数 0.36）；1 个月收益 +5.8%；回撤分位 0.84。",
+      "return_1m": 0.05809900234537846,
+      "anomaly_score": 0.35882606607674106,
+      "materiality": 0.4,
+      "decision_relevance": {
+        "if_true": "若利率/风格解释成立，研究久期与行业相对价值；若全球风险解释成立，研究防御/周期切换。",
+        "if_false": "若相对表现无法由风格/风险解释，保留为待验证的行业基本面问题。"
+      }
+    },
+    {
+      "card_id": "C19",
+      "asset": "US_SEC_XLV",
+      "observed_phenomenon": "Health Care Select Sector SPDR 近期 price_return_shock（up，分数 0.17）；1 个月收益 +8.0%；回撤分位 0.87。",
+      "return_1m": 0.0797309414916334,
+      "anomaly_score": 0.16697510183366862,
+      "materiality": 0.6,
+      "decision_relevance": {
+        "if_true": "若利率/风格解释成立，研究久期与行业相对价值；若全球风险解释成立，研究防御/周期切换。",
+        "if_false": "若相对表现无法由风格/风险解释，保留为待验证的行业基本面问题。"
+      }
+    },
+    {
+      "card_id": "C20",
+      "asset": "US_VOL_VIX",
+      "observed_phenomenon": "CBOE Volatility Index 近期 price_return_shock（down，分数 0.25）；1 个月收益 +10.8%；回撤分位 0.74。",
+      "return_1m": 0.10847657573615233,
+      "anomaly_score": 0.2494478558529104,
+      "materiality": 0.9,
+      "decision_relevance": {
+        "if_true": "若波动率状态解释成立，研究波动率风险溢价与期限结构。",
+        "if_false": "若无稳定关系，保留为市场情报，不宣称错误定价。"
+      }
+    }
+  ]
+}

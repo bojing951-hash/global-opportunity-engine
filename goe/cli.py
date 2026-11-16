@@ -134,6 +134,8 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     add("git", "ok" if shutil.which("git") else "warn", shutil.which("git") or "git not found")
     add("gh_cli", "ok" if shutil.which("gh") else "warn", shutil.which("gh") or "gh not installed (API/SSH only)")
     out = {"version": __version__, "db": str(store.path), "checks": checks}
+    after = candidate_price_fingerprints(store)
+    out["research_updates"] = notify_price_changes(store, before, after)
     if args.json:
         _print_json(out)
     else:
@@ -150,9 +152,11 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 def cmd_ingest(args: argparse.Namespace) -> int:
     from .ingest import Ingestor
 
+    from .research_updates import candidate_price_fingerprints, notify_price_changes
     store = _store(args)
     ing = Ingestor(store)
     ing.register_metadata()
+    before = candidate_price_fingerprints(store)
     out: dict[str, Any] = {}
     if not args.indicators_only:
         out["prices"] = ing.ingest_prices(mode=args.mode).to_dict()
@@ -161,6 +165,8 @@ def cmd_ingest(args: argparse.Namespace) -> int:
             out["indicators"] = ing.ingest_indicators(mode=args.mode).to_dict()
         except Exception as exc:  # noqa: BLE001
             out["indicators_error"] = f"{type(exc).__name__}: {exc}"
+    after = candidate_price_fingerprints(store)
+    out["research_updates"] = notify_price_changes(store, before, after)
     if args.json:
         _print_json(out)
     else:
@@ -414,7 +420,8 @@ def cmd_research(args: argparse.Namespace) -> int:
     if args.action == "status":
         for r in orch.status():
             print(f"{r['research_id']} {r['asset_class']} state={r['workflow']} "
-                  f"findings={r['findings']} latest={r['latest_finding']}")
+                  f"findings={r['findings']} latest={r['latest_finding']} "
+                  f"updates={r['open_updates']} last_update={r['latest_update']}")
         return 0
     if args.action in ("run", "next"):
         if args.id:
@@ -588,6 +595,8 @@ def cmd_events(args: argparse.Namespace) -> int:
            "first": cal.events[0].date if cal.events else None,
            "last": cal.events[-1].date if cal.events else None,
            "problems": problems, "ok": not problems}
+    after = candidate_price_fingerprints(store)
+    out["research_updates"] = notify_price_changes(store, before, after)
     if args.json:
         _print_json(out)
     else:
@@ -761,6 +770,8 @@ def cmd_replay(args: argparse.Namespace) -> int:
         out = run_case_validation(store, out_dir=args.out)
     else:
         out = run_replay(store, start=args.start, end=args.end, step=args.step, out_dir=args.out)
+    after = candidate_price_fingerprints(store)
+    out["research_updates"] = notify_price_changes(store, before, after)
     if args.json:
         _print_json(out)
     store.close()

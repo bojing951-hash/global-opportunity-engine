@@ -42,14 +42,19 @@ class ResearchOrchestrator:
             self.store.set_research_workflow_state(spec.research_id, "PLANNED")
         self.store.add_research_event(spec.research_id, "research:planned", spec.question)
 
-    def reopen(self, research_id: str, reason: str) -> None:
+    def reopen(self, research_id: str, reason: str, trigger_key: str | None = None) -> int | None:
         if not self.store.research_candidate(research_id):
             raise ValueError(f"research candidate does not exist: {research_id}")
-        self.store.add_research_event(research_id, "research:evidence_update", reason)
+        key = trigger_key or f"manual:{reason}"
+        update_id = self.store.enqueue_research_update(research_id, "manual", key, reason)
+        self.store.add_research_event(research_id, "research:evidence_update", reason,
+                                      payload={"trigger_key": key, "update_id": update_id})
         self.store.set_research_workflow_state(research_id, "PLANNED")
+        return update_id
 
     def retry(self, research_id: str) -> None:
         state = self.store.research_workflow_state(research_id)
+        self.store.retry_failed_research_updates(research_id)
         if state in ("BLOCKED", "WAITING_FOR_DATA"):
             self.store.set_research_workflow_state(research_id, "PLANNED")
             self.store.add_research_event(research_id, "research:retry",
@@ -57,13 +62,19 @@ class ResearchOrchestrator:
 
     def run(self, spec: ResearchSpec) -> Any:
         self.store.set_research_workflow_state(spec.research_id, "EVIDENCE_PENDING")
+        update = self.store.pending_research_update(spec.research_id)
+        if update:
+            self.store.mark_research_update(int(update["update_id"]), "PROCESSING")
         task = plan_evidence(spec)
         self.store.add_research_event(spec.research_id, "research:evidence_plan",
                                       task.target_claim, payload=task.to_dict())
         try:
             self.store.set_research_workflow_state(spec.research_id, "TESTING")
             finding = execute_spec(self.store, spec)
-        except Exception:
+        except Exception as exc:
+            if update:
+                self.store.mark_research_update(int(update["update_id"]), "FAILED",
+                                                error=f"{type(exc).__name__}: {exc}")
             self.store.set_research_workflow_state(spec.research_id, "BLOCKED")
             raise
         self.store.set_research_workflow_state(spec.research_id, "INCONCLUSIVE"
@@ -73,8 +84,14 @@ class ResearchOrchestrator:
                     for v in finding.hypothesis_updates.values())
                   else ("STOP_LOW_VALUE_RESEARCH" if finding.status == "INCONCLUSIVE"
                         else "COMPLETE_RESEARCH"))
+        if update:
+            # Even a no-change reuse of the old Finding consumes this notification:
+            # do not leave the same trigger pending forever.
+            self.store.mark_research_update(int(update["update_id"]), "PROCESSED",
+                                            finding_id=finding.finding_id)
         self.store.add_research_event(spec.research_id, "research:evaluated", finding.status,
-                                      payload={"next_action": action})
+                                      payload={"next_action": action,
+                                               "update_id": update["update_id"] if update else None})
         return finding
 
     def next_case(self) -> ResearchSpec | None:
@@ -89,18 +106,13 @@ class ResearchOrchestrator:
                 continue
             if c.get("research_worthiness") not in ("high", "medium"):
                 continue
+            pending = self.store.open_research_update_count(r["research_id"])
             latest = self.store.conn.execute(
-                "SELECT created_at FROM research_v2_findings WHERE research_id=? "
-                "ORDER BY created_at DESC LIMIT 1", (r["research_id"],)).fetchone()
-            if latest:
-                reopened = self.store.conn.execute(
-                    """SELECT 1 FROM research_v2_events WHERE research_id=?
-                       AND event_type='research:evidence_update' AND at>?""",
-                    (r["research_id"], latest["created_at"])).fetchone()
-                if not reopened:
-                    continue
+                "SELECT 1 FROM research_v2_findings WHERE research_id=?", (r["research_id"],)).fetchone()
+            if latest and not pending:
+                continue
             state = self.store.research_workflow_state(r["research_id"])
-            if state in ("BLOCKED", "WAITING_FOR_DATA"):
+            if state in ("BLOCKED", "WAITING_FOR_DATA") and not pending:
                 continue
             score = {"high": 2, "medium": 1}.get(c.get("research_worthiness"), 0)
             score += {"ready": 2, "partial": 1}.get(c.get("evidence_readiness"), 0)
@@ -234,7 +246,11 @@ class ResearchOrchestrator:
                       (SELECT state FROM research_v2_workflow w WHERE w.research_id=c.research_id) workflow,
                       (SELECT COUNT(*) FROM research_v2_findings f WHERE f.research_id=c.research_id) findings,
                       (SELECT status FROM research_v2_findings f WHERE f.research_id=c.research_id
-                       ORDER BY created_at DESC LIMIT 1) latest_finding
+                       ORDER BY created_at DESC LIMIT 1) latest_finding,
+                      (SELECT COUNT(*) FROM research_v2_update_requests u WHERE u.research_id=c.research_id
+                       AND u.status IN ('PENDING','PROCESSING')) open_updates,
+                      (SELECT status FROM research_v2_update_requests u WHERE u.research_id=c.research_id
+                       ORDER BY update_id DESC LIMIT 1) latest_update
                FROM research_v2_candidates c ORDER BY c.research_id""").fetchall()
         return [dict(r) for r in rows]
 

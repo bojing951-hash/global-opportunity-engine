@@ -120,8 +120,80 @@ def test_finding_can_reenter_after_evidence_update(tmp_path):
     store.add_research_finding("F1", "R-REENTRY", "INCONCLUSIVE", {"v": 1}, "f.json")
     orch = ResearchOrchestrator(store)
     assert orch.next_case() is None  # no new evidence -> no empty rerun
-    import time
-    time.sleep(1.1)
     orch.reopen("R-REENTRY", "new evidence arrived")
     spec = orch.next_case()
     assert spec is not None and spec.research_id == "R-REENTRY"
+
+
+def test_no_change_reopen_is_consumed_and_does_not_loop(tmp_path, monkeypatch):
+    import time, types
+    from goe.research_updates import notify_price_changes
+    store = Store(str(tmp_path / "t.db"))
+    c = {"research_id": "R-CONSUME", "research_theme_id": "T", "as_of": "2026-11-13",
+         "market": "TW", "asset_class": "equity_index", "instruments": ["TW_EQ_TAIEX"],
+         "observed_phenomenon": "price_return_shock down", "detector_id": "price_return_shock",
+         "direction": "down", "event_date": "2026-11-06",
+         "priority_tier": "intelligence", "research_worthiness": "high",
+         "evidence_readiness": "partial", "research_queue": "watch",
+         "competing_hypotheses": [{"id": "H-EQTW-LOCAL", "label": "local", "type": "local"}]}
+    store.upsert_research_candidate(c)
+    store.conn.execute("""INSERT INTO anomalies(anomaly_id,as_of,detector,family,instrument_id,
+        direction,magnitude,score,percentile,window,evidence_json,fingerprint,run_id,created_at)
+        VALUES('A1','2026-11-06','price_return_shock','price','TW_EQ_TAIEX','down',0.04,0.8,0.0,
+               '1d','{}','f','r','x')""")
+    store.conn.commit()
+    store.add_research_finding("F1", "R-CONSUME", "INCONCLUSIVE", {"v": 1}, "f.json")
+    orch = ResearchOrchestrator(store)
+    t0 = store.conn.execute("SELECT created_at FROM research_v2_findings WHERE finding_id='F1'").fetchone()[0]
+    # Same second as the Finding: must still be consumed.
+    orch.reopen("R-CONSUME", "manual check")
+    spec = orch.next_case()
+    assert spec is not None
+    fake = types.SimpleNamespace(finding_id="F1", status="INCONCLUSIVE", research_id="R-CONSUME",
+                                 learned=[], event_date="2026-11-06",
+                                 hypothesis_updates={"H": {"status": "INSUFFICIENT_DATA"}})
+    monkeypatch.setattr("goe.research_orchestrator.execute_spec", lambda store, spec: fake)
+    orch.run(spec)
+    assert orch.next_case() is None
+    assert store.open_research_update_count("R-CONSUME") == 0
+    assert store.conn.execute("SELECT created_at FROM research_v2_findings WHERE finding_id='F1'").fetchone()[0] == t0
+    # A second data update can be queued after the first was processed.
+    notify_price_changes(store, {"TW_EQ_TAIEX": "old"}, {"TW_EQ_TAIEX": "new"})
+    assert store.open_research_update_count("R-CONSUME") >= 1
+    # Duplicate same data fingerprint is idempotent.
+    notify_price_changes(store, {"TW_EQ_TAIEX": "old"}, {"TW_EQ_TAIEX": "new"})
+    assert store.open_research_update_count("R-CONSUME") == 1
+
+
+def test_failed_update_is_not_marked_processed_and_can_recover(tmp_path, monkeypatch):
+    import types
+    store = Store(str(tmp_path / "t.db"))
+    c = {"research_id": "R-FAIL", "research_theme_id": "T", "as_of": "2026-11-13",
+         "market": "TW", "asset_class": "equity_index", "instruments": ["TW_EQ_TAIEX"],
+         "observed_phenomenon": "price_return_shock down", "detector_id": "price_return_shock",
+         "direction": "down", "event_date": "2026-11-06", "priority_tier": "intelligence",
+         "research_worthiness": "high", "evidence_readiness": "partial",
+         "research_queue": "watch", "competing_hypotheses": []}
+    store.upsert_research_candidate(c)
+    store.conn.execute("""INSERT INTO anomalies(anomaly_id,as_of,detector,family,instrument_id,
+        direction,magnitude,score,percentile,window,evidence_json,fingerprint,run_id,created_at)
+        VALUES('A1','2026-11-06','price_return_shock','price','TW_EQ_TAIEX','down',0.04,0.8,0.0,
+               '1d','{}','f','r','x')""")
+    store.conn.commit()
+    store.add_research_finding("F1", "R-FAIL", "INCONCLUSIVE", {}, "f.json")
+    orch = ResearchOrchestrator(store)
+    orch.reopen("R-FAIL", "trigger")
+    spec = orch.next_case()
+    assert spec
+    def boom(store, spec): raise RuntimeError("controlled failure")
+    monkeypatch.setattr("goe.research_orchestrator.execute_spec", boom)
+    try:
+        orch.run(spec)
+    except RuntimeError:
+        pass
+    row = store.conn.execute("SELECT status FROM research_v2_update_requests WHERE research_id='R-FAIL'").fetchone()
+    assert row["status"] == "FAILED"
+    assert store.research_workflow_state("R-FAIL") == "BLOCKED"
+    orch.retry("R-FAIL")
+    pending = store.pending_research_update("R-FAIL")
+    assert pending and pending["status"] == "PENDING"

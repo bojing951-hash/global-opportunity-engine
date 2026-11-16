@@ -164,6 +164,14 @@ CREATE TABLE IF NOT EXISTS research_v2_event_contracts (
   contract_hash TEXT NOT NULL, anomaly_id TEXT, contract_json TEXT NOT NULL, created_at TEXT
 );
 
+CREATE TABLE IF NOT EXISTS research_v2_update_requests (
+  update_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  research_id TEXT NOT NULL REFERENCES research_v2_candidates(research_id) ON DELETE CASCADE,
+  trigger_type TEXT NOT NULL, trigger_key TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'PENDING',
+  reason TEXT, finding_id TEXT, error TEXT, created_at TEXT NOT NULL, processed_at TEXT,
+  UNIQUE(research_id, trigger_key)
+);
+
 CREATE TABLE IF NOT EXISTS research_v2_workflow (
   research_id TEXT PRIMARY KEY REFERENCES research_v2_candidates(research_id) ON DELETE CASCADE,
   state TEXT NOT NULL, updated_at TEXT
@@ -946,6 +954,67 @@ class Store:
                          VALUES(?,?,?,?) ON CONFLICT(old_id) DO UPDATE SET
                          new_id=excluded.new_id, reason=excluded.reason""",
                       (old_id, new_id, reason, utc_now()))
+
+    def enqueue_research_update(self, research_id: str, trigger_type: str, trigger_key: str,
+                                reason: str = "") -> int | None:
+        with self.transaction() as c:
+            if not c.execute("SELECT 1 FROM research_v2_candidates WHERE research_id=?",
+                             (research_id,)).fetchone():
+                raise ValueError(f"research candidate does not exist: {research_id}")
+            cur = c.execute("""INSERT OR IGNORE INTO research_v2_update_requests(research_id,
+                             trigger_type,trigger_key,status,reason,created_at)
+                             VALUES(?,?,?,'PENDING',?,?)""",
+                            (research_id, trigger_type, trigger_key, reason, utc_now()))
+            return cur.lastrowid if cur.rowcount else None
+
+    def pending_research_update(self, research_id: str) -> dict[str, Any] | None:
+        row = self.conn.execute(
+            """SELECT * FROM research_v2_update_requests WHERE research_id=?
+               AND status='PENDING' ORDER BY update_id LIMIT 1""", (research_id,)).fetchone()
+        return dict(row) if row else None
+
+    def mark_research_update(self, update_id: int, status: str, finding_id: str = "",
+                             error: str = "") -> None:
+        if status not in ("PENDING", "PROCESSING", "PROCESSED", "FAILED"):
+            raise ValueError("invalid update status")
+        with self.transaction() as c:
+            c.execute("""UPDATE research_v2_update_requests SET status=?,finding_id=?,error=?,
+                         processed_at=? WHERE update_id=?""",
+                      (status, finding_id or None, error or None,
+                       utc_now() if status in ("PROCESSED", "FAILED") else None, update_id))
+
+    def retry_failed_research_updates(self, research_id: str) -> int:
+        with self.transaction() as c:
+            cur = c.execute("""UPDATE research_v2_update_requests SET status='PENDING',
+                               error=NULL,processed_at=NULL WHERE research_id=? AND status='FAILED'""",
+                            (research_id,))
+            return cur.rowcount
+
+    def open_research_update_count(self, research_id: str) -> int:
+        return int(self.conn.execute(
+            "SELECT COUNT(*) FROM research_v2_update_requests WHERE research_id=? "
+            "AND status IN ('PENDING','PROCESSING')", (research_id,)).fetchone()[0])
+
+    def instrument_price_fingerprint(self, instrument_id: str) -> str:
+        import hashlib
+        rows = self.conn.execute(
+            "SELECT date,close,adj_close,source_id FROM prices WHERE instrument_id=? "
+            "ORDER BY date", (instrument_id,)).fetchall()
+        return hashlib.sha256(repr([tuple(r) for r in rows]).encode()).hexdigest()
+
+    def research_ids_for_instrument(self, instrument_id: str) -> list[str]:
+        out = []
+        for r in self.conn.execute("SELECT research_id,payload_json FROM research_v2_candidates"):
+            try:
+                payload = json.loads(r["payload_json"] or "{}")
+                instruments = payload.get("instruments") or []
+                if isinstance(instruments, str):
+                    instruments = json.loads(instruments)
+            except Exception:
+                instruments = []
+            if instrument_id in instruments:
+                out.append(r["research_id"])
+        return out
 
     def save_event_contract(self, research_id: str, contract: dict[str, Any], contract_hash: str,
                             anomaly_id: str = "") -> None:

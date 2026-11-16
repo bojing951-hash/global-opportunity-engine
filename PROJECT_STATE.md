@@ -194,3 +194,14 @@ ACCEPTANCE_STATUS: multi-case functional; research value NOT VALIDATED.
 - Investment intelligence: MARKET_EXPECTATIONS_NOT_ESTABLISHED / MISPRICING_NOT_ESTABLISHED.
 - A-B real UST/JGB rate-differential request ok_valid (63 evidence rows); B unchanged.
 - DISCOVERY VALUE STILL NOT VALIDATED.
+
+
+## V4.1 update lifecycle (2026-11-16)
+- Update ledger `research_v2_update_requests`: PENDING/PROCESSING/PROCESSED/FAILED; no-change
+  checks are consumed; same-second and duplicate notifications are idempotent.
+- Actual `goe ingest` entry compares candidate price fingerprints and enqueues related updates.
+- Candidate screening metadata is preserved by `register`.
+- Neutral triage materials: `evaluation/triage_cards.json`, `triage_scores_template.csv`,
+  mapping `triage_method_mapping.json`; no human ratings yet.
+- QQQ real research: risk-off supported; rate shock weakened; H-TECH observation only.
+- CURRENT: five fixes PASS; supervised use ready; continuous/update value not validated.

@@ -1,0 +1,124 @@
+{
+  "window": "2026-11-13",
+  "simple_baseline": [
+    "CM_ENE_RB",
+    "CM_AGR_SB",
+    "GX_FX_USDBRL",
+    "US_VOL_VIX",
+    "CM_ETF_SLV",
+    "JP_EQ_N225",
+    "TW_EQ_TAIEX",
+    "US_FAC_MTUM",
+    "US_SEC_XLV",
+    "MX_EQ_IPC"
+  ],
+  "goe_selection": [
+    "JP_EQ_N225",
+    "TW_EQ_TAIEX",
+    "US_EQ_QQQ",
+    "US_SEC_XLV"
+  ],
+  "method_mapping": {
+    "C01": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    },
+    "C02": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    },
+    "C03": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    },
+    "C04": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    },
+    "C05": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    },
+    "C06": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "partial"
+    },
+    "C07": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    },
+    "C08": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "partial"
+    },
+    "C09": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    },
+    "C10": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    },
+    "C11": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    },
+    "C12": {
+      "system_class": "watch",
+      "worthiness": "high",
+      "readiness": "partial"
+    },
+    "C13": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    },
+    "C14": {
+      "system_class": "watch",
+      "worthiness": "medium",
+      "readiness": "missing"
+    },
+    "C15": {
+      "system_class": "watch",
+      "worthiness": "medium",
+      "readiness": "missing"
+    },
+    "C16": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    },
+    "C17": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    },
+    "C18": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    },
+    "C19": {
+      "system_class": "watch",
+      "worthiness": "medium",
+      "readiness": "missing"
+    },
+    "C20": {
+      "system_class": "archive",
+      "worthiness": "low",
+      "readiness": "missing"
+    }
+  },
+  "note": "mapping is stored separately and must not be shown to raters"
+}
