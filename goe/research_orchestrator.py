@@ -65,10 +65,10 @@ class ResearchOrchestrator:
         update = self.store.pending_research_update(spec.research_id)
         if update:
             self.store.mark_research_update(int(update["update_id"]), "PROCESSING")
-        task = plan_evidence(spec)
-        self.store.add_research_event(spec.research_id, "research:evidence_plan",
-                                      task.target_claim, payload=task.to_dict())
         try:
+            task = plan_evidence(spec)
+            self.store.add_research_event(spec.research_id, "research:evidence_plan",
+                                          task.target_claim, payload=task.to_dict())
             self.store.set_research_workflow_state(spec.research_id, "TESTING")
             finding = execute_spec(self.store, spec)
         except Exception as exc:

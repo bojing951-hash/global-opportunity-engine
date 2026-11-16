@@ -205,3 +205,11 @@ ACCEPTANCE_STATUS: multi-case functional; research value NOT VALIDATED.
   mapping `triage_method_mapping.json`; no human ratings yet.
 - QQQ real research: risk-off supported; rate shock weakened; H-TECH observation only.
 - CURRENT: five fixes PASS; supervised use ready; continuous/update value not validated.
+
+
+## Four P1 fixes (2026-11-16)
+- F1 CLI doctor/events/replay restored and manually run.
+- F2 peer/dependency-aware ingest updates; IEF-only change reactivates QQQ.
+- F3 planner/execute failures mark FAILED; stale PROCESSING recoverable; retry.
+- F4 transition key old->new; A→B→C→B all processed.
+- Triage cards/scores/mapping frozen; no user ratings.

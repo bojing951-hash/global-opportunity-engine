@@ -158,10 +158,12 @@ def test_no_change_reopen_is_consumed_and_does_not_loop(tmp_path, monkeypatch):
     assert store.open_research_update_count("R-CONSUME") == 0
     assert store.conn.execute("SELECT created_at FROM research_v2_findings WHERE finding_id='F1'").fetchone()[0] == t0
     # A second data update can be queued after the first was processed.
-    notify_price_changes(store, {"TW_EQ_TAIEX": "old"}, {"TW_EQ_TAIEX": "new"})
+    notify_price_changes(store, {"R-CONSUME": {"TW_EQ_TAIEX": "old"}},
+                         {"R-CONSUME": {"TW_EQ_TAIEX": "new"}})
     assert store.open_research_update_count("R-CONSUME") >= 1
-    # Duplicate same data fingerprint is idempotent.
-    notify_price_changes(store, {"TW_EQ_TAIEX": "old"}, {"TW_EQ_TAIEX": "new"})
+    # Duplicate same transition is idempotent.
+    notify_price_changes(store, {"R-CONSUME": {"TW_EQ_TAIEX": "old"}},
+                         {"R-CONSUME": {"TW_EQ_TAIEX": "new"}})
     assert store.open_research_update_count("R-CONSUME") == 1
 
 
@@ -197,3 +199,44 @@ def test_failed_update_is_not_marked_processed_and_can_recover(tmp_path, monkeyp
     orch.retry("R-FAIL")
     pending = store.pending_research_update("R-FAIL")
     assert pending and pending["status"] == "PENDING"
+
+
+def test_planner_failure_does_not_leave_processing_stuck(tmp_path, monkeypatch):
+    import types
+    store = Store(str(tmp_path / "t.db"))
+    c = {"research_id": "R-PLANFAIL", "research_theme_id": "T", "as_of": "2026-11-13",
+         "market": "TW", "asset_class": "equity_index", "instruments": ["TW_EQ_TAIEX"],
+         "observed_phenomenon": "price_return_shock down", "detector_id": "price_return_shock",
+         "direction": "down", "event_date": "2026-11-06", "priority_tier": "intelligence",
+         "research_worthiness": "high", "evidence_readiness": "partial",
+         "research_queue": "watch", "competing_hypotheses": []}
+    store.upsert_research_candidate(c)
+    store.conn.execute("""INSERT INTO anomalies(anomaly_id,as_of,detector,family,instrument_id,
+        direction,magnitude,score,percentile,window,evidence_json,fingerprint,run_id,created_at)
+        VALUES('A1','2026-11-06','price_return_shock','price','TW_EQ_TAIEX','down',0.04,0.8,0.0,
+               '1d','{}','f','r','x')""")
+    store.conn.commit()
+    store.add_research_finding("F1", "R-PLANFAIL", "INCONCLUSIVE", {}, "f.json")
+    orch = ResearchOrchestrator(store)
+    orch.reopen("R-PLANFAIL", "plan failure")
+    spec = orch.next_case()
+    assert spec
+    def boom(spec): raise RuntimeError("planner boom")
+    monkeypatch.setattr("goe.research_orchestrator.plan_evidence", boom)
+    try:
+        orch.run(spec)
+    except RuntimeError:
+        pass
+    row = store.conn.execute("SELECT status FROM research_v2_update_requests WHERE research_id='R-PLANFAIL'").fetchone()
+    assert row["status"] == "FAILED"
+    orch.retry("R-PLANFAIL")
+    assert store.pending_research_update("R-PLANFAIL") is not None
+    # Successful recovery consumes the request.
+    fake = types.SimpleNamespace(finding_id="F1", status="INCONCLUSIVE",
+                                 research_id="R-PLANFAIL", learned=[], event_date="2026-11-06",
+                                 hypothesis_updates={"H": {"status": "INCONCLUSIVE"}})
+    monkeypatch.setattr("goe.research_orchestrator.plan_evidence",
+                        lambda spec: types.SimpleNamespace(target_claim="q", to_dict=lambda: {}))
+    monkeypatch.setattr("goe.research_orchestrator.execute_spec", lambda store, spec: fake)
+    orch.run(spec)
+    assert store.open_research_update_count("R-PLANFAIL") == 0

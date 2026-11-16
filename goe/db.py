@@ -970,7 +970,7 @@ class Store:
     def pending_research_update(self, research_id: str) -> dict[str, Any] | None:
         row = self.conn.execute(
             """SELECT * FROM research_v2_update_requests WHERE research_id=?
-               AND status='PENDING' ORDER BY update_id LIMIT 1""", (research_id,)).fetchone()
+               AND status IN ('PENDING','PROCESSING') ORDER BY update_id LIMIT 1""", (research_id,)).fetchone()
         return dict(row) if row else None
 
     def mark_research_update(self, update_id: int, status: str, finding_id: str = "",
@@ -986,7 +986,8 @@ class Store:
     def retry_failed_research_updates(self, research_id: str) -> int:
         with self.transaction() as c:
             cur = c.execute("""UPDATE research_v2_update_requests SET status='PENDING',
-                               error=NULL,processed_at=NULL WHERE research_id=? AND status='FAILED'""",
+                               error=NULL,processed_at=NULL WHERE research_id=?
+                               AND status IN ('FAILED','PROCESSING')""",
                             (research_id,))
             return cur.rowcount
 
@@ -995,12 +996,41 @@ class Store:
             "SELECT COUNT(*) FROM research_v2_update_requests WHERE research_id=? "
             "AND status IN ('PENDING','PROCESSING')", (research_id,)).fetchone()[0])
 
-    def instrument_price_fingerprint(self, instrument_id: str) -> str:
+    def instrument_price_fingerprint(self, instrument_id: str, cutoff: str | None = None) -> str:
         import hashlib
-        rows = self.conn.execute(
-            "SELECT date,close,adj_close,source_id FROM prices WHERE instrument_id=? "
-            "ORDER BY date", (instrument_id,)).fetchall()
+        if cutoff:
+            rows = self.conn.execute(
+                "SELECT date,close,adj_close,source_id FROM prices WHERE instrument_id=? "
+                "AND date<=? ORDER BY date", (instrument_id, cutoff)).fetchall()
+        else:
+            rows = self.conn.execute(
+                "SELECT date,close,adj_close,source_id FROM prices WHERE instrument_id=? "
+                "ORDER BY date", (instrument_id,)).fetchall()
         return hashlib.sha256(repr([tuple(r) for r in rows]).encode()).hexdigest()
+
+    def research_dependencies(self, research_id: str, as_of: str) -> list[str]:
+        """Candidate asset + all peers actually used by its findings."""
+        row = self.conn.execute("SELECT payload_json FROM research_v2_candidates WHERE research_id=?",
+                                (research_id,)).fetchone()
+        deps = set()
+        if row:
+            try:
+                p = json.loads(row["payload_json"] or "{}")
+                deps.update(str(x) for x in (p.get("instruments") or []))
+            except Exception:
+                pass
+        for f in self.conn.execute("SELECT payload_json FROM research_v2_findings WHERE research_id=?",
+                                   (research_id,)):
+            try:
+                payload = json.loads(f["payload_json"] or "{}")
+                plan = payload.get("plan") or {}
+                deps.update(str(x) for x in (plan.get("peers") or {}).keys())
+                contract = plan.get("event_contract") or {}
+                if contract.get("asset_id"):
+                    deps.add(str(contract["asset_id"]))
+            except Exception:
+                continue
+        return sorted(x for x in deps if x)
 
     def research_ids_for_instrument(self, instrument_id: str) -> list[str]:
         out = []
