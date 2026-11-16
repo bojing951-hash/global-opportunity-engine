@@ -357,6 +357,32 @@ def cmd_release(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_discovery(args: argparse.Namespace) -> int:
+    import json as _json
+    from .discovery import qualify
+    doc = _json.loads(Path(args.artifact).read_text(encoding="utf-8"))
+    rows = [qualify(c) for c in doc.get("candidates", [])]
+    out = {"as_of": doc.get("as_of"), "rows": rows,
+           "counts": {k: sum(1 for r in rows if r["classification"] == k)
+                      for k in ("RESEARCH_READY", "EVIDENCE_TO_COLLECT", "INTELLIGENCE_ONLY", "DATA_ARTIFACT")}}
+    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.out).write_text(_json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(_json.dumps(out["counts"], ensure_ascii=False))
+    return 0
+
+
+def cmd_intel(args: argparse.Namespace) -> int:
+    import json as _json
+    from .investment_intel import analyze
+    f = _json.loads(Path(args.finding).read_text(encoding="utf-8"))
+    out = analyze(f)
+    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.out).write_text(_json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"expectations={out['market_expectations']['status']} "
+          f"mispricing={out['expectation_gap']['status']}")
+    return 0
+
+
 def cmd_research(args: argparse.Namespace) -> int:
     """Generalized autonomous research entry: run / next / status."""
     from .research_orchestrator import (ResearchOrchestrator, case_nikkei, case_dxy,
@@ -639,6 +665,16 @@ def build_parser() -> argparse.ArgumentParser:
     t.add_argument("--ia-out", default=None)
     t.add_argument("--ia-timeout", type=int, default=300)
     t.set_defaults(func=cmd_triage)
+
+    dsc = sub.add_parser("discovery", help="Research Opportunity Qualification")
+    dsc.add_argument("--artifact", default="evaluation/v2_candidates_20_2026-11-13.json")
+    dsc.add_argument("--out", default="evaluation/discovery_qualification.json")
+    dsc.set_defaults(func=cmd_discovery)
+
+    intel = sub.add_parser("intel", help="证据门控投资情报")
+    intel.add_argument("--finding", required=True)
+    intel.add_argument("--out", default="evaluation/investment_intelligence.json")
+    intel.set_defaults(func=cmd_intel)
 
     rsub = sub.add_parser("research", help="通用研究执行/调度")
     rsub.add_argument("action", choices=["run", "next", "status", "retry"])

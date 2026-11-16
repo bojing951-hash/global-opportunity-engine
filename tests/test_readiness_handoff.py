@@ -330,3 +330,13 @@ def test_missing_key_tenor_blocks_even_if_other_tenors_exist(store):
     res = check_data_readiness(store, as_of=END_DATE, min_coverage=0.8)
     assert res.ok is False
     assert any("关键期限" in c and "UST:2Y" in c for c in res.critical), res.critical
+
+
+def test_grounded_s8_values_without_l1_rows_can_be_ok_valid(tmp_path):
+    _write_report(tmp_path, {
+        "run_ok": True, "evidence_index": [{"id": 1}],
+        "layers": {"L1_事实层": {"available": True, "rows": []}},
+        "steps": [{"step": "S8_grounded_qa", "semantic_ok": True,
+                   "envelope": {"data": {"status": "answered",
+                                         "values": {"UST_10Y": 4.88}}}}]})
+    assert parse_research_artifact(tmp_path)["semantic_status"] == "ok_valid"

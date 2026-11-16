@@ -179,3 +179,10 @@ ACCEPTANCE_STATUS: multi-case functional; research value NOT VALIDATED.
 - KOSPI V1/V2 preserved: CNY round then USDKRW round; same 2026-10-15 event; no overwrite.
 - Queue skips unresolved candidates (WAITING_FOR_DATA) and continues; explicit retry clears.
 - True post-cutoff new evidence is OBJECTIVELY_BLOCKED (data ends 2026-11-13).
+
+
+## Research Discovery & Intelligence (2026-11-16)
+- Discovery qualification: 0 research-ready / 4 evidence-to-collect / 16 intelligence-only / 1 data-artifact.
+- Investment intelligence gated: MARKET_EXPECTATIONS_NOT_ESTABLISHED, MISPRICING_NOT_ESTABLISHED.
+- Real A→B supported request: 美日10年期国债收益率差, ok_valid, 63 evidence rows, B unchanged.
+- Value: no independent labels/future sample; DISCOVERY NOT VALIDATED.

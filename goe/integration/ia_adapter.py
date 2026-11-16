@@ -88,8 +88,10 @@ def parse_research_artifact(out_dir: str | Path, stdout: str = "",
     n_l1_rows = len((layers.get("L1_事实层") or {}).get("rows") or [])
     n_l2_views = int(((layers.get("L2_机构观点层") or {}).get("views") or {}).get("n") or 0)
     s8 = next((st for st in steps if isinstance(st, dict) and st.get("step") == "S8_grounded_qa"), None)
-    s8_status = (((s8 or {}).get("envelope") or {}).get("data") or {}).get("status")
+    s8_data = ((s8 or {}).get("envelope") or {}).get("data") or {}
+    s8_status = s8_data.get("status")
     s8_ok = (s8 or {}).get("semantic_ok")
+    n_s8_values = len(s8_data.get("values") or {}) if isinstance(s8_data, dict) else 0
     if run_ok is False:
         status, reason = "rejected", "下游研究明确返回失败/拒绝（run_ok=false）"
     elif s8_status in ("out_of_scope", "refused", "rejected", "unmapped", "no_registry_identity"):
@@ -102,8 +104,8 @@ def parse_research_artifact(out_dir: str | Path, stdout: str = "",
     elif n_steps_failed:
         status, reason = "partial", f"下游研究有 {n_steps_failed} 个步骤语义失败"
     elif (s8_ok is True and s8_status == "answered" and run_ok is True
-          and (n_evidence or 0) >= 1 and n_l1_rows > 0):
-        status, reason = "ok_valid", "下游 S8 已接地作答（answered）并有 L1 事实行"
+          and (n_evidence or 0) >= 1 and (n_l1_rows > 0 or n_s8_values > 0)):
+        status, reason = "ok_valid", "下游 S8 已接地作答（answered）并有事实值/事实行"
     elif s8_ok is True and s8_status == "answered" and run_ok is True:
         status, reason = "insufficient_data", "下游回答缺少 L1 事实行（不能仅凭观点行判成功）"
     elif s8_ok is True and s8_status == "answered" and (n_evidence or 0) == 0:

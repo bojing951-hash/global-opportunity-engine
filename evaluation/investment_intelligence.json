@@ -1,0 +1,84 @@
+{
+  "research_id": "RC-20261113-KR_EQ_KOSPI-5710b185e99c",
+  "decision_as_of": "2026-11-13",
+  "event_date": "2026-10-15",
+  "observed_fact": {
+    "KR_EQ_KOSPI": {
+      "label": "KR_EQ_KOSPI",
+      "return": -0.075654,
+      "data_date": "2026-10-15",
+      "alignment": "same_day"
+    },
+    "HK_EQ_HSI": {
+      "label": "local",
+      "return": -0.010342,
+      "data_date": "2026-10-15",
+      "alignment": "same_day"
+    },
+    "CN_EQ_CSI300": {
+      "label": "regional A",
+      "return": -0.01225,
+      "data_date": "2026-10-15",
+      "alignment": "same_day"
+    },
+    "JP_EQ_N225": {
+      "label": "regional B",
+      "return": -0.048983,
+      "data_date": "2026-10-15",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "US broad",
+      "return": -0.01081,
+      "data_date": "2026-10-14",
+      "alignment": "prior_us_session"
+    },
+    "US_EQ_QQQ": {
+      "label": "US growth",
+      "return": -0.019662,
+      "data_date": "2026-10-14",
+      "alignment": "prior_us_session"
+    },
+    "US_VOL_VIX": {
+      "label": "VIX",
+      "return": 0.104781,
+      "data_date": "2026-10-14",
+      "alignment": "prior_us_session"
+    },
+    "GX_FX_USDKRW": {
+      "label": "FX",
+      "return": 0.004632,
+      "data_date": "2026-10-14",
+      "alignment": "prior_us_session"
+    }
+  },
+  "supported_hypotheses": [
+    "H-EQKR-GLOBAL"
+  ],
+  "insufficient_hypotheses": [
+    "H-EQKR-POLICY",
+    "H-EQKR-FUND"
+  ],
+  "market_expectations": {
+    "status": "MARKET_EXPECTATIONS_NOT_ESTABLISHED",
+    "reason": "no licensed implied-rate/consensus/options distribution baseline in this run"
+  },
+  "expectation_gap": {
+    "status": "MISPRICING_NOT_ESTABLISHED",
+    "direction": null,
+    "magnitude": null
+  },
+  "scenarios": {
+    "base": "US/global risk transmission remains the best-supported channel; local/regional channels are not distinguishable",
+    "alternative": "Japan/Asia-local factor dominates after new sector/flow evidence",
+    "invalidation": "a later independent window fails to reproduce the global lead or a new source shows a local driver"
+  },
+  "monitoring": [
+    "new post-cutoff market data",
+    "TOPIX/Asia sector breadth",
+    "implied rate/consensus vintages",
+    "FX and cross-asset correlations"
+  ],
+  "decision_relevance": "research priority only; no trade, target price, or mispricing claim",
+  "discovery_value": "NOT VALIDATED"
+}
