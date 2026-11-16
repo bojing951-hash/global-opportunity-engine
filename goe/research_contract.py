@@ -81,12 +81,12 @@ def resolve_event(candidate: dict[str, Any], conn) -> EventContract:
     hint = candidate.get("event_date")
     if hint:
         row = conn.execute(
-            """SELECT as_of,detector,direction,evidence_json FROM anomalies
+            """SELECT as_of,detector,direction,evidence_json,anomaly_id FROM anomalies
                WHERE instrument_id=? AND detector=? AND as_of=?""",
             (asset, detector, str(hint))).fetchone()
     else:
         row = conn.execute(
-            """SELECT as_of,detector,direction,evidence_json FROM anomalies
+            """SELECT as_of,detector,direction,evidence_json,anomaly_id FROM anomalies
                WHERE instrument_id=? AND detector=? AND as_of<=?
                  AND (?='' OR direction LIKE ?)
                ORDER BY as_of DESC, score DESC LIMIT 1""",
@@ -95,9 +95,8 @@ def resolve_event(candidate: dict[str, Any], conn) -> EventContract:
     if not row:
         raise EventNotResolved(f"EVENT_NOT_RESOLVED: no matching anomaly for {asset} {detector} {direction}")
     date = str(row["as_of"])
-    anomaly_id = ""
     try:
-        anomaly_id = str(json.loads(row["evidence_json"] or "{}").get("anomaly_id") or "")
+        anomaly_id = str(row["anomaly_id"] or "")
     except Exception:
         anomaly_id = ""
     contract = EventContract(
