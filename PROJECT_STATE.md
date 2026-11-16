@@ -182,7 +182,7 @@ ACCEPTANCE_STATUS: multi-case functional; research value NOT VALIDATED.
 
 
 ## Research Discovery & Intelligence (2026-11-16)
-- Discovery qualification: 0 research-ready / 4 evidence-to-collect / 16 intelligence-only / 1 data-artifact.
+- Discovery qualification (20-candidate artifact): 0 ready / 4 collect / 16 intelligence / 0 data-artifact; supplemental real CT case adds 1 data-artifact.
 - Investment intelligence gated: MARKET_EXPECTATIONS_NOT_ESTABLISHED, MISPRICING_NOT_ESTABLISHED.
 - Real A→B supported request: 美日10年期国债收益率差, ok_valid, 63 evidence rows, B unchanged.
 - Value: no independent labels/future sample; DISCOVERY NOT VALIDATED.
