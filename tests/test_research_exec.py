@@ -117,3 +117,47 @@ def test_generic_execution_is_idempotent_and_keeps_artifact(tmp_path, monkeypatc
     assert f2.finding_id == f1.finding_id
     assert art.read_bytes() == before
     assert store.conn.execute("SELECT COUNT(*) FROM research_v2_findings").fetchone()[0] == 1
+
+
+def test_post_event_data_changes_input_hash_and_preserves_old_artifact(tmp_path, monkeypatch):
+    import types
+    import goe.research_engine as eng
+    from goe.db import Store
+
+    idx = pd.bdate_range("2026-01-01", "2026-02-01")
+    cols = ["X_EQ", "HK_EQ_HSI", "JP_EQ_N225", "KR_EQ_KOSPI", "US_EQ_SPY", "US_EQ_QQQ",
+            "US_VOL_VIX", "CN_FX_USDCNY"]
+    base = pd.DataFrame({c: [0.001] * len(idx) for c in cols}, index=idx)
+    base.loc[idx[-6], "X_EQ"] = -0.06
+
+    class FakeBuilder:
+        rets = base
+        def __init__(self, *a, **k): pass
+        def build(self): return types.SimpleNamespace(returns=FakeBuilder.rets)
+
+    monkeypatch.setattr(eng, "FeatureBuilder", FakeBuilder)
+    store = Store(str(tmp_path / "t.db"))
+    spec = eng.spec_for_asset(
+        asset="X_EQ", market="TW", asset_class="equity_index", as_of="2026-02-01", question="q",
+        peers={"HK_EQ_HSI": ("HK", "same_day"), "JP_EQ_N225": ("JP", "same_day"),
+               "KR_EQ_KOSPI": ("KR", "same_day"), "US_EQ_SPY": ("SPY", "prior_us_session"),
+               "US_EQ_QQQ": ("QQQ", "prior_us_session"), "US_VOL_VIX": ("VIX", "prior_us_session"),
+               "CN_FX_USDCNY": ("CNY", "prior_us_session")},
+        hypotheses=[("H-RISK", {"label": "risk", "type": "risk"})],
+        case_kind="equity_event", event_override="2026-01-27",
+        roles={"local": "HK_EQ_HSI", "regional_tw": "JP_EQ_N225", "regional_kr": "KR_EQ_KOSPI",
+               "global_equity": "US_EQ_SPY", "global_growth": "US_EQ_QQQ",
+               "global_vol": "US_VOL_VIX", "fx": "CN_FX_USDCNY"},
+        hypothesis_ids={"risk": "H-RISK"})
+    store.upsert_research_candidate({
+        "research_id": spec.research_id, "research_theme_id": spec.research_theme_id,
+        "as_of": spec.as_of, "market": "TW", "asset_class": "equity_index",
+        "instruments": ["X_EQ"], "observed_phenomenon": "q", "priority_tier": "intelligence",
+        "competing_hypotheses": [], "evidence": []})
+    f1 = eng.execute_spec(store, spec, out_dir=str(tmp_path / "out"))
+    # Change only post-event bars used by reversal_test, not the event-day data.
+    changed = base.copy(); changed.iloc[-1, changed.columns.get_loc("X_EQ")] = -0.02
+    FakeBuilder.rets = changed
+    f2 = eng.execute_spec(store, spec, out_dir=str(tmp_path / "out"))
+    assert f2.finding_id != f1.finding_id
+    assert (tmp_path / "out" / spec.as_of / spec.asset / f1.finding_id / "finding.json").exists()

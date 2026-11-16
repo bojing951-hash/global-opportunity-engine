@@ -240,6 +240,13 @@ def cmd_opp(args: argparse.Namespace) -> int:
             for e in events:
                 print(f"  {e['at']} {e['event_type']}: {e.get('from_status')} -> {e.get('to_status')} {e.get('note','')}")
         return 0
+    if args.action == "reopen":
+        if not args.id:
+            print("--id required for reopen")
+            return 2
+        orch.reopen(args.id, args.reason or "new evidence arrived")
+        print(f"reopened={args.id}")
+        return 0
     if args.action == "retry":
         if not args.id:
             print("--id required for retry")
@@ -390,6 +397,13 @@ def cmd_research(args: argparse.Namespace) -> int:
     store = Store(args.db or str(project_root() / "data" / "goe.db"))
     orch = ResearchOrchestrator(store)
     cases = {"nikkei": case_nikkei, "dxy": case_dxy, "silver": case_silver}
+    if args.action == "reopen":
+        if not args.id:
+            print("--id required for reopen")
+            return 2
+        orch.reopen(args.id, args.reason or "new evidence arrived")
+        print(f"reopened={args.id}")
+        return 0
     if args.action == "retry":
         if not args.id:
             print("--id required for retry")
@@ -677,8 +691,9 @@ def build_parser() -> argparse.ArgumentParser:
     intel.set_defaults(func=cmd_intel)
 
     rsub = sub.add_parser("research", help="通用研究执行/调度")
-    rsub.add_argument("action", choices=["run", "next", "status", "retry"])
+    rsub.add_argument("action", choices=["run", "next", "status", "retry", "reopen"])
     rsub.add_argument("--id", default=None)
+    rsub.add_argument("--reason", default=None)
     rsub.add_argument("--case", default="next", choices=["nikkei", "dxy", "silver", "all", "next"])
     rsub.add_argument("--db", default=None)
     rsub.set_defaults(func=cmd_research)

@@ -33,6 +33,8 @@ def analyze(finding: dict[str, Any], candidate: dict[str, Any] | None = None) ->
         "event_date": finding.get("event_date"),
         "observed_fact": finding.get("observed"),
         "supported_hypotheses": supported,
+        "observed_relative_weakness": (tests.get("relative_underperform_test") or {}).get("spread"),
+        "relative_weakness_note": "relative underperformance is an observation, not independent support for a tech-specific mechanism",
         "insufficient_hypotheses": insufficient,
         "market_expectations": {
             "status": expectation_status,

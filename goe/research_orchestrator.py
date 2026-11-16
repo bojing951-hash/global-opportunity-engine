@@ -33,11 +33,20 @@ class ResearchOrchestrator:
         self.store = store
 
     def register(self, spec: ResearchSpec) -> None:
-        hyps = [{"id": k, **v} for k, v in spec.hypotheses]
-        self.store.upsert_research_candidate(_candidate(spec, hyps))
+        # Never overwrite screening metadata of an existing candidate. Only a
+        # genuinely new candidate gets explicit defaults.
+        if not self.store.research_candidate(spec.research_id):
+            hyps = [{"id": k, **v} for k, v in spec.hypotheses]
+            self.store.upsert_research_candidate(_candidate(spec, hyps))
         if self.store.research_workflow_state(spec.research_id) is None:
             self.store.set_research_workflow_state(spec.research_id, "PLANNED")
         self.store.add_research_event(spec.research_id, "research:planned", spec.question)
+
+    def reopen(self, research_id: str, reason: str) -> None:
+        if not self.store.research_candidate(research_id):
+            raise ValueError(f"research candidate does not exist: {research_id}")
+        self.store.add_research_event(research_id, "research:evidence_update", reason)
+        self.store.set_research_workflow_state(research_id, "PLANNED")
 
     def retry(self, research_id: str) -> None:
         state = self.store.research_workflow_state(research_id)
@@ -72,10 +81,7 @@ class ResearchOrchestrator:
         """Select from the real candidate queue; never from a hardcoded case list."""
         rows = self.store.conn.execute(
             """SELECT c.research_id,c.payload_json,c.status
-               FROM research_v2_candidates c
-               WHERE NOT EXISTS (SELECT 1 FROM research_v2_findings f
-                                 WHERE f.research_id=c.research_id)
-               ORDER BY c.research_id""").fetchall()
+               FROM research_v2_candidates c ORDER BY c.research_id""").fetchall()
         ranked = []
         for r in rows:
             c = json.loads(r["payload_json"] or "{}")
@@ -83,8 +89,18 @@ class ResearchOrchestrator:
                 continue
             if c.get("research_worthiness") not in ("high", "medium"):
                 continue
+            latest = self.store.conn.execute(
+                "SELECT created_at FROM research_v2_findings WHERE research_id=? "
+                "ORDER BY created_at DESC LIMIT 1", (r["research_id"],)).fetchone()
+            if latest:
+                reopened = self.store.conn.execute(
+                    """SELECT 1 FROM research_v2_events WHERE research_id=?
+                       AND event_type='research:evidence_update' AND at>?""",
+                    (r["research_id"], latest["created_at"])).fetchone()
+                if not reopened:
+                    continue
             state = self.store.research_workflow_state(r["research_id"])
-            if state in ("BLOCKED", "COMPLETED", "WAITING_FOR_DATA"):
+            if state in ("BLOCKED", "WAITING_FOR_DATA"):
                 continue
             score = {"high": 2, "medium": 1}.get(c.get("research_worthiness"), 0)
             score += {"ready": 2, "partial": 1}.get(c.get("evidence_readiness"), 0)

@@ -36,18 +36,34 @@ def plan(spec: ResearchSpec) -> EvidenceTask:
                 "fx": "prior FX move explains a material share"}
         method = "event_cross_section + historical_percentile"
         avail = "available for market/global series; sector breadth unavailable"
+    elif spec.case_kind == "us_equity_relative":
+        required = ["event asset return", "US market return", "VIX", "IEF duration proxy",
+                    "DXY", "gold", "intraday leadership"]
+        pred = {"risk": "market down + VIX up",
+                "rate": "IEF down (yield up) + growth underperformance",
+                "tech": "event asset underperforms market beyond risk duration",
+                "artifact": "index construction/price flag"}
+        method = "us_relative_return + risk/rate decomposition + percentile"
+        avail = "available for proxies; intraday leadership/implied rates unavailable"
     elif spec.case_kind == "fx_level":
         required = ["cross FX returns", "US duration proxy", "risk/VIX", "2Y/10Y decomposition"]
         pred = {"rate": "duration down + USD up", "risk": "SPY down + VIX up",
                 "broad": "EUR down + USDJPY up"}
         method = "fx_rate_risk_cross_section + percentile"
         avail = "available for proxies; 2Y/10Y decomposition unavailable"
-    else:
+    elif spec.case_kind == "commodity_event":
         required = ["DXY", "gold", "duration proxy", "risk/VIX", "inventory/supply"]
         pred = {"dollar": "DXY up + commodity down", "real_rate": "duration down + commodity down",
                 "risk": "SPY down + VIX up", "supply": "inventory shock precedes price"}
         method = "commodity_cross_section + percentile"
         avail = "available for proxies; inventory unavailable"
+    else:
+        return EvidenceTask(
+            research_id=spec.research_id, hypothesis_ids=ids, target_claim=spec.question,
+            required_data=[], source="none", observation_window="n/a",
+            point_in_time_cutoff=spec.as_of, discriminating_predictions={},
+            method="UNSUPPORTED_TEST", estimated_cost="n/a",
+            availability_status=f"UNSUPPORTED_TEST: no planner for {spec.case_kind}")
     return EvidenceTask(
         research_id=spec.research_id, hypothesis_ids=ids,
         target_claim=spec.question, required_data=required, source="GOE prices DB",

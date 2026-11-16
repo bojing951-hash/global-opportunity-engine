@@ -74,3 +74,54 @@ def test_unresolved_high_priority_candidate_does_not_block_valid_one(tmp_path):
     spec = ResearchOrchestrator(store).next_case()
     assert spec is not None and spec.research_id == "B-GOOD"
     assert store.research_workflow_state("A-BAD") == "WAITING_FOR_DATA"
+
+
+def test_register_preserves_screening_fields(tmp_path):
+    from goe.research_engine import spec_for_asset
+    store = Store(str(tmp_path / "t.db"))
+    c = {"research_id": "R-SCREEN", "research_theme_id": "T", "as_of": "2026-11-13",
+         "market": "TW", "asset_class": "equity_index", "instruments": ["TW_EQ_TAIEX"],
+         "observed_phenomenon": "price_return_shock down", "priority_tier": "intelligence",
+         "research_worthiness": "high", "evidence_readiness": "ready", "research_queue": "research",
+         "handoff_eligibility": "eligible", "materiality": {"importance": .9, "gap_score": .8},
+         "research_cost": {"hours": 3}, "evidence": [{"claim": "screening"}]}
+    store.upsert_research_candidate(c)
+    spec = spec_for_asset(asset="TW_EQ_TAIEX", market="TW", asset_class="equity_index",
+                          as_of="2026-11-13", question="q", peers={}, hypotheses=[],
+                          case_kind="equity_event")
+    spec.research_id = "R-SCREEN"
+    ResearchOrchestrator(store).register(spec)
+    row = store.research_candidate("R-SCREEN")
+    import json
+    p = json.loads(row["payload_json"])
+    assert p["research_worthiness"] == "high"
+    assert p["evidence_readiness"] == "ready"
+    assert p["research_queue"] == "research"
+    assert p["handoff_eligibility"] == "eligible"
+    assert p["research_cost"] == {"hours": 3}
+    assert p["evidence"] == [{"claim": "screening"}]
+
+
+def test_finding_can_reenter_after_evidence_update(tmp_path):
+    store = Store(str(tmp_path / "t.db"))
+    c = {"research_id": "R-REENTRY", "research_theme_id": "T", "as_of": "2026-11-13",
+         "market": "TW", "asset_class": "equity_index", "instruments": ["TW_EQ_TAIEX"],
+         "observed_phenomenon": "price_return_shock down", "detector_id": "price_return_shock",
+         "direction": "down", "event_date": "2026-11-06",
+         "priority_tier": "intelligence", "research_worthiness": "high",
+         "evidence_readiness": "partial", "research_queue": "watch",
+         "competing_hypotheses": [{"id": "H-EQTW-LOCAL", "label": "local", "type": "local"}]}
+    store.upsert_research_candidate(c)
+    store.conn.execute("""INSERT INTO anomalies(anomaly_id,as_of,detector,family,instrument_id,
+        direction,magnitude,score,percentile,window,evidence_json,fingerprint,run_id,created_at)
+        VALUES('A1','2026-11-06','price_return_shock','price','TW_EQ_TAIEX','down',0.04,0.8,0.0,
+               '1d','{}','f','r','x')""")
+    store.conn.commit()
+    store.add_research_finding("F1", "R-REENTRY", "INCONCLUSIVE", {"v": 1}, "f.json")
+    orch = ResearchOrchestrator(store)
+    assert orch.next_case() is None  # no new evidence -> no empty rerun
+    import time
+    time.sleep(1.1)
+    orch.reopen("R-REENTRY", "new evidence arrived")
+    spec = orch.next_case()
+    assert spec is not None and spec.research_id == "R-REENTRY"

@@ -30,8 +30,7 @@ Tests: historical percentile (0.40%, tail), relative underperformance (pass), ri
 ## What was learned
 - **Risk-off/flight-to-quality is supported** by the joint SPY/VIX/IEF pattern.
 - **A simple yield-up shock is weakened by the data**: IEF rose, not fell.
-- QQQ's relative underperformance is real and consistent with growth/duration de-rating,
-  but this data cannot separate that mechanism from broad risk-off.
+- QQQ's relative underperformance is a real observation, but it is **not independent evidence** of a tech-specific mechanism; it cannot be separated from broad risk-off/duration.
 - No data-artifact flag is apparent, but this is not proof of clean index construction.
 
 ## Investment relevance

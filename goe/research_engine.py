@@ -123,7 +123,7 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
     if spec.asset not in observed:
         raise RuntimeError(f"event asset unavailable: {spec.asset}")
     data_hash = hashlib.sha256(
-        pd.util.hash_pandas_object(returns.loc[:pd.Timestamp(event)], index=True).values.tobytes()).hexdigest()
+        pd.util.hash_pandas_object(returns.loc[:pd.Timestamp(spec.as_of)], index=True).values.tobytes()).hexdigest()
 
     def rv(k: str):
         return (observed.get(k) or {}).get("return")
@@ -189,10 +189,10 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
                                      "label": "Rate/duration shock", "type": "rates",
                                      "new_evidence": "IEF same-day", "value": rates_ret,
                                      "note": "IEF up while QQQ underperformed is inconsistent with a simple yield-up shock; flight-to-quality."},
-            hid("tech", "H-TECH"): {"status": hs(tests["relative_underperform_test"]["pass"], "SUPPORTED_BY_AVAILABLE_EVIDENCE", "INCONCLUSIVE"),
+            hid("tech", "H-TECH"): {"status": "INCONCLUSIVE",
                                      "label": "Growth/tech-specific de-rating", "type": "tech",
-                                     "new_evidence": "QQQ-SPY spread", "value": spread,
-                                     "note": "Relative underperformance is observed; it is not separable from duration/risk-off."},
+                                     "new_evidence": "QQQ-SPY spread (observation, not independent support)", "value": spread,
+                                     "note": "Relative underperformance is observed, but it is not independent evidence of a tech-specific mechanism."},
             hid("artifact", "H-DATA"): {"status": "INSUFFICIENT_DATA", "label": "Data artifact",
                                          "type": "data_artifact", "new_evidence": "no price/roll flag",
                                          "value": None, "note": "No index construction artifact indicated."},
@@ -380,7 +380,7 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         evidence={"source": "GOE prices DB", "event_available_at": event,
                   "decision_as_of": spec.as_of, "data_hash": data_hash,
                   "data_dates": {k: v["data_date"] for k, v in observed.items()},
-                  "input_rows": int(len(returns.loc[:pd.Timestamp(event)]))},
+                  "input_rows": int(len(returns.loc[:pd.Timestamp(spec.as_of)]))},
         tests=tests, hypothesis_updates=updates, learned=learned, still_unknown=unknown,
         next_action="Retain in A; acquire the listed missing evidence. No B handoff for unsupported deep asset research.",
         input_sha256=input_hash,
