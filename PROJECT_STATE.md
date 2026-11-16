@@ -172,3 +172,10 @@ ACCEPTANCE_STATUS: multi-case functional; research value NOT VALIDATED.
 - Unseen cases: TW_EQ_TAIEX (dynamic retry/id) and KR_EQ_KOSPI (automatic `research next`); KOSPI regional peers exclude the event asset; global lead only.
 - Findings versioned/idempotent; same input returns existing finding; KOSPI first/second run same ID.
 - 243+ tests; proof/CI pending.
+
+
+## V4 multi-round / event persistence
+- `research_v2_event_contracts` persists immutable contract; resolve_event rebinds only same event.
+- KOSPI V1/V2 preserved: CNY round then USDKRW round; same 2026-10-15 event; no overwrite.
+- Queue skips unresolved candidates (WAITING_FOR_DATA) and continues; explicit retry clears.
+- True post-cutoff new evidence is OBJECTIVELY_BLOCKED (data ends 2026-11-13).

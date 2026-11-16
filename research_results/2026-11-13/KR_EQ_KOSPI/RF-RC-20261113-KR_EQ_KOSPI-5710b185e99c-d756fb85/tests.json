@@ -1,0 +1,37 @@
+{
+  "historical_percentile": {
+    "event_return": -0.075654,
+    "percentile": 0.023809523809523808,
+    "pass": true,
+    "interpretation": "two-sided 5% tail of the trailing 252-session return distribution"
+  },
+  "local_asia_test": {
+    "topix_return": -0.010342,
+    "pass": false,
+    "interpretation": "local co-move; association only"
+  },
+  "global_lead_test": {
+    "prior_us_session": "2026-10-14",
+    "spy_return": -0.01081,
+    "qqq_return": -0.019662,
+    "vix_return": 0.104781,
+    "pass": true,
+    "interpretation": "prior US session selloff/VIX spike is consistent with a global lead"
+  },
+  "asia_regional_test": {
+    "regional_a_return": -0.01225,
+    "regional_b_return": -0.048983,
+    "pass": false,
+    "interpretation": "Regional peers did not both meet the pre-set threshold"
+  },
+  "fx_test": {
+    "prior_usdjpy_return": 0.004632,
+    "pass": false,
+    "interpretation": "small FX move cannot explain the equity move"
+  },
+  "reversal_test": {
+    "n225_next_3d": -0.000266,
+    "pass": false,
+    "interpretation": "only bars after event through as-of"
+  }
+}

@@ -40,9 +40,11 @@ class ResearchOrchestrator:
         self.store.add_research_event(spec.research_id, "research:planned", spec.question)
 
     def retry(self, research_id: str) -> None:
-        if self.store.research_workflow_state(research_id) == "BLOCKED":
+        state = self.store.research_workflow_state(research_id)
+        if state in ("BLOCKED", "WAITING_FOR_DATA"):
             self.store.set_research_workflow_state(research_id, "PLANNED")
-            self.store.add_research_event(research_id, "research:retry", "manual/unblocked retry")
+            self.store.add_research_event(research_id, "research:retry",
+                                          f"resume from {state} after condition/approval")
 
     def run(self, spec: ResearchSpec) -> Any:
         self.store.set_research_workflow_state(spec.research_id, "EVIDENCE_PENDING")

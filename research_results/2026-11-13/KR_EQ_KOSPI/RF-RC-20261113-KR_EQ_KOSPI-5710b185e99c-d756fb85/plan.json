@@ -1,0 +1,66 @@
+{
+  "question": "KOSPI 2026-10-15 near 5-year drawdown extreme; breadth/region/global explanations unresolved.",
+  "case_kind": "equity_event",
+  "test_id": "equity_event_cross_section",
+  "event_contract": {
+    "research_id": "RC-20261113-KR_EQ_KOSPI-5710b185e99c",
+    "research_theme_id": "RT-03c393cfd191c90b",
+    "asset_id": "KR_EQ_KOSPI",
+    "market": "KR",
+    "asset_class": "equity_index",
+    "phenomenon_id": "drawdown_extreme|KR_EQ_KOSPI|deep_drawdown|2026-10-15",
+    "detector_id": "drawdown_extreme",
+    "direction": "deep_drawdown",
+    "detection_window": "1d",
+    "event_start": "2026-10-15",
+    "event_end": "2026-10-15",
+    "event_timestamp": "2026-10-15T23:59:59Z",
+    "event_timezone": "exchange_local",
+    "decision_as_of": "2026-11-13",
+    "observed_facts": [
+      "KOSPI 2026-10-15 near 5-year drawdown extreme; breadth/region/global explanations unresolved."
+    ],
+    "research_question": "KOSPI 2026-10-15 near 5-year drawdown extreme; breadth/region/global explanations unresolved.",
+    "source_snapshot": "goe.db:prices+anomalies",
+    "data_version": "scan-20261115T044634Z-b68802",
+    "anomaly_id": "",
+    "contract_hash": "6e42d35b08088dc9a3b3bf0974d7888ac82c8c62e16f6943a06d281572fd30c4"
+  },
+  "peers": {
+    "HK_EQ_HSI": [
+      "local",
+      "same_day"
+    ],
+    "CN_EQ_CSI300": [
+      "regional A",
+      "same_day"
+    ],
+    "JP_EQ_N225": [
+      "regional B",
+      "same_day"
+    ],
+    "US_EQ_SPY": [
+      "US broad",
+      "prior_us_session"
+    ],
+    "US_EQ_QQQ": [
+      "US growth",
+      "prior_us_session"
+    ],
+    "US_VOL_VIX": [
+      "VIX",
+      "prior_us_session"
+    ],
+    "GX_FX_USDKRW": [
+      "FX",
+      "prior_us_session"
+    ]
+  },
+  "missing": [
+    "local sector/constituent breadth",
+    "regional supply-chain exposure",
+    "consensus revisions",
+    "event/news calendar"
+  ],
+  "pit": "same-day for event market; prior US session for US/FX in equity case"
+}
