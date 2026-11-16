@@ -10,3 +10,6 @@ def test_no_market_expectation_baseline_means_no_mispricing_claim():
     assert out["market_expectations"]["status"] == "MARKET_EXPECTATIONS_NOT_ESTABLISHED"
     assert out["expectation_gap"]["status"] == "MISPRICING_NOT_ESTABLISHED"
     assert out["discovery_value"] == "NOT VALIDATED"
+    import json
+    assert "Japan" not in json.dumps(out, ensure_ascii=False)
+    assert "TOPIX" not in json.dumps(out, ensure_ascii=False)

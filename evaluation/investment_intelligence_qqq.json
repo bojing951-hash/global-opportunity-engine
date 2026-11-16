@@ -56,16 +56,20 @@
     "direction": null,
     "magnitude": null
   },
+  "asset": "US_EQ_QQQ",
+  "unresolved_hypotheses": [
+    "H-RATE"
+  ],
   "scenarios": {
-    "base": "US/global risk transmission remains the best-supported channel; local/regional channels are not distinguishable",
-    "alternative": "Japan/Asia-local factor dominates after new sector/flow evidence",
-    "invalidation": "a later independent window fails to reproduce the global lead or a new source shows a local driver"
+    "base": "Best-supported channels: H-RISK, H-TECH; unresolved: H-RATE",
+    "alternative": "A competing mechanism remains possible where hypotheses are WEAKENED/INCONCLUSIVE; see hypothesis updates",
+    "invalidation": "new independent-window evidence fails to reproduce the supported channel or identifies a specific omitted driver"
   },
   "monitoring": [
-    "new post-cutoff market data",
-    "TOPIX/Asia sector breadth",
-    "implied rate/consensus vintages",
-    "FX and cross-asset correlations"
+    "US 2Y/10Y decomposition",
+    "QQQ vs SPY breadth",
+    "implied rates/options distribution",
+    "post-event reversal"
   ],
   "decision_relevance": "research priority only; no trade, target price, or mispricing claim",
   "discovery_value": "NOT VALIDATED"
