@@ -159,6 +159,11 @@ CREATE TABLE IF NOT EXISTS research_v2_events (
   at TEXT NOT NULL, event_type TEXT NOT NULL, note TEXT, payload_json TEXT
 );
 
+CREATE TABLE IF NOT EXISTS research_v2_event_contracts (
+  research_id TEXT PRIMARY KEY REFERENCES research_v2_candidates(research_id) ON DELETE CASCADE,
+  contract_hash TEXT NOT NULL, anomaly_id TEXT, contract_json TEXT NOT NULL, created_at TEXT
+);
+
 CREATE TABLE IF NOT EXISTS research_v2_workflow (
   research_id TEXT PRIMARY KEY REFERENCES research_v2_candidates(research_id) ON DELETE CASCADE,
   state TEXT NOT NULL, updated_at TEXT
@@ -941,6 +946,26 @@ class Store:
                          VALUES(?,?,?,?) ON CONFLICT(old_id) DO UPDATE SET
                          new_id=excluded.new_id, reason=excluded.reason""",
                       (old_id, new_id, reason, utc_now()))
+
+    def save_event_contract(self, research_id: str, contract: dict[str, Any], contract_hash: str,
+                            anomaly_id: str = "") -> None:
+        with self.transaction() as c:
+            c.execute("""INSERT INTO research_v2_event_contracts(research_id,contract_hash,
+                         anomaly_id,contract_json,created_at) VALUES(?,?,?,?,?)
+                       ON CONFLICT(research_id) DO NOTHING""",
+                      (research_id, contract_hash, anomaly_id,
+                       json.dumps(contract, ensure_ascii=False, sort_keys=True), utc_now()))
+
+    def event_contract(self, research_id: str) -> dict[str, Any] | None:
+        row = self.conn.execute(
+            "SELECT contract_json,contract_hash,anomaly_id FROM research_v2_event_contracts "
+            "WHERE research_id=?", (research_id,)).fetchone()
+        if not row:
+            return None
+        d = json.loads(row["contract_json"])
+        d["contract_hash"] = row["contract_hash"]
+        d["anomaly_id"] = row["anomaly_id"]
+        return d
 
     def set_research_workflow_state(self, research_id: str, state: str) -> None:
         with self.transaction() as c:

@@ -1,11 +1,17 @@
 """Immutable Research Question & Event Contract (V4)."""
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass, asdict
 from typing import Any
 
 
 class EventNotResolved(ValueError):
+    pass
+
+
+class EventIdentityConflict(ValueError):
     pass
 
 
@@ -44,13 +50,28 @@ class EventContract:
     research_question: str
     source_snapshot: str
     data_version: str
+    anomaly_id: str
+    contract_hash: str
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
 def resolve_event(candidate: dict[str, Any], conn) -> EventContract:
-    """Bind a candidate to one stored anomaly; never silently pick another event."""
+    """Bind to a persisted event; never silently pick a different event later."""
+    rid = str(candidate["research_id"])
+    existing = conn.execute(
+        "SELECT contract_json FROM research_v2_event_contracts WHERE research_id=?", (rid,)).fetchone()
+    if existing:
+        d = json.loads(existing["contract_json"])
+        if (str(d.get("asset_id")) != str((candidate.get("instruments") or [""])[0])
+                or str(d.get("decision_as_of")) != str(candidate.get("as_of"))):
+            raise EventIdentityConflict(f"EVENT_IDENTITY_CONFLICT: {rid}")
+        if candidate.get("event_date") and str(candidate["event_date"]) != str(d.get("event_start")):
+            raise EventIdentityConflict(f"EVENT_IDENTITY_CONFLICT: event rebind {rid}")
+        if candidate.get("detector_id") and str(candidate["detector_id"]) != str(d.get("detector_id")):
+            raise EventIdentityConflict(f"EVENT_IDENTITY_CONFLICT: detector rebind {rid}")
+        return EventContract(**d)
     asset = str((candidate.get("instruments") or [""])[0])
     inferred_det, inferred_dir, window = _phenomenon(candidate)
     detector = str(candidate.get("detector_id") or inferred_det)
@@ -74,7 +95,12 @@ def resolve_event(candidate: dict[str, Any], conn) -> EventContract:
     if not row:
         raise EventNotResolved(f"EVENT_NOT_RESOLVED: no matching anomaly for {asset} {detector} {direction}")
     date = str(row["as_of"])
-    return EventContract(
+    anomaly_id = ""
+    try:
+        anomaly_id = str(json.loads(row["evidence_json"] or "{}").get("anomaly_id") or "")
+    except Exception:
+        anomaly_id = ""
+    contract = EventContract(
         research_id=str(candidate["research_id"]),
         research_theme_id=str(candidate.get("research_theme_id") or ""),
         asset_id=asset, market=str(candidate.get("market") or ""),
@@ -85,4 +111,13 @@ def resolve_event(candidate: dict[str, Any], conn) -> EventContract:
         event_timezone="exchange_local", decision_as_of=str(candidate.get("as_of")),
         observed_facts=(str(candidate.get("observed_phenomenon") or ""),),
         research_question=str(candidate.get("observed_phenomenon") or ""),
-        source_snapshot="goe.db:prices+anomalies", data_version="scan-20261115T044634Z-b68802")
+        source_snapshot="goe.db:prices+anomalies", data_version="scan-20261115T044634Z-b68802",
+        anomaly_id=anomaly_id, contract_hash="")
+    payload = contract.to_dict(); payload.pop("contract_hash", None)
+    ch = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+    contract = EventContract(**{**payload, "contract_hash": ch})
+    conn.execute("""INSERT OR IGNORE INTO research_v2_event_contracts(research_id,contract_hash,
+                    anomaly_id,contract_json,created_at) VALUES(?,?,?,?,datetime('now'))""",
+                 (rid, ch, anomaly_id, json.dumps(contract.to_dict(), ensure_ascii=False, sort_keys=True)))
+    conn.commit()
+    return contract

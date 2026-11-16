@@ -52,3 +52,25 @@ def test_next_case_selects_real_candidate_queue_not_fixed_cases(tmp_path):
     spec = orch.next_case()
     assert spec is not None
     assert spec.research_id == "RC-TEST-TW-1"
+
+
+def test_unresolved_high_priority_candidate_does_not_block_valid_one(tmp_path):
+    store = Store(str(tmp_path / "t.db"))
+    bad = {"research_id": "A-BAD", "research_theme_id": "T", "as_of": "2026-11-13",
+           "market": "TW", "asset_class": "equity_index", "instruments": ["NO_SUCH"],
+           "observed_phenomenon": "price_return_shock down", "priority_tier": "intelligence",
+           "research_worthiness": "high", "evidence_readiness": "ready",
+           "research_queue": "watch", "competing_hypotheses": []}
+    good = {**bad, "research_id": "B-GOOD", "instruments": ["TW_EQ_TAIEX"],
+            "observed_phenomenon": "price_return_shock down", "research_worthiness": "medium",
+            "detector_id": "price_return_shock", "direction": "down", "event_date": "2026-11-06"}
+    store.upsert_research_candidate(bad)
+    store.upsert_research_candidate(good)
+    store.conn.execute("""INSERT INTO anomalies(anomaly_id,as_of,detector,family,instrument_id,
+        direction,magnitude,score,percentile,window,evidence_json,fingerprint,run_id,created_at)
+        VALUES('A1','2026-11-06','price_return_shock','price','TW_EQ_TAIEX','down',0.04,0.8,0.0,
+               '1d','{}','f','r','x')""")
+    store.conn.commit()
+    spec = ResearchOrchestrator(store).next_case()
+    assert spec is not None and spec.research_id == "B-GOOD"
+    assert store.research_workflow_state("A-BAD") == "WAITING_FOR_DATA"

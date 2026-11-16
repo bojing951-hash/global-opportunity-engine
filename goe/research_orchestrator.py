@@ -57,8 +57,9 @@ class ResearchOrchestrator:
             raise
         self.store.set_research_workflow_state(spec.research_id, "INCONCLUSIVE"
                                                 if finding.status == "INCONCLUSIVE" else "COMPLETED")
-        action = ("WAIT_FOR_NEW_DATA" if any(str(x) == "INSUFFICIENT_DATA"
-                                              for x in finding.hypothesis_updates.values())
+        action = ("ACQUIRE_MORE_EVIDENCE" if any(
+                    str(v.get("status")) == "INSUFFICIENT_DATA"
+                    for v in finding.hypothesis_updates.values())
                   else ("STOP_LOW_VALUE_RESEARCH" if finding.status == "INCONCLUSIVE"
                         else "COMPLETE_RESEARCH"))
         self.store.add_research_event(spec.research_id, "research:evaluated", finding.status,
@@ -86,7 +87,7 @@ class ResearchOrchestrator:
             if c.get("research_worthiness") not in ("high", "medium"):
                 continue
             state = self.store.research_workflow_state(r["research_id"])
-            if state in ("BLOCKED", "COMPLETED"):
+            if state in ("BLOCKED", "COMPLETED", "WAITING_FOR_DATA"):
                 continue
             score = {"high": 2, "medium": 1}.get(c.get("research_worthiness"), 0)
             score += {"ready": 2, "partial": 1}.get(c.get("evidence_readiness"), 0)
@@ -94,16 +95,20 @@ class ResearchOrchestrator:
         if not ranked:
             return None
         ranked.sort(key=lambda x: (-x[0], x[1]))
-        _, _, c = ranked[0]
-        try:
-            spec = self._spec_from_candidate(c)
-        except EventNotResolved as exc:
-            self.store.set_research_workflow_state(c["research_id"], "WAITING_FOR_DATA")
-            self.store.add_research_event(c["research_id"], "research:event_not_resolved",
-                                          str(exc))
-            return None
-        self.register(spec)
-        return spec
+        for _, rid, c in ranked:
+            try:
+                spec = self._spec_from_candidate(c)
+            except EventNotResolved as exc:
+                self.store.set_research_workflow_state(rid, "WAITING_FOR_DATA")
+                self.store.add_research_event(rid, "research:event_not_resolved", str(exc))
+                continue  # one unresolved high-priority task must not block the queue
+            except Exception as exc:  # identity conflict / malformed contract
+                self.store.set_research_workflow_state(rid, "BLOCKED")
+                self.store.add_research_event(rid, "research:blocked", str(exc))
+                continue
+            self.register(spec)
+            return spec
+        return None
 
     def _spec_from_candidate(self, c: dict[str, Any]) -> ResearchSpec:
         asset = str((c.get("instruments") or ["unknown"])[0])
@@ -116,17 +121,18 @@ class ResearchOrchestrator:
             rest = [x for x in pool if x != local]
             regional_a = rest[0]
             regional_b = rest[1] if len(rest) > 1 else rest[0]
+            fx_asset = "GX_FX_USDKRW" if asset == "KR_EQ_KOSPI" else "CN_FX_USDCNY"
             peers = {local: ("local", "same_day"),
                      regional_a: ("regional A", "same_day"),
                      regional_b: ("regional B", "same_day"),
                      "US_EQ_SPY": ("US broad", "prior_us_session"),
                      "US_EQ_QQQ": ("US growth", "prior_us_session"),
                      "US_VOL_VIX": ("VIX", "prior_us_session"),
-                     "CN_FX_USDCNY": ("CNY", "prior_us_session")}
+                     fx_asset: ("FX", "prior_us_session")}
             roles = {"local": local, "regional_tw": regional_a,
                      "regional_kr": regional_b, "global_equity": "US_EQ_SPY",
                      "global_growth": "US_EQ_QQQ", "global_vol": "US_VOL_VIX",
-                     "fx": "CN_FX_USDCNY"}
+                     "fx": fx_asset}
             kind = "equity_event"
         elif ac == "fx":
             peers = {"GX_FX_EURUSD": ("EURUSD", "same_day"),

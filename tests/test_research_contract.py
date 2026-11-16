@@ -13,6 +13,8 @@ def test_event_contract_binds_to_stored_anomaly(tmp_path):
     c = {"research_id": "R1", "research_theme_id": "T1", "as_of": "2026-11-13",
          "market": "TW", "asset_class": "equity_index", "instruments": ["TW_EQ_TAIEX"],
          "observed_phenomenon": "TAIEX 近期 price_return_shock（down，分数 0.81）"}
+    store.upsert_research_candidate({**c, "priority_tier": "intelligence",
+                                     "competing_hypotheses": [], "evidence": []})
     store.conn.execute("""INSERT INTO anomalies(anomaly_id,as_of,detector,family,instrument_id,
         direction,magnitude,score,percentile,window,evidence_json,fingerprint,run_id,created_at)
         VALUES('A1','2026-11-06','price_return_shock','price','TW_EQ_TAIEX','down',0.05,0.8,0.0,'1d','{}','f','r','x')""")
@@ -108,3 +110,31 @@ def test_missing_risk_data_is_insufficient_for_fx_and_commodity(tmp_path, monkey
         {"dollar": "US_FX_DXY", "gold": "CM_MET_GC", "rates": "US_FI_IEF",
          "risk": "US_EQ_SPY", "vol": "US_VOL_VIX"}, "commodity_event",
         ["X_CMD", "US_FX_DXY", "CM_MET_GC", "US_FI_IEF"])
+
+
+def test_event_contract_persists_and_rejects_rebinding(tmp_path):
+    from goe.research_contract import EventIdentityConflict
+    store = Store(str(tmp_path / "t.db"))
+    cand = {"research_id": "R-PERSIST", "research_theme_id": "T", "as_of": "2026-11-13",
+            "market": "TW", "asset_class": "equity_index", "instruments": ["TW_EQ_TAIEX"],
+            "observed_phenomenon": "price_return_shock down", "detector_id": "price_return_shock",
+            "direction": "down", "event_date": "2026-11-06"}
+    store.upsert_research_candidate({**cand, "priority_tier": "intelligence",
+                                     "competing_hypotheses": [], "evidence": []})
+    store.conn.execute("""INSERT INTO anomalies(anomaly_id,as_of,detector,family,instrument_id,
+        direction,magnitude,score,percentile,window,evidence_json,fingerprint,run_id,created_at)
+        VALUES('A1','2026-11-06','price_return_shock','price','TW_EQ_TAIEX','down',0.04,0.8,0.0,
+               '1d','{}','f','r','x')""")
+    store.conn.execute("""INSERT INTO anomalies(anomaly_id,as_of,detector,family,instrument_id,
+        direction,magnitude,score,percentile,window,evidence_json,fingerprint,run_id,created_at)
+        VALUES('A2','2026-12-01','price_return_shock','price','TW_EQ_TAIEX','down',0.04,0.8,0.0,
+               '1d','{}','f2','r2','x')""")
+    store.conn.commit()
+    ev1 = resolve_event(cand, store.conn)
+    # Reopen the database and rescan: must stay on the original event.
+    store2 = Store(str(tmp_path / "t.db"))
+    ev2 = resolve_event(cand, store2.conn)
+    assert ev2.event_start == ev1.event_start == "2026-11-06"
+    assert ev2.contract_hash == ev1.contract_hash
+    with pytest.raises(EventIdentityConflict):
+        resolve_event({**cand, "event_date": "2026-12-01"}, store2.conn)
