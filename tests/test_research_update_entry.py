@@ -81,10 +81,17 @@ def test_b_to_c_to_b_transitions_are_not_swallowed(tmp_path):
          "research_queue": "watch", "competing_hypotheses": []}
     store.upsert_research_candidate(c)
     store.add_research_finding("F1", "R-BCB", "INCONCLUSIVE", {"plan": {"peers": {}}}, "f.json")
-    for old, new in [("A", "B"), ("B", "C"), ("C", "B")]:
+    for old, new in [("A", "B"), ("B", "C"), ("C", "B"), ("B", "C")]:
         notify_price_changes(store, {"R-BCB": {"US_EQ_QQQ": old}},
                              {"R-BCB": {"US_EQ_QQQ": new}})
-    assert store.open_research_update_count("R-BCB") == 3
+    assert store.open_research_update_count("R-BCB") == 4
+    # Same occurrence delivered twice with the same batch is idempotent.
+    n = store.open_research_update_count("R-BCB")
+    notify_price_changes(store, {"R-BCB": {"US_EQ_QQQ": "B"}},
+                         {"R-BCB": {"US_EQ_QQQ": "C"}}, batch="same")
+    notify_price_changes(store, {"R-BCB": {"US_EQ_QQQ": "B"}},
+                         {"R-BCB": {"US_EQ_QQQ": "C"}}, batch="same")
+    assert store.open_research_update_count("R-BCB") == n + 1
 
 
 def test_ingest_peer_revision_reactivates_qqq(tmp_path, monkeypatch):

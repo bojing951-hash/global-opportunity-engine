@@ -392,6 +392,9 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
         payload = json.loads(existing.read_text(encoding="utf-8"))
         if payload.get("finding_id") != finding.finding_id:
             raise RuntimeError("artifact/finding id mismatch at immutable path")
+        # A cache hit is still this round's result: apply the current
+        # hypothesis state before consuming the update request.
+        store.update_research_hypotheses(spec.research_id, payload.get("hypothesis_updates") or {})
         store.add_research_finding(finding.finding_id, spec.research_id, finding.status,
                                    payload, str(existing))
         return ResearchFinding(**payload) if isinstance(payload, dict) else finding

@@ -1,5 +1,32 @@
 # PROJECT STATE — Global Opportunity Engine
 
+## AUTHORITATIVE PHASE-1 STATE (2026-11-16)
+
+- **Phase-1 product scope is frozen**: supervised market monitoring, fact/candidate
+  organization, preliminary evidence checks, research memory/update, and handoff of
+  questions/evidence to the user or a genuinely supported B capability.
+- **Not phase-1 gates**: investment Alpha, superiority over simple anomaly screening,
+  user/expert scoring, full causal identification, unattended 24h operation, or full B
+  coverage. Value evaluation remains useful but is **not** a phase-1 failure condition.
+- **Current mode**: human-supervised research assistant; no auto-trading, no auto-merge.
+- **Implementation baseline**: `e315f33`; five-fix lifecycle prior baseline `bfbed8e`.
+- **Latest offline proof**: see `audit/releases/` and the frozen candidate tag below.
+- **Known data limit**: market database observations end **2026-11-13**; no post-cutoff
+  real observation exists. Continuous unattended operation is **not validated**.
+- **Working entry points**: `goe doctor`, `goe ingest`, `goe research status/next/run/
+  reopen/retry`, `goe dossier`.
+- **Historical sections below are retained as history**; where they conflict with this
+  banner, this banner is authoritative.
+
+### Freeze candidate
+See final delivery: branch `architecture/research-v2`, candidate tag
+`phase1-research-assistant-rc.1`, and the release proof generated from the exact
+implementation commit. Do not treat the tag as a final release until GPT audit and user
+approval.
+
+---
+# PROJECT STATE — Global Opportunity Engine
+
 - Date: 2026-11-15
 - Branch: `architecture/research-v2`
 - HEAD at last state write: research-product commit (will advance with the Phase-1 scan-evidence commit)

@@ -955,6 +955,15 @@ class Store:
                          new_id=excluded.new_id, reason=excluded.reason""",
                       (old_id, new_id, reason, utc_now()))
 
+    def next_update_batch(self) -> int:
+        """Monotonic occurrence batch; duplicate delivery can reuse it."""
+        with self.transaction() as c:
+            row = c.execute("SELECT value FROM counters WHERE name='research_update_batch'").fetchone()
+            value = int(row["value"]) + 1 if row else 1
+            c.execute("""INSERT INTO counters(name,value) VALUES('research_update_batch',?)
+                         ON CONFLICT(name) DO UPDATE SET value=excluded.value""", (value,))
+            return value
+
     def enqueue_research_update(self, research_id: str, trigger_type: str, trigger_key: str,
                                 reason: str = "") -> int | None:
         with self.transaction() as c:

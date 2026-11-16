@@ -159,11 +159,11 @@ def test_no_change_reopen_is_consumed_and_does_not_loop(tmp_path, monkeypatch):
     assert store.conn.execute("SELECT created_at FROM research_v2_findings WHERE finding_id='F1'").fetchone()[0] == t0
     # A second data update can be queued after the first was processed.
     notify_price_changes(store, {"R-CONSUME": {"TW_EQ_TAIEX": "old"}},
-                         {"R-CONSUME": {"TW_EQ_TAIEX": "new"}})
+                         {"R-CONSUME": {"TW_EQ_TAIEX": "new"}}, batch=1)
     assert store.open_research_update_count("R-CONSUME") >= 1
-    # Duplicate same transition is idempotent.
+    # Same occurrence delivered twice with the same batch is idempotent.
     notify_price_changes(store, {"R-CONSUME": {"TW_EQ_TAIEX": "old"}},
-                         {"R-CONSUME": {"TW_EQ_TAIEX": "new"}})
+                         {"R-CONSUME": {"TW_EQ_TAIEX": "new"}}, batch=1)
     assert store.open_research_update_count("R-CONSUME") == 1
 
 

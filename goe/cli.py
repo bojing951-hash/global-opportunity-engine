@@ -164,7 +164,8 @@ def cmd_ingest(args: argparse.Namespace) -> int:
         except Exception as exc:  # noqa: BLE001
             out["indicators_error"] = f"{type(exc).__name__}: {exc}"
     after = research_snapshots(store)
-    out["research_updates"] = notify_price_changes(store, before, after)
+    batch = store.next_update_batch()
+    out["research_updates"] = notify_price_changes(store, before, after, batch=batch)
     if args.json:
         _print_json(out)
     else:

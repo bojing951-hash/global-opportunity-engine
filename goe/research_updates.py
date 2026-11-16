@@ -26,7 +26,15 @@ def research_snapshots(store: Store) -> dict[str, dict[str, str]]:
 
 def notify_price_changes(store: Store, before: dict[str, dict[str, str]],
                          after: dict[str, dict[str, str]],
-                         reason: str = "price data revised") -> list[dict[str, Any]]:
+                         reason: str = "price data revised",
+                         batch: int | str | None = None) -> list[dict[str, Any]]:
+    """One occurrence batch distinguishes duplicate delivery from a later repeat.
+
+    A caller delivering the same update twice passes the same batch. A later
+    ingestion/transition allocates a new batch even if the content returns to a
+    previous value (B→C→B→C).
+    """
+    batch = batch if batch is not None else store.next_update_batch()
     created = []
     for rid, old_deps in before.items():
         new_deps = after.get(rid, {})
@@ -35,7 +43,7 @@ def notify_price_changes(store: Store, before: dict[str, dict[str, str]],
             if new == old:
                 continue
             # A->B->A creates a new transition key, so the final A is not swallowed.
-            key = f"price:{iid}:{old[:12]}->{new[:12]}"
+            key = f"price:{iid}:{old[:12]}->{new[:12]}:b{batch}"
             uid = store.enqueue_research_update(rid, "price_revision", key, reason)
             if uid:
                 store.set_research_workflow_state(rid, "PLANNED")

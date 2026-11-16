@@ -113,7 +113,15 @@ def test_generic_execution_is_idempotent_and_keeps_artifact(tmp_path, monkeypatc
     f1 = eng.execute_spec(store, spec, out_dir=str(tmp_path / "out"))
     art = tmp_path / "out" / spec.as_of / spec.asset / f1.finding_id / "finding.json"
     before = art.read_bytes()
+    # Desynchronise current DB state intentionally; a cache hit must reapply the
+    # cached Finding's current hypothesis state before consuming the update.
+    key = next(iter(f1.hypothesis_updates))
+    store.update_research_hypotheses(spec.research_id, {key: {"status": "CONTRADICTED_BY_TEST"}})
     f2 = eng.execute_spec(store, spec, out_dir=str(tmp_path / "out"))
+    db_status = store.conn.execute(
+        "SELECT status FROM research_v2_hypotheses WHERE hypothesis_id=?",
+        (spec.research_id + ":" + key,)).fetchone()[0]
+    assert db_status == f2.hypothesis_updates[key]["status"]
     assert f2.finding_id == f1.finding_id
     assert art.read_bytes() == before
     assert store.conn.execute("SELECT COUNT(*) FROM research_v2_findings").fetchone()[0] == 1
