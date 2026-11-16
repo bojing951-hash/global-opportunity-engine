@@ -1,0 +1,72 @@
+{
+  "research_id": "RC-20261113-US_EQ_QQQ-c6b8c38dbf91",
+  "decision_as_of": "2026-11-13",
+  "event_date": "2026-11-05",
+  "observed_fact": {
+    "US_EQ_QQQ": {
+      "label": "US_EQ_QQQ",
+      "return": -0.064889,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "US market",
+      "return": -0.044092,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "US_VOL_VIX": {
+      "label": "VIX",
+      "return": 0.696568,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "US_FI_IEF": {
+      "label": "IEF duration",
+      "return": 0.003382,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "US_FX_DXY": {
+      "label": "DXY",
+      "return": 0.000394,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "CM_MET_GC": {
+      "label": "Gold",
+      "return": 0.009944,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    }
+  },
+  "supported_hypotheses": [
+    "H-RISK",
+    "H-TECH"
+  ],
+  "insufficient_hypotheses": [
+    "H-DATA"
+  ],
+  "market_expectations": {
+    "status": "MARKET_EXPECTATIONS_NOT_ESTABLISHED",
+    "reason": "no licensed implied-rate/consensus/options distribution baseline in this run"
+  },
+  "expectation_gap": {
+    "status": "MISPRICING_NOT_ESTABLISHED",
+    "direction": null,
+    "magnitude": null
+  },
+  "scenarios": {
+    "base": "US/global risk transmission remains the best-supported channel; local/regional channels are not distinguishable",
+    "alternative": "Japan/Asia-local factor dominates after new sector/flow evidence",
+    "invalidation": "a later independent window fails to reproduce the global lead or a new source shows a local driver"
+  },
+  "monitoring": [
+    "new post-cutoff market data",
+    "TOPIX/Asia sector breadth",
+    "implied rate/consensus vintages",
+    "FX and cross-asset correlations"
+  ],
+  "decision_relevance": "research priority only; no trade, target price, or mispricing claim",
+  "discovery_value": "NOT VALIDATED"
+}

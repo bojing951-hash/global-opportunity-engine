@@ -1,0 +1,42 @@
+{
+  "source": "GOE prices DB",
+  "observed": {
+    "US_EQ_QQQ": {
+      "label": "US_EQ_QQQ",
+      "return": -0.064889,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "US market",
+      "return": -0.044092,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "US_VOL_VIX": {
+      "label": "VIX",
+      "return": 0.696568,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "US_FI_IEF": {
+      "label": "IEF duration",
+      "return": 0.003382,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "US_FX_DXY": {
+      "label": "DXY",
+      "return": 0.000394,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "CM_MET_GC": {
+      "label": "Gold",
+      "return": 0.009944,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    }
+  },
+  "data_hash": "f94e12e0b336eab1a519f36ba79f930cf78d6251f739e6afb20eb42ec1a07b8f"
+}

@@ -25,6 +25,14 @@ TESTS = {
         ("local_asia_test", "global_lead_test", "asia_regional_test", "fx_test",
          "reversal_test", "historical_percentile"),
         ("INSUFFICIENT_DATA", "UNSUPPORTED_TEST", "INVALID_DATA")),
+    "us_equity_relative": TestDefinition(
+        "us_equity_relative", ("equity_index", "equity_etf", "sector_equity"),
+        ("event_asset", "market", "vol", "rates", "dollar", "gold"),
+        "relative return vs US market + risk/rate/dollar decomposition",
+        "US close event; no future data",
+        ("relative_underperform_test", "risk_test", "rate_test", "dollar_test",
+         "historical_percentile"),
+        ("INSUFFICIENT_DATA", "UNSUPPORTED_TEST", "INVALID_DATA")),
     "fx_rate_risk_cross_section": TestDefinition(
         "fx_rate_risk_cross_section", ("fx",),
         ("event_asset", "cross1", "cross2", "risk", "vol", "rates"),
@@ -52,5 +60,6 @@ def select_test(asset_class: str) -> TestDefinition | None:
 
 def execution_key(test_id: str) -> str:
     return {"equity_event_cross_section": "equity_event",
+            "us_equity_relative": "us_equity_relative",
             "fx_rate_risk_cross_section": "fx_level",
             "commodity_cross_section": "commodity_event"}[test_id]

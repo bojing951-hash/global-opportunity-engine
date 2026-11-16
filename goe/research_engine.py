@@ -100,7 +100,12 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
     fs = FeatureBuilder(store, as_of=spec.as_of, point_in_time=True,
                         history_start=(pd.Timestamp(spec.as_of) - pd.DateOffset(years=3)).strftime("%Y-%m-%d")).build()
     returns = fs.returns
-    definition = select_test(spec.asset_class)
+    from .test_registry import TESTS
+    explicit = {"equity_event": "equity_event_cross_section",
+                "fx_level": "fx_rate_risk_cross_section",
+                "commodity_event": "commodity_cross_section",
+                "us_equity_relative": "us_equity_relative"}.get(spec.case_kind)
+    definition = TESTS.get(explicit) if explicit else select_test(spec.asset_class)
     if definition is None:
         raise ValueError(f"UNSUPPORTED_TEST: no registered test for {spec.asset_class}")
     case_kind = execution_key(definition.test_id)
@@ -148,7 +153,59 @@ def execute_spec(store: Store, spec: ResearchSpec, *, out_dir: str | Path = "res
     learned: list[str] = []
     unknown: list[str] = []
 
-    if case_kind == "equity_event":
+    if case_kind == "us_equity_relative":
+        market_ret, vol_ret = role("market"), role("vol")
+        rates_ret, dollar_ret, gold_ret = role("rates"), role("dollar"), role("gold")
+        spread = None if n225 is None or market_ret is None else n225 - market_ret
+        tests["relative_underperform_test"] = {
+            "event_return": n225, "market_return": market_ret, "spread": spread,
+            "pass": None if spread is None else spread < -0.01,
+            "interpretation": "event asset underperformed the US market" if spread is not None and spread < -0.01
+                              else "no material relative underperformance"}
+        tests["risk_test"] = {
+            "market_return": market_ret, "vix_return": vol_ret,
+            "pass": None if market_ret is None or vol_ret is None else (market_ret < 0 and vol_ret > 0),
+            "interpretation": "risk-off: market down and VIX up"}
+        tests["rate_test"] = {
+            "ief_return": rates_ret,
+            "pass": None if rates_ret is None else rates_ret < 0,
+            "interpretation": "rates-up shock would imply IEF down; positive IEF is flight-to-quality"}
+        tests["dollar_test"] = {
+            "dxy_return": dollar_ret, "gold_return": gold_ret,
+            "pass": None if dollar_ret is None or gold_ret is None else (dollar_ret < 0 and gold_ret > 0),
+            "interpretation": "classic safe-haven dollar/gold pattern is not required for a risk-off equity shock"}
+        idx = returns.index; pos = idx.get_loc(pd.Timestamp(event))
+        nxt = returns[spec.asset].iloc[pos + 1: pos + 4]
+        reversal = round(float((1 + nxt).prod() - 1), 6) if len(nxt) else None
+        tests["reversal_test"] = {"next_3d": reversal,
+                                  "pass": None if reversal is None else reversal > 0,
+                                  "interpretation": "post-event reversal through as-of"}
+        updates = {
+            hid("risk", "H-RISK"): {"status": hs(tests["risk_test"]["pass"], "SUPPORTED_BY_AVAILABLE_EVIDENCE", "WEAKENED_BY_EVIDENCE"),
+                                     "label": "Risk-off / flight to quality", "type": "risk",
+                                     "new_evidence": "SPY/VIX same-day", "value": {"SPY": market_ret, "VIX": vol_ret},
+                                     "note": "Risk-off co-movement is supported; not a causal proof."},
+            hid("rates", "H-RATE"): {"status": hs(tests["rate_test"]["pass"], "SUPPORTED_BY_AVAILABLE_EVIDENCE", "WEAKENED_BY_EVIDENCE"),
+                                     "label": "Rate/duration shock", "type": "rates",
+                                     "new_evidence": "IEF same-day", "value": rates_ret,
+                                     "note": "IEF up while QQQ underperformed is inconsistent with a simple yield-up shock; flight-to-quality."},
+            hid("tech", "H-TECH"): {"status": hs(tests["relative_underperform_test"]["pass"], "SUPPORTED_BY_AVAILABLE_EVIDENCE", "INCONCLUSIVE"),
+                                     "label": "Growth/tech-specific de-rating", "type": "tech",
+                                     "new_evidence": "QQQ-SPY spread", "value": spread,
+                                     "note": "Relative underperformance is observed; it is not separable from duration/risk-off."},
+            hid("artifact", "H-DATA"): {"status": "INSUFFICIENT_DATA", "label": "Data artifact",
+                                         "type": "data_artifact", "new_evidence": "no price/roll flag",
+                                         "value": None, "note": "No index construction artifact indicated."},
+        }
+        learned = [f"{spec.asset} {event}: {p(n225)} vs market {p(market_ret)}; spread {p(spread)}.",
+                   f"VIX {p(vol_ret)} and IEF {p(rates_ret)}: risk-off/flight-to-quality is supported; a simple yield-up shock is not.",
+                   f"DXY {p(dollar_ret)}, gold {p(gold_ret)}; no classic safe-haven dollar/gold confirmation.",
+                   f"Post-event 3-day return {p(reversal)}.",
+                   "QQQ underperformance is consistent with growth/duration de-rating, but the mechanism remains unseparated."]
+        unknown = ["intraday leadership/sector breadth", "implied rates and options distribution",
+                   "earnings revisions", "positioning"]
+
+    elif case_kind == "equity_event":
         topix, taiex, kospi = role("local"), role("regional_tw"), role("regional_kr")
         spy, qqq, vix = role("global_equity"), role("global_growth"), role("global_vol")
         fx = role("fx")

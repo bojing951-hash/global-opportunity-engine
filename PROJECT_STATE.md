@@ -186,3 +186,11 @@ ACCEPTANCE_STATUS: multi-case functional; research value NOT VALIDATED.
 - Investment intelligence gated: MARKET_EXPECTATIONS_NOT_ESTABLISHED, MISPRICING_NOT_ESTABLISHED.
 - Real A→B supported request: 美日10年期国债收益率差, ok_valid, 63 evidence rows, B unchanged.
 - Value: no independent labels/future sample; DISCOVERY NOT VALIDATED.
+
+
+## Research Mission 01 (2026-11-16)
+- US QQQ 2026-11-05 relative underperformance: risk-off supported; simple rate-up shock weakened by IEF +0.34%; tech/duration attribution unresolved.
+- Event contract persisted; finding INCONCLUSIVE but information gain over price anomaly.
+- Investment intelligence: MARKET_EXPECTATIONS_NOT_ESTABLISHED / MISPRICING_NOT_ESTABLISHED.
+- A-B real UST/JGB rate-differential request ok_valid (63 evidence rows); B unchanged.
+- DISCOVERY VALUE STILL NOT VALIDATED.

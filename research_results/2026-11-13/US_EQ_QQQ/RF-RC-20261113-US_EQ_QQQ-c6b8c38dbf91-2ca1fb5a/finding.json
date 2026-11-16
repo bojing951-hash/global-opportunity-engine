@@ -1,0 +1,225 @@
+{
+  "finding_id": "RF-RC-20261113-US_EQ_QQQ-c6b8c38dbf91-2ca1fb5a",
+  "research_id": "RC-20261113-US_EQ_QQQ-c6b8c38dbf91",
+  "decision_as_of": "2026-11-13",
+  "event_date": "2026-11-05",
+  "observed": {
+    "US_EQ_QQQ": {
+      "label": "US_EQ_QQQ",
+      "return": -0.064889,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "US_EQ_SPY": {
+      "label": "US market",
+      "return": -0.044092,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "US_VOL_VIX": {
+      "label": "VIX",
+      "return": 0.696568,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "US_FI_IEF": {
+      "label": "IEF duration",
+      "return": 0.003382,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "US_FX_DXY": {
+      "label": "DXY",
+      "return": 0.000394,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    },
+    "CM_MET_GC": {
+      "label": "Gold",
+      "return": 0.009944,
+      "data_date": "2026-11-05",
+      "alignment": "same_day"
+    }
+  },
+  "plan": {
+    "question": "QQQ relative_strength_extreme underperform on 2026-11-05: -6.49% vs SPY -4.41%; VIX +69.66%; decision as-of 2026-11-13.",
+    "case_kind": "us_equity_relative",
+    "test_id": "us_equity_relative",
+    "event_contract": {
+      "research_id": "RC-20261113-US_EQ_QQQ-c6b8c38dbf91",
+      "research_theme_id": "RT-22ac1a3c472dfe56",
+      "asset_id": "US_EQ_QQQ",
+      "market": "US",
+      "asset_class": "equity_etf",
+      "phenomenon_id": "relative_strength_extreme|US_EQ_QQQ|underperform|2026-11-05",
+      "detector_id": "relative_strength_extreme",
+      "direction": "underperform",
+      "detection_window": "1d",
+      "event_start": "2026-11-05",
+      "event_end": "2026-11-05",
+      "event_timestamp": "2026-11-05T23:59:59Z",
+      "event_timezone": "exchange_local",
+      "decision_as_of": "2026-11-13",
+      "observed_facts": [
+        "QQQ relative_strength_extreme underperform on 2026-11-05: -6.49% vs SPY -4.41%; VIX +69.66%; decision as-of 2026-11-13."
+      ],
+      "research_question": "QQQ relative_strength_extreme underperform on 2026-11-05: -6.49% vs SPY -4.41%; VIX +69.66%; decision as-of 2026-11-13.",
+      "source_snapshot": "goe.db:prices+anomalies",
+      "data_version": "scan-20261115T044634Z-b68802",
+      "anomaly_id": "AN-1821b60c31ae31",
+      "contract_hash": "f31e7f43f8be67b64c0c9f7362258839b3173c10a574f68f91bc332e6e1499f8"
+    },
+    "peers": {
+      "US_EQ_SPY": [
+        "US market",
+        "same_day"
+      ],
+      "US_VOL_VIX": [
+        "VIX",
+        "same_day"
+      ],
+      "US_FI_IEF": [
+        "IEF duration",
+        "same_day"
+      ],
+      "US_FX_DXY": [
+        "DXY",
+        "same_day"
+      ],
+      "CM_MET_GC": [
+        "Gold",
+        "same_day"
+      ]
+    },
+    "missing": [
+      "intraday leadership/sector breadth",
+      "implied rates and options distribution",
+      "earnings revisions",
+      "positioning"
+    ],
+    "pit": "same-day for event market; prior US session for US/FX in equity case"
+  },
+  "evidence": {
+    "source": "GOE prices DB",
+    "event_available_at": "2026-11-05",
+    "decision_as_of": "2026-11-13",
+    "data_hash": "f94e12e0b336eab1a519f36ba79f930cf78d6251f739e6afb20eb42ec1a07b8f",
+    "data_dates": {
+      "US_EQ_QQQ": "2026-11-05",
+      "US_EQ_SPY": "2026-11-05",
+      "US_VOL_VIX": "2026-11-05",
+      "US_FI_IEF": "2026-11-05",
+      "US_FX_DXY": "2026-11-05",
+      "CM_MET_GC": "2026-11-05"
+    },
+    "input_rows": 779
+  },
+  "tests": {
+    "historical_percentile": {
+      "event_return": -0.064889,
+      "percentile": 0.003968253968253968,
+      "pass": true,
+      "interpretation": "two-sided 5% tail of the trailing 252-session return distribution"
+    },
+    "relative_underperform_test": {
+      "event_return": -0.064889,
+      "market_return": -0.044092,
+      "spread": -0.020797000000000003,
+      "pass": true,
+      "interpretation": "event asset underperformed the US market"
+    },
+    "risk_test": {
+      "market_return": -0.044092,
+      "vix_return": 0.696568,
+      "pass": true,
+      "interpretation": "risk-off: market down and VIX up"
+    },
+    "rate_test": {
+      "ief_return": 0.003382,
+      "pass": false,
+      "interpretation": "rates-up shock would imply IEF down; positive IEF is flight-to-quality"
+    },
+    "dollar_test": {
+      "dxy_return": 0.000394,
+      "gold_return": 0.009944,
+      "pass": false,
+      "interpretation": "classic safe-haven dollar/gold pattern is not required for a risk-off equity shock"
+    },
+    "reversal_test": {
+      "next_3d": 0.042825,
+      "pass": true,
+      "interpretation": "post-event reversal through as-of"
+    }
+  },
+  "hypothesis_updates": {
+    "H-RISK": {
+      "status": "SUPPORTED_BY_AVAILABLE_EVIDENCE",
+      "label": "Risk-off / flight to quality",
+      "type": "risk",
+      "new_evidence": "SPY/VIX same-day",
+      "value": {
+        "SPY": -0.044092,
+        "VIX": 0.696568
+      },
+      "note": "Risk-off co-movement is supported; not a causal proof."
+    },
+    "H-RATE": {
+      "status": "WEAKENED_BY_EVIDENCE",
+      "label": "Rate/duration shock",
+      "type": "rates",
+      "new_evidence": "IEF same-day",
+      "value": 0.003382,
+      "note": "IEF up while QQQ underperformed is inconsistent with a simple yield-up shock; flight-to-quality."
+    },
+    "H-TECH": {
+      "status": "SUPPORTED_BY_AVAILABLE_EVIDENCE",
+      "label": "Growth/tech-specific de-rating",
+      "type": "tech",
+      "new_evidence": "QQQ-SPY spread",
+      "value": -0.020797000000000003,
+      "note": "Relative underperformance is observed; it is not separable from duration/risk-off."
+    },
+    "H-DATA": {
+      "status": "INSUFFICIENT_DATA",
+      "label": "Data artifact",
+      "type": "data_artifact",
+      "new_evidence": "no price/roll flag",
+      "value": null,
+      "note": "No index construction artifact indicated."
+    }
+  },
+  "learned": [
+    "US_EQ_QQQ 2026-11-05: -6.49% vs market -4.41%; spread -2.08%.",
+    "VIX +69.66% and IEF +0.34%: risk-off/flight-to-quality is supported; a simple yield-up shock is not.",
+    "DXY +0.04%, gold +0.99%; no classic safe-haven dollar/gold confirmation.",
+    "Post-event 3-day return +4.28%.",
+    "QQQ underperformance is consistent with growth/duration de-rating, but the mechanism remains unseparated."
+  ],
+  "still_unknown": [
+    "intraday leadership/sector breadth",
+    "implied rates and options distribution",
+    "earnings revisions",
+    "positioning"
+  ],
+  "next_action": "Retain in A; acquire the listed missing evidence. No B handoff for unsupported deep asset research.",
+  "input_sha256": "2ca1fb5ae9773e21bb5a3772b885704568258c92728b0911c8615d8ca90b4860",
+  "code_commit": "9c5636486fd4ef0c468e271d035feef0ee85ff8e",
+  "feature_version": "v2",
+  "status": "INCONCLUSIVE",
+  "data_dates": {
+    "US_EQ_QQQ": "2026-11-05",
+    "US_EQ_SPY": "2026-11-05",
+    "US_VOL_VIX": "2026-11-05",
+    "US_FI_IEF": "2026-11-05",
+    "US_FX_DXY": "2026-11-05",
+    "CM_MET_GC": "2026-11-05"
+  },
+  "rules": {
+    "historical_percentile": "two-sided 5% tail of the trailing 252-session return distribution",
+    "relative_underperform_test": "event asset underperformed the US market",
+    "risk_test": "risk-off: market down and VIX up",
+    "rate_test": "rates-up shock would imply IEF down; positive IEF is flight-to-quality",
+    "dollar_test": "classic safe-haven dollar/gold pattern is not required for a risk-off equity shock",
+    "reversal_test": "post-event reversal through as-of"
+  }
+}

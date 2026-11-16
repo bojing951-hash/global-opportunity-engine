@@ -81,11 +81,6 @@ class ResearchOrchestrator:
             c = json.loads(r["payload_json"] or "{}")
             if c.get("research_queue") not in ("watch", "research"):
                 continue
-            # The equity template's lead/lag peers are calibrated for non-US events;
-            # a US-event template is not yet registered, so do not misapply it.
-            if (c.get("asset_class") in ("equity_index", "equity_etf", "sector_equity")
-                    and c.get("market") == "US"):
-                continue
             if c.get("research_worthiness") not in ("high", "medium"):
                 continue
             state = self.store.research_workflow_state(r["research_id"])
@@ -116,6 +111,39 @@ class ResearchOrchestrator:
         asset = str((c.get("instruments") or ["unknown"])[0])
         ac = str(c.get("asset_class"))
         if ac in ("equity_index", "equity_etf", "sector_equity"):
+            if str(c.get("market")) == "US":
+                peers = {"US_EQ_SPY": ("US market", "same_day"),
+                         "US_VOL_VIX": ("VIX", "same_day"),
+                         "US_FI_IEF": ("IEF duration", "same_day"),
+                         "US_FX_DXY": ("DXY", "same_day"),
+                         "CM_MET_GC": ("Gold", "same_day")}
+                roles = {"market": "US_EQ_SPY", "vol": "US_VOL_VIX",
+                         "rates": "US_FI_IEF", "dollar": "US_FX_DXY", "gold": "CM_MET_GC"}
+                hyps = []
+                hmap = {}
+                for h in c.get("competing_hypotheses") or []:
+                    hid0 = str(h.get("id")); key = hid0.rsplit("-", 1)[-1].lower()
+                    hyps.append((hid0, {"label": h.get("label", hid0), "type": h.get("type", "research")}))
+                    hmap[key] = hid0
+                if not hyps:
+                    hyps = [("H-RISK", {"label": "risk-off", "type": "risk"}),
+                            ("H-RATE", {"label": "rate shock", "type": "rates"}),
+                            ("H-TECH", {"label": "tech de-rating", "type": "tech"}),
+                            ("H-DATA", {"label": "data artifact", "type": "data_artifact"})]
+                contract = resolve_event(c, self.store.conn)
+                return ResearchSpec(
+                    event_override=contract.event_end, research_id=str(c["research_id"]),
+                    research_theme_id=str(c.get("research_theme_id") or research_theme_id(
+                        instrument_id=asset, detector="relative_strength_extreme",
+                        direction="underperform", window="event")),
+                    as_of=str(c.get("as_of")), asset=asset, market="US", asset_class=ac,
+                    question=str(c.get("observed_phenomenon") or "relative performance"),
+                    case_kind="us_equity_relative", peers=peers, hypotheses=hyps,
+                    roles=roles, event_contract=contract.to_dict(),
+                    hypothesis_ids={"risk": hmap.get("risk", "H-RISK"),
+                                    "rates": hmap.get("rate", hmap.get("rates", "H-RATE")),
+                                    "tech": hmap.get("tech", "H-TECH"),
+                                    "artifact": hmap.get("data", hmap.get("artifact", "H-DATA"))})
             # Build peers dynamically and never let the event asset be a peer.
             pool = ["HK_EQ_HSI", "CN_EQ_CSI300", "JP_EQ_N225", "TW_EQ_TAIEX", "KR_EQ_KOSPI"]
             pool = [x for x in pool if x != asset]

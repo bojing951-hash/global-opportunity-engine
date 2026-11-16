@@ -20,6 +20,9 @@ def _phenomenon(c: dict[str, Any]) -> tuple[str, str, str]:
     if "drawdown" in text:
         det = "drawdown_extreme"
         direction = "deep_drawdown" if ("deep" in text or "回撤" in text) else "near_high"
+    elif "relative_strength" in text or "相对强弱" in text:
+        det = "relative_strength_extreme"
+        direction = "underperform" if ("under" in text or "弱" in text) else "outperform"
     elif "price_return_shock" in text or "收益" in text:
         det = "price_return_shock"
         direction = "down" if ("down" in text or "-" in text or "下跌" in text) else "up"

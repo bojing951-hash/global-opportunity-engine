@@ -1,0 +1,58 @@
+{
+  "question": "QQQ relative_strength_extreme underperform on 2026-11-05: -6.49% vs SPY -4.41%; VIX +69.66%; decision as-of 2026-11-13.",
+  "case_kind": "us_equity_relative",
+  "test_id": "equity_event_cross_section",
+  "event_contract": {
+    "research_id": "RC-20261113-US_EQ_QQQ-c6b8c38dbf91",
+    "research_theme_id": "RT-22ac1a3c472dfe56",
+    "asset_id": "US_EQ_QQQ",
+    "market": "US",
+    "asset_class": "equity_etf",
+    "phenomenon_id": "relative_strength_extreme|US_EQ_QQQ|underperform|2026-11-05",
+    "detector_id": "relative_strength_extreme",
+    "direction": "underperform",
+    "detection_window": "1d",
+    "event_start": "2026-11-05",
+    "event_end": "2026-11-05",
+    "event_timestamp": "2026-11-05T23:59:59Z",
+    "event_timezone": "exchange_local",
+    "decision_as_of": "2026-11-13",
+    "observed_facts": [
+      "QQQ relative_strength_extreme underperform on 2026-11-05: -6.49% vs SPY -4.41%; VIX +69.66%; decision as-of 2026-11-13."
+    ],
+    "research_question": "QQQ relative_strength_extreme underperform on 2026-11-05: -6.49% vs SPY -4.41%; VIX +69.66%; decision as-of 2026-11-13.",
+    "source_snapshot": "goe.db:prices+anomalies",
+    "data_version": "scan-20261115T044634Z-b68802",
+    "anomaly_id": "AN-1821b60c31ae31",
+    "contract_hash": "f31e7f43f8be67b64c0c9f7362258839b3173c10a574f68f91bc332e6e1499f8"
+  },
+  "peers": {
+    "US_EQ_SPY": [
+      "US market",
+      "same_day"
+    ],
+    "US_VOL_VIX": [
+      "VIX",
+      "same_day"
+    ],
+    "US_FI_IEF": [
+      "IEF duration",
+      "same_day"
+    ],
+    "US_FX_DXY": [
+      "DXY",
+      "same_day"
+    ],
+    "CM_MET_GC": [
+      "Gold",
+      "same_day"
+    ]
+  },
+  "missing": [
+    "local market sector/constituent breadth",
+    "regional supply-chain exposure",
+    "consensus revisions",
+    "event/news calendar"
+  ],
+  "pit": "same-day for event market; prior US session for US/FX in equity case"
+}

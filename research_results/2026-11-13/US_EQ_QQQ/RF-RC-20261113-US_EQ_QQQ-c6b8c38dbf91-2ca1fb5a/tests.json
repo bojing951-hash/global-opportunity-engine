@@ -1,0 +1,37 @@
+{
+  "historical_percentile": {
+    "event_return": -0.064889,
+    "percentile": 0.003968253968253968,
+    "pass": true,
+    "interpretation": "two-sided 5% tail of the trailing 252-session return distribution"
+  },
+  "relative_underperform_test": {
+    "event_return": -0.064889,
+    "market_return": -0.044092,
+    "spread": -0.020797000000000003,
+    "pass": true,
+    "interpretation": "event asset underperformed the US market"
+  },
+  "risk_test": {
+    "market_return": -0.044092,
+    "vix_return": 0.696568,
+    "pass": true,
+    "interpretation": "risk-off: market down and VIX up"
+  },
+  "rate_test": {
+    "ief_return": 0.003382,
+    "pass": false,
+    "interpretation": "rates-up shock would imply IEF down; positive IEF is flight-to-quality"
+  },
+  "dollar_test": {
+    "dxy_return": 0.000394,
+    "gold_return": 0.009944,
+    "pass": false,
+    "interpretation": "classic safe-haven dollar/gold pattern is not required for a risk-off equity shock"
+  },
+  "reversal_test": {
+    "next_3d": 0.042825,
+    "pass": true,
+    "interpretation": "post-event reversal through as-of"
+  }
+}
