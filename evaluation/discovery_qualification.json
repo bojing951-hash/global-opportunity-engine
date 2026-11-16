@@ -1,0 +1,371 @@
+{
+  "as_of": "2026-11-13",
+  "rows": [
+    {
+      "research_id": "RC-20261113-CH_EQ_SMI-1438e3aa5bb7",
+      "asset": "CH_EQ_SMI",
+      "materiality": 0.4,
+      "explanatory_gap": 1.0,
+      "distinct_predictions": 6,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-CM_AGR_LE-f0851c3c415a",
+      "asset": "CM_AGR_LE",
+      "materiality": 0.2,
+      "explanatory_gap": 0.0,
+      "distinct_predictions": 5,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若供给解释成立，研究库存/地缘情景；若美元解释成立，研究计价与对冲。",
+        "if_false": "若均不成立，保留为待验证情报，不直接做方向性判断。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-CM_AGR_SB-3d2c094bfbb6",
+      "asset": "CM_AGR_SB",
+      "materiality": 0.25,
+      "explanatory_gap": 0.0,
+      "distinct_predictions": 5,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若供给解释成立，研究库存/地缘情景；若美元解释成立，研究计价与对冲。",
+        "if_false": "若均不成立，保留为待验证情报，不直接做方向性判断。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-CM_ENE_RB-45ada7784c4a",
+      "asset": "CM_ENE_RB",
+      "materiality": 0.4,
+      "explanatory_gap": 0.0,
+      "distinct_predictions": 5,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若供给解释成立，研究库存/地缘情景；若美元解释成立，研究计价与对冲。",
+        "if_false": "若均不成立，保留为待验证情报，不直接做方向性判断。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-CM_ETF_SLV-31b18b96549b",
+      "asset": "CM_ETF_SLV",
+      "materiality": 0.35,
+      "explanatory_gap": 0.0,
+      "distinct_predictions": 5,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若供给解释成立，研究库存/地缘情景；若美元解释成立，研究计价与对冲。",
+        "if_false": "若均不成立，保留为待验证情报，不直接做方向性判断。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-CN_EQ_CSI1000-67b29d5b0466",
+      "asset": "CN_EQ_CSI1000",
+      "materiality": 0.4,
+      "explanatory_gap": 0.0,
+      "distinct_predictions": 7,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "partial",
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-CN_SEC_EV-efd47b130d9d",
+      "asset": "CN_SEC_EV",
+      "materiality": 0.35,
+      "explanatory_gap": 0.0,
+      "distinct_predictions": 4,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若利率/风格解释成立，研究久期与行业相对价值；若全球风险解释成立，研究防御/周期切换。",
+        "if_false": "若相对表现无法由风格/风险解释，保留为待验证的行业基本面问题。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-DE_EQ_DAX-f0c491641f0d",
+      "asset": "DE_EQ_DAX",
+      "materiality": 0.7,
+      "explanatory_gap": 0.0,
+      "distinct_predictions": 6,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "partial",
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-GX_FX_USDBRL-52e02877b1d2",
+      "asset": "GX_FX_USDBRL",
+      "materiality": 0.35,
+      "explanatory_gap": 0.0,
+      "distinct_predictions": 4,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若利差/风险解释成立，研究 carry 或避险对冲；若干预解释成立，研究政策防线。",
+        "if_false": "若均被证伪，保留为市场情报，等待资金流/政策证据。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-GX_FX_USDKRW-e18cb73d9ec9",
+      "asset": "GX_FX_USDKRW",
+      "materiality": 0.4,
+      "explanatory_gap": 0.0,
+      "distinct_predictions": 4,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若利差/风险解释成立，研究 carry 或避险对冲；若干预解释成立，研究政策防线。",
+        "if_false": "若均被证伪，保留为市场情报，等待资金流/政策证据。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-IN_EQ_INDA-8e22daa664a8",
+      "asset": "IN_EQ_INDA",
+      "materiality": 0.3,
+      "explanatory_gap": 0.0,
+      "distinct_predictions": 6,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-JP_EQ_N225-455ff8e1a32f",
+      "asset": "JP_EQ_N225",
+      "materiality": 0.8,
+      "explanatory_gap": 0.709,
+      "distinct_predictions": 7,
+      "distinct_ok": true,
+      "research_worthiness": "high",
+      "evidence_readiness": "partial",
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      },
+      "research_queue": "watch",
+      "classification": "EVIDENCE_TO_COLLECT",
+      "reason": "worth researching, but evidence readiness incomplete",
+      "next_best_evidence": "collect missing evidence before promoting"
+    },
+    {
+      "research_id": "RC-20261113-MX_EQ_IPC-8f3340472d14",
+      "asset": "MX_EQ_IPC",
+      "materiality": 0.25,
+      "explanatory_gap": 0.957,
+      "distinct_predictions": 6,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-TW_EQ_TAIEX-d1be6bcd3313",
+      "asset": "TW_EQ_TAIEX",
+      "materiality": 0.5,
+      "explanatory_gap": 0.782,
+      "distinct_predictions": 6,
+      "distinct_ok": true,
+      "research_worthiness": "medium",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若本地/汇率/政策解释成立，研究本地风险与对冲；若全球解释成立，研究 beta。",
+        "if_false": "若竞争解释被证伪，保留为市场情报并等待新证据，不宣称错误定价。"
+      },
+      "research_queue": "watch",
+      "classification": "EVIDENCE_TO_COLLECT",
+      "reason": "worth researching, but evidence readiness incomplete",
+      "next_best_evidence": "collect missing evidence before promoting"
+    },
+    {
+      "research_id": "RC-20261113-US_EQ_QQQ-ed67c9acfee9",
+      "asset": "US_EQ_QQQ",
+      "materiality": 0.95,
+      "explanatory_gap": 0.328,
+      "distinct_predictions": 5,
+      "distinct_ok": true,
+      "research_worthiness": "medium",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若利率/全球风险解释成立，研究久期与风格暴露；若盈利解释成立，交 B 做估值/盈利研究。",
+        "if_false": "若均被证伪，保留为市场情报，不升级为研究候选。"
+      },
+      "research_queue": "watch",
+      "classification": "EVIDENCE_TO_COLLECT",
+      "reason": "worth researching, but evidence readiness incomplete",
+      "next_best_evidence": "collect missing evidence before promoting"
+    },
+    {
+      "research_id": "RC-20261113-US_FAC_MTUM-66083bd4ef45",
+      "asset": "US_FAC_MTUM",
+      "materiality": 0.3,
+      "explanatory_gap": 0.932,
+      "distinct_predictions": 5,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若利率/全球风险解释成立，研究久期与风格暴露；若盈利解释成立，交 B 做估值/盈利研究。",
+        "if_false": "若均被证伪，保留为市场情报，不升级为研究候选。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-US_SEC_XLB-cce9f5cca3a3",
+      "asset": "US_SEC_XLB",
+      "materiality": 0.35,
+      "explanatory_gap": 0.703,
+      "distinct_predictions": 4,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若利率/风格解释成立，研究久期与行业相对价值；若全球风险解释成立，研究防御/周期切换。",
+        "if_false": "若相对表现无法由风格/风险解释，保留为待验证的行业基本面问题。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-US_SEC_XLP-d928c9167d8c",
+      "asset": "US_SEC_XLP",
+      "materiality": 0.4,
+      "explanatory_gap": 0.428,
+      "distinct_predictions": 4,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若利率/风格解释成立，研究久期与行业相对价值；若全球风险解释成立，研究防御/周期切换。",
+        "if_false": "若相对表现无法由风格/风险解释，保留为待验证的行业基本面问题。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    },
+    {
+      "research_id": "RC-20261113-US_SEC_XLV-08992cbc4a1e",
+      "asset": "US_SEC_XLV",
+      "materiality": 0.6,
+      "explanatory_gap": 1.0,
+      "distinct_predictions": 4,
+      "distinct_ok": true,
+      "research_worthiness": "medium",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若利率/风格解释成立，研究久期与行业相对价值；若全球风险解释成立，研究防御/周期切换。",
+        "if_false": "若相对表现无法由风格/风险解释，保留为待验证的行业基本面问题。"
+      },
+      "research_queue": "watch",
+      "classification": "EVIDENCE_TO_COLLECT",
+      "reason": "worth researching, but evidence readiness incomplete",
+      "next_best_evidence": "collect missing evidence before promoting"
+    },
+    {
+      "research_id": "RC-20261113-US_VOL_VIX-c1092d4e5bea",
+      "asset": "US_VOL_VIX",
+      "materiality": 0.9,
+      "explanatory_gap": 0.0,
+      "distinct_predictions": 4,
+      "distinct_ok": true,
+      "research_worthiness": "low",
+      "evidence_readiness": "missing",
+      "decision_relevance": {
+        "if_true": "若波动率状态解释成立，研究波动率风险溢价与期限结构。",
+        "if_false": "若无稳定关系，保留为市场情报，不宣称错误定价。"
+      },
+      "research_queue": "archive",
+      "classification": "INTELLIGENCE_ONLY",
+      "reason": "materiality/decision relevance or explanatory gap too small for research",
+      "next_best_evidence": "none; retain as intelligence"
+    }
+  ],
+  "counts": {
+    "RESEARCH_READY": 0,
+    "EVIDENCE_TO_COLLECT": 4,
+    "INTELLIGENCE_ONLY": 16,
+    "DATA_ARTIFACT": 0
+  }
+}
