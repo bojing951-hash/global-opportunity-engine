@@ -41,9 +41,10 @@
     }
   },
   "supported_hypotheses": [
-    "H-RISK",
-    "H-TECH"
+    "H-RISK"
   ],
+  "observed_relative_weakness": -0.020797000000000003,
+  "relative_weakness_note": "relative underperformance is an observation, not independent support for a tech-specific mechanism",
   "insufficient_hypotheses": [
     "H-DATA"
   ],
@@ -58,10 +59,11 @@
   },
   "asset": "US_EQ_QQQ",
   "unresolved_hypotheses": [
-    "H-RATE"
+    "H-RATE",
+    "H-TECH"
   ],
   "scenarios": {
-    "base": "Best-supported channels: H-RISK, H-TECH; unresolved: H-RATE",
+    "base": "Best-supported channels: H-RISK; unresolved: H-RATE, H-TECH",
     "alternative": "A competing mechanism remains possible where hypotheses are WEAKENED/INCONCLUSIVE; see hypothesis updates",
     "invalidation": "new independent-window evidence fails to reproduce the supported channel or identifies a specific omitted driver"
   },
